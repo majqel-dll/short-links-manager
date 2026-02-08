@@ -78,7 +78,7 @@ git clone https://github.com/miqel-dll/short-links-manager.git
 
 #### 2. Environment Variable Configuration
 
-The application as a demo **includes** default environmental settings for basic functionality.However, if you want anything else for any purpose, you can configure these everything in a [.env](./backend/.env.d.ts) file.
+The application as a demo **includes** default environmental settings for basic functionality. However, if you want anything else for any purpose, you can configure these everything in a [.env](./backend/.env.d.ts) file.
 
 > ⚠ The demo version does not include SMTP server configuration. If these environment variables are not provided, the application will skip email verification during registration and password changes.
 
@@ -88,7 +88,7 @@ Make sure [`Docker`](https://www.docker.com) is installed, then run:
 
 ```bash
 
-# Application build with proxy (default)
+# Application build with reverse-proxy (default)
 docker compose -f docker/docker-compose.yml --profile prod up -d -V --build
 
 # Application build if you're already using 80 and 443 ports
