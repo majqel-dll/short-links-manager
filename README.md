@@ -1,4 +1,4 @@
-# Slist-Link Manager
+# Short-Link Manager
 
 ## Table of Contents
 
