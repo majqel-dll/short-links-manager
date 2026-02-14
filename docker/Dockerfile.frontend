@@ -1,0 +1,68 @@
+ARG IMAGE=node:25
+
+# BASE
+
+FROM $IMAGE as base
+
+ENV TZ="Europe/Warsaw"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /usr/src/app && \ 
+    chown -R node:node /usr/src/app
+
+WORKDIR /usr/src/app
+
+# DEVELOPMENT
+
+FROM base AS development
+
+COPY --chown=node:node ./frontend/package*.json .
+
+RUN mkdir -p /usr/src/app/node_modules && \
+    chown -R node:node /usr/src/app/node_modules
+
+RUN npm install @angular/cli
+
+RUN npm install
+
+COPY --chown=node:node ./frontend .
+
+# PRODUCTION BUILDER
+
+FROM base AS production-builder
+
+ENV NODE_ENV=production
+
+ENV CI=true
+
+RUN mkdir -p /usr/src/app/node_modules && \
+    chown -R node:node /usr/src/app/node_modules
+
+COPY --chown=node:node ./frontend/package*.json .
+
+RUN npm install -package-lock-only && npm ci
+
+RUN npm install @angular/cli
+
+COPY --chown=node:node ./frontend .
+
+RUN npm run build
+
+RUN npm prune --prod
+
+# PRODUCTION
+
+FROM base as production
+
+ENV NODE_ENV=production
+
+ENV CI=true
+
+COPY --chown=node:node ./frontend/package*.json .
+
+COPY --chown=node:node --from=production-builder /usr/src/app/dist ./dist
+
