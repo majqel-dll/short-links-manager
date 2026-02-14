@@ -1,0 +1,15 @@
+x-app-backend-base: &app-backend-base
+  container_name: app-backend
+  restart: always
+  networks:
+    - short-links-manager-network
+
+services:
+  app-backend-dev:
+    <<: *app-backend-base
+    profiles: [dev, backend-dev]
+    ports:
+      - "127.0.0.1:5000:3000"
+    
+
+  app-backend-prod:

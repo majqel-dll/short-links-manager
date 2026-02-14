@@ -1,0 +1,14 @@
+name: short-links-manager
+
+include:
+  - app-adminer-compose.yml
+  - app-backend-compose.yml
+  - app-frontend-compose.yml
+  - app-router-compose.yml
+  - app-database-compose.yml
+
+volumes:
+  postgres-volume:
+
+networks:
+  short-links-manager-network:
