@@ -8,6 +8,8 @@ services:
   short-links-manager-frontend-dev:
     <<: *app-frontend-base
     image: short-links-manager-frontend-dev
+    volumes:
+      - ../frontend:/usr/src/app
     tty: true
     build:
       context: ../

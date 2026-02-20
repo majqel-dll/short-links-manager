@@ -64,5 +64,12 @@ ENV CI=true
 
 COPY --chown=node:node ./frontend/package*.json .
 
+COPY --chown=node:node --from=production-builder /usr/src/app/node_modules ./node_modules
+
 COPY --chown=node:node --from=production-builder /usr/src/app/dist ./dist
 
+EXPOSE 4000
+
+USER node
+
+CMD ["node", "dist/main.js"]

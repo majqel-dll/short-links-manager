@@ -13,7 +13,6 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -23,40 +22,46 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@libs/database": [
-        "libs/database/src"
+        "./libs/database/src"
       ],
       "@libs/database/*": [
-        "libs/database/src/*"
+        "./libs/database/src/*"
       ],
       "@libs/dtos": [
-        "libs/dtos/src"
+        "./libs/dtos/src"
       ],
       "@libs/dtos/*": [
-        "libs/dtos/src/*"
+        "./libs/dtos/src/*"
       ],
       "@libs/entities": [
-        "libs/entities/src"
+        "./libs/entities/src"
       ],
       "@libs/entities/*": [
-        "libs/entities/src/*"
+        "./libs/entities/src/*"
       ],
       "@libs/enums": [
-        "libs/enums/src"
+        "./libs/enums/src"
       ],
       "@libs/enums/*": [
-        "libs/enums/src/*"
+        "./libs/enums/src/*"
       ],
       "@libs/logger": [
-        "libs/logger/src"
+        "./libs/logger/src"
       ],
       "@libs/logger/*": [
-        "libs/logger/src/*"
+        "./libs/logger/src/*"
+      ],
+      "@libs/s3": [
+        "./libs/s3/src"
+      ],
+      "@libs/s3/*": [
+        "./libs/s3/src/*"
       ],
       "@libs/types": [
-        "libs/types/src"
+        "./libs/types/src"
       ],
       "@libs/types/*": [
-        "libs/types/src/*"
+        "./libs/types/src/*"
       ]
     }
   }

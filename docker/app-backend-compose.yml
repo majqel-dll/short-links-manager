@@ -13,6 +13,8 @@ services:
       target: development
       dockerfile: ./docker/Dockerfile.backend
     tty: true
+    volumes:
+      - ../backend:/usr/src/app
     profiles: [dev, backend-dev]
     depends_on:
       - short-links-manager-database-dev
