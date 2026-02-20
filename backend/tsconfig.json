@@ -20,6 +20,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "types": [
+      "node",
+      "express",
+      "jest",
+      "./.env.d.ts"
+    ],
     "paths": {
       "@libs/database": [
         "./libs/database/src"

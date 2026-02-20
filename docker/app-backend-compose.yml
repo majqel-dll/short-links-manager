@@ -1,6 +1,13 @@
 x-app-backend-base: &app-backend-base
   container_name: short-links-manager-backend
   restart: always
+  environment:
+    SECRET: ${SECRET}
+    MAIN_DATABASE_HOST: ${MAIN_DATABASE_HOST}
+    MAIN_DATABASE_PORT: ${MAIN_DATABASE_PORT}
+    MAIN_DATABASE_USER: ${MAIN_DATABASE_USER}
+    MAIN_DATABASE_PASS: ${MAIN_DATABASE_PASS}
+    MAIN_DATABASE_NAME: ${MAIN_DATABASE_NAME}
   networks:
     - short-links-manager-network
 
