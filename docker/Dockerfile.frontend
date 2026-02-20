@@ -2,7 +2,7 @@ ARG IMAGE=node:25
 
 # BASE
 
-FROM $IMAGE as base
+FROM $IMAGE AS base
 
 ENV TZ="Europe/Warsaw"
 
@@ -56,7 +56,7 @@ RUN npm prune --prod
 
 # PRODUCTION
 
-FROM base as production
+FROM base AS production
 
 ENV NODE_ENV=production
 

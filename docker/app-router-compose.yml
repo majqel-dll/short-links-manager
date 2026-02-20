@@ -1,0 +1,23 @@
+x-app-router-base: &app-router-base
+  image: caddy:latest
+  container_name: short-links-manager-router
+  restart: always
+  networks:
+    - short-links-manager-network
+  ports:
+    - 80:80
+
+services:
+  short-links-manager-router-dev:
+    <<: *app-router-base
+    profiles: [dev]
+    volumes:
+      - caddy_config:/config
+      - ../Caddyfile.dev:/etc/caddy/Caddyfile
+
+  short-links-manager-router-prod:
+    <<: *app-router-base
+    profiles: [prod]
+    volumes:
+      - caddy_config:/config
+      - ../Caddyfile.prod:/etc/caddy/Caddyfile

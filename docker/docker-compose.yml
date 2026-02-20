@@ -8,7 +8,8 @@ include:
   - app-database-compose.yml
 
 volumes:
-  postgres-volume:
+  main-database-volume:
+  caddy_config:
 
 networks:
   short-links-manager-network:

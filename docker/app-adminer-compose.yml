@@ -1,0 +1,21 @@
+x-app-adminer-base: &app-adminer-base
+  image: adminer
+  container_name: short-links-manager-adminer
+  restart: always
+  networks:
+    - short-links-manager-network
+
+services:
+  short-links-manager-adminer-dev:
+    <<: *app-adminer-base
+    profiles: [dev, prod-native]
+    depends_on:
+      - short-links-manager-database-dev
+    ports:
+      - 18080:8080
+
+  short-links-manager-adminer-prod:
+    <<: *app-adminer-base
+    profiles: [prod]
+    depends_on:
+      - short-links-manager-database-prod

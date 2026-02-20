@@ -1,0 +1,25 @@
+x-database-base: &database-base
+    image: postgres:15
+    container_name: short-links-manager-database
+    restart: always
+    tty: true
+    environment:
+        POSTGRES_USER: ${MAIN_DATABASE_USER}
+        POSTGRES_PASSWORD: ${MAIN_DATABASE_PASS}
+        POSTGRES_DB: ${MAIN_DATABASE_NAME}
+    networks:
+        - short-links-manager-network
+    volumes:
+        - main-database-volume:/var/lib/postgresql/data
+
+services:
+
+    short-links-manager-database-dev:
+        <<: *database-base
+        profiles: [dev, database-dev]
+        ports:
+            - "5432:5432"
+
+    short-links-manager-database-prod:
+        <<: *database-base
+        profiles: [prod, database-prod]

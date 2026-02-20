@@ -1,15 +1,35 @@
 x-app-backend-base: &app-backend-base
-  container_name: app-backend
+  container_name: short-links-manager-backend
   restart: always
   networks:
     - short-links-manager-network
 
 services:
-  app-backend-dev:
+  short-links-manager-backend-dev:
     <<: *app-backend-base
+    image: short-links-manager-backend-dev
+    build:
+      context: ../
+      target: development
+      dockerfile: ./docker/Dockerfile.backend
+    tty: true
     profiles: [dev, backend-dev]
+    depends_on:
+      - short-links-manager-database-dev
     ports:
       - "127.0.0.1:5000:3000"
-    
+    expose:
+      - 5000
+    command: npm run start:dev
 
-  app-backend-prod:
+  short-links-manager-backend-prod:
+    <<: *app-backend-base
+    image: short-links-manager-backend-prod
+    build:
+      context: ../
+      target: production
+      dockerfile: ./docker/Dockerfile.backend
+    profiles: [prod, backend-prod]
+    depends_on:
+      - short-links-manager-database-prod
+    command: npm run start:prod

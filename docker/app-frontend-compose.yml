@@ -1,0 +1,40 @@
+x-app-frontend-base: &app-frontend-base
+  container_name: short-links-manager-frontend
+  restart: always
+  networks:
+    - short-links-manager-network
+
+services:
+  short-links-manager-frontend-dev:
+    <<: *app-frontend-base
+    image: short-links-manager-frontend-dev
+    tty: true
+    build:
+      context: ../
+      target: development
+      dockerfile: ./docker/Dockerfile.frontend
+    profiles: [dev, frontend-dev]
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NG_CLI_ANALYTICS=false
+    depends_on:
+      - short-links-manager-backend-dev
+    ports:
+      - "127.0.0.1:5001:4000"
+    expose:
+      - 5001
+    command: npm run start:dev
+
+  short-links-manager-frontend-prod:
+    <<: *app-frontend-base
+    image: short-links-manager-frontend-prod
+    environment:
+      - NODE_ENV=production
+    build:
+      context: ../
+      target: production
+      dockerfile: ./docker/Dockerfile.frontend
+    profiles: [prod, frontend-prod]
+    depends_on:
+      - short-links-manager-backend-prod
+    command: npm run prod

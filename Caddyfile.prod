@@ -1,0 +1,32 @@
+{
+	auto_https off
+}
+
+http://:80 {
+
+    encode zstd gzip
+    header Strict-Transport-Security "max-age=0"
+    
+    @adminer path /adminer*
+    handle @adminer {
+        uri strip_prefix /adminer
+        reverse_proxy short-links-manager-adminer-prod:8080 {
+            header_up X-Forwarded-Proto "http"
+        }
+    }
+
+    @panel path /panel* /panel/*
+    handle @panel {
+        uri strip_prefix /panel
+        reverse_proxy short-links-manager-frontend-prod:4000 {
+            header_up X-Forwarded-Proto "http"
+        }
+    }
+
+    handle_path /* {
+        reverse_proxy short-links-manager-backend-prod:13000 {
+            header_up X-Forwarded-Proto "http"
+        }
+    }
+
+}

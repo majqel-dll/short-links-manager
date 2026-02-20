@@ -89,10 +89,10 @@ Make sure [`Docker`](https://www.docker.com) is installed, then run:
 ```bash
 
 # Application build with reverse-proxy (default)
-docker compose -f docker/docker-compose.yml --profile prod up -d -V --build
+docker compose --env-file ./backend/.env.demo -f docker/docker-compose.yml --profile prod up -d -V --build
 
 # Application build if you're already using 80 and 443 ports
-docker compose -f docker/docker-compose.yml --profile prod-native up -d -V --build
+docker compose --env-file ./backend/.env.demo -f docker/docker-compose.yml --profile prod-native up -d -V --build
 
 ```
 
