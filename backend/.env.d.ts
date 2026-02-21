@@ -3,6 +3,7 @@ declare namespace NodeJS {
 
     // GENERAL
 
+    NODE_ENV: `DEVELOPMENT` | `PRODUCTION`;
     SECRET: string;
 
     // MAIN DATABASE

@@ -1,0 +1,17 @@
+import { Logger } from "@libs/logger";
+
+export function onBootstrapMessageUtil(
+    logger: Logger, name: string
+): void {
+    const mode = process.env.NODE_ENV ? `DEVELOPMENT` : `PRODUCTION`;
+    const warning = process.env.NODE_ENV
+        ? `Some actions may not be saved or could affect the real environment.`
+        : `Be careful: every action can affect the real environment.`;
+
+    const appName = `${name?.slice(0, 1)}${name.slice(1).toLowerCase()}`
+    logger.warn(Array.from({ length: 64 }, () => `-`).join(""), { save: false });
+    logger.warn(`Application is currently running in ${mode} mode.`)
+    logger.warn(warning)
+    logger.warn(Array.from({ length: 64 }, () => `-`).join(""), { save: false });
+    logger.log(`${appName} application has been bootstrapped.`);
+};

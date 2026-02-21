@@ -70,12 +70,11 @@
         "./libs/types/src/*"
       ],
       "@libs/utils": [
-        "libs/utils/src"
+        "./libs/utils/src"
       ],
       "@libs/utils/*": [
-        "libs/utils/src/*"
+        "./libs/utils/src/*"
       ]
     },
-    "baseUrl": "./"
   }
 }
