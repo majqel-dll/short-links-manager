@@ -1,6 +1,9 @@
-import { V1PermissionModule } from "./permission";
+import { Module, OnModuleInit } from "@nestjs/common";
+import { onBootstrapMessageUtil } from "@libs/utils";
+import { Logger, LoggerModule } from "@libs/logger";
 import { V1RedirectionModule } from "./redirection";
-import { Logger, Module, OnModuleInit } from "@nestjs/common";
+import { V1PermissionModule } from "./permission";
+import { InjectLogger } from "@libs/decorators";
 import { V1UserModule } from "./user";
 import { V1AuthModule } from "./auth";
 
@@ -12,19 +15,23 @@ const AllV1ApiModules = [
 ]
 
 @Module({
-    imports: AllV1ApiModules,
+    imports: [
+        LoggerModule.forFeature([
+            V1ApiModule
+        ]),
+        ...AllV1ApiModules,
+    ],
     exports: AllV1ApiModules,
 })
 
 export class V1ApiModule implements OnModuleInit {
 
-    public async onModuleInit() {
-        Logger.warn(process.env.MAIN_DATABASE_HOST)
-        Logger.warn(process.env.MAIN_DATABASE_PORT)
-        Logger.warn(process.env.MAIN_DATABASE_NAME)
-        Logger.warn(process.env.MAIN_DATABASE_PASS)
-        Logger.warn(process.env.MAIN_DATABASE_USER)
-        Logger.warn(process.env.MAIN_DATABASE_HOST)
-    }
+    constructor(
+        @InjectLogger(V1ApiModule) private readonly logger: Logger
+    ) { }
 
- }
+    public async onModuleInit() {
+        onBootstrapMessageUtil(this.logger, `V1 api module`)
+    };
+
+}

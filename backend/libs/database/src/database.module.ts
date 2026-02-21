@@ -1,7 +1,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
+import * as Entities from "@libs/entities";
 import { Module } from '@nestjs/common';
 
-const entities = [];
 
 @Module({
   imports: [
@@ -12,12 +12,13 @@ const entities = [];
       username: process.env.MAIN_DATABASE_USER,
       password: process.env.MAIN_DATABASE_PASS,
       database: process.env.MAIN_DATABASE_NAME,
-      entities: entities,
+      entities: Object.values(Entities),
       synchronize: true
     }),
+    TypeOrmModule.forFeature(Object.values(Entities))
   ],
   exports: [
-    TypeOrmModule.forFeature(entities)
+    TypeOrmModule.forFeature(Object.values(Entities))
   ],
 })
 export class DatabaseModule { }

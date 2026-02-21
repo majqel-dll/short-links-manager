@@ -3,6 +3,7 @@ x-app-backend-base: &app-backend-base
   restart: always
   environment:
     SECRET: ${SECRET}
+    NODE_ENV: ${NODE_ENV}
     MAIN_DATABASE_HOST: ${MAIN_DATABASE_HOST}
     MAIN_DATABASE_PORT: ${MAIN_DATABASE_PORT}
     MAIN_DATABASE_USER: ${MAIN_DATABASE_USER}

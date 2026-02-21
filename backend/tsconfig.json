@@ -34,10 +34,10 @@
         "./libs/database/src/*"
       ],
       "@libs/decorators": [
-        "libs/decorators/src"
+        "./libs/decorators/src"
       ],
       "@libs/decorators/*": [
-        "libs/decorators/src/*"
+        "./libs/decorators/src/*"
       ],
       "@libs/dtos": [
         "./libs/dtos/src"
@@ -81,7 +81,6 @@
       "@libs/utils/*": [
         "./libs/utils/src/*"
       ]
-    },
-    "baseUrl": "./"
+    }
   }
 }
