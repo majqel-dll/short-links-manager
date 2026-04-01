@@ -2,7 +2,6 @@ export * from "./code.entity";
 export * from "./http-request-header.entity";
 export * from "./http-request.entity";
 export * from "./http-response.entity";
-export * from "./identifier.entity";
 export * from "./log.entity";
 export * from "./permission.entity";
 export * from "./redirection.entity";

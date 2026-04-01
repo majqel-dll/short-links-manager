@@ -6,7 +6,9 @@ export enum DatabaseTableEnum {
     LOG = `logs`,
     IDENTIFIER = `identifiers`,
     CODE = `CODES`,
-    HTTP_REQUEST = `http_requests`,
-    HTTP_REQUEST_HEADER = `http_requests_headers`,
-    HTTP_RESPONSE = `http_responses`,
+    SESSION = `sessions`,
+    HTTP_REQUEST = `monitoring_http_requests`,
+    HTTP_REQUEST_HEADER = `monitoring_http_requests_headers`,
+    HTTP_RESPONSE = `monitoring_http_responses`,
+    IP_ADDRESS = `monitoring_ip_addresses`
 }
