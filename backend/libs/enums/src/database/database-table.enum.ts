@@ -5,7 +5,7 @@ export enum DatabaseTableEnum {
     PERMISSION = `permissions`,
     LOG = `logs`,
     IDENTIFIER = `identifiers`,
-    CODE = `CODES`,
+    CODE = `codes`,
     SESSION = `sessions`,
     HTTP_REQUEST = `monitoring_http_requests`,
     HTTP_REQUEST_HEADER = `monitoring_http_requests_headers`,

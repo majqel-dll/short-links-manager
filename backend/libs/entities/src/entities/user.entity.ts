@@ -20,7 +20,7 @@ export class UserEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, length: 64, nullable: true, default: null })
     public email: string;
 
-    @Column({ type: `varchar`, length: 64, nullable: false })
+    @Column({ type: `varchar`, length: 64, nullable: false, unique: true })
     public login: string;
 
     @Column({ type: `text`, nullable: false, transformer })
@@ -41,19 +41,19 @@ export class UserEntity extends BasicEntityProperties {
     @Exclude()
     public lastLoginAt: Date;
 
-    @OneToMany(() => SessionEntity, session => session.user, { nullable: true, onDelete: `SET NULL` })
+    @OneToMany(() => SessionEntity, session => session.user)
     public sessions?: SessionEntity[];
 
-    @OneToMany(() => HttpRequestEntity, httpRequest => httpRequest.user, { nullable: true, onDelete: `SET NULL` })
+    @OneToMany(() => HttpRequestEntity, httpRequest => httpRequest.user)
     public requests?: HttpRequestEntity[];
 
-    @OneToMany(() => RedirectionEntity, redirection => redirection.user, { nullable: true, onDelete: `SET NULL` })
+    @OneToMany(() => RedirectionEntity, redirection => redirection.user)
     public redirections?: RedirectionEntity[];
 
-    @OneToMany(() => CodeEntity, code => code.user, { nullable: true, onDelete: `SET NULL` })
+    @OneToMany(() => CodeEntity, code => code.user)
     public codes?: CodeEntity[];
 
-    @OneToMany(() => LogEntity, log => log.user, { nullable: true, onDelete: `SET NULL` })
+    @OneToMany(() => LogEntity, log => log.user)
     public logs?: LogEntity[];
 
     @ManyToMany(() => PermissionEntity, permission => permission.users, { nullable: true, onDelete: `CASCADE` })

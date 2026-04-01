@@ -8,7 +8,7 @@ import { RoleEnum } from "@libs/enums";
 @Entity(DatabaseTableEnum.ROLE)
 export class RoleEntity extends BasicEntityProperties {
 
-    @Column({ type: `varchar`, length: 64, nullable: false })
+    @Column({ type: `varchar`, unique: true, length: 64, nullable: false })
     public name: string;
 
     @Column({ type: `enum`, enum: RoleEnum, nullable: true, default: null })

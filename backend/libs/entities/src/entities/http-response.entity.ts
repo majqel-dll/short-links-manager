@@ -6,7 +6,7 @@ import { DatabaseTableEnum } from "@libs/enums/database";
 @Entity(DatabaseTableEnum.HTTP_RESPONSE)
 export class HttpResponseEntity extends BasicEntityProperties {
 
-    @Column({ type: `bigint`, nullable: true, default: null })
+    @Column({ type: `int`, nullable: true, default: null })
     public size?: number;
 
     @Column({ type: `json`, nullable: true, default: null })
