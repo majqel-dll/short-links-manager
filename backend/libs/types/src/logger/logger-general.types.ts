@@ -1,3 +1,5 @@
+import { LogTypeEnum } from "@libs/enums";
+
 export type LogMessages = { [key in `error` | `warn` | `log`]: LogMessageContent };
 
 export type LogMessageContent = {
@@ -13,6 +15,7 @@ export type LoggerConfig = {
     context?: unknown,
     save?: boolean,
     startTime?: number,
+    tag?: LogTypeEnum,
 };
 
 export type ErrorConfig = LoggerConfig & {

@@ -2,7 +2,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Entities from "@libs/entities";
 import { Module } from '@nestjs/common';
 
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({

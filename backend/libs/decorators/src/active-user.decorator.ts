@@ -9,4 +9,4 @@ export const ActiveUser = createParamDecorator((field: string, ctx: ExecutionCon
     if (!user) return null;
     if (field) return user[field] ?? null;
     return user;
-})
+});

@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule, OnModuleInit, RequestMethod } from '@nestjs/common';
+import { Logger, LoggerModule, RequestLoggingMiddleware, ResponseLoggingExceptionFilterProvider, ResponseLoggingInterceptorProvider } from '@libs/logger';
 import { onBootstrapMessageUtil } from '@libs/utils';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { Logger, LoggerModule } from '@libs/logger';
 import { V1ApiModule } from './v1/v1-api.module';
 import { DatabaseModule } from '@libs/database';
 import { InjectLogger } from '@libs/decorators';
@@ -20,9 +20,16 @@ import { JwtModule } from '@nestjs/jwt';
         expiresIn: `30d`,
       }
     }),
-    LoggerModule.forFeature(AppModule),
+    LoggerModule.forFeature([
+      AppModule,
+      RequestLoggingMiddleware
+    ]),
     DatabaseModule,
     V1ApiModule
+  ],
+  providers: [
+    ResponseLoggingExceptionFilterProvider,
+    ResponseLoggingInterceptorProvider,
   ]
 })
 
@@ -33,7 +40,7 @@ export class AppModule implements OnModuleInit, NestModule {
   ) { }
 
   public configure(consumer: MiddlewareConsumer) {
-    consumer.apply().forRoutes(
+    consumer.apply(RequestLoggingMiddleware).forRoutes(
       { path: ``, method: RequestMethod.ALL },
       { path: `*route`, method: RequestMethod.ALL },
     );
