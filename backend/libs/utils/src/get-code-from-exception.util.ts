@@ -1,4 +1,4 @@
-export function getCodeFromExceptionOrNull<T extends unknown>(error: T): string {
+export function getCodeFromExceptionOrNull<T extends Error>(error: T): string {
     if (typeof error === `object`) {
         if (`status` in error && error?.status) {
             return error?.status?.toString() || null;

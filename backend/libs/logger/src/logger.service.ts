@@ -1,8 +1,7 @@
+import { Logger as NestLogger, Injectable } from "@nestjs/common";
 import { ErrorConfig, LoggerConfig } from "@libs/types";
-import { Logger as NestLogger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DeepPartial, Repository } from "typeorm";
-import { Injectable } from "@nestjs/common";
 import { LogLabelEnum } from "@libs/enums";
 import { LogEntity } from "@libs/entities";
 

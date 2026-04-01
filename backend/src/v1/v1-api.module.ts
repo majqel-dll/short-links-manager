@@ -16,7 +16,7 @@ const AllV1ApiModules = [V1AuthModule, V1PermissionModule, V1RedirectionModule, 
 export class V1ApiModule implements OnModuleInit {
     constructor(@InjectLogger(V1ApiModule) private readonly logger: Logger) {}
 
-    public async onModuleInit() {
-        onBootstrapMessageUtil(this.logger, `V1 api module`);
+    public onModuleInit(): void {
+        onBootstrapMessageUtil(V1ApiModule.name, this.logger);
     }
 }
