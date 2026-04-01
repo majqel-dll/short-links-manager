@@ -9,12 +9,12 @@ import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
 
 @Catch()
-export class HttpExceptionLogger extends BaseExceptionFilter implements ExceptionFilter {
+export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
 
     constructor(
         @InjectRepository(HttpResponseEntity)
         private readonly httpResponseRepository: Repository<HttpResponseEntity>,
-        @InjectLogger(HttpExceptionLogger) private readonly logger: Logger,
+        @InjectLogger(ResponseLoggingExceptionFilter) private readonly logger: Logger,
     ) {
         super();
     };
@@ -48,7 +48,7 @@ export class HttpExceptionLogger extends BaseExceptionFilter implements Exceptio
 
 };
 
-export const HttpExceptionLoggerProvider: Provider = {
+export const ResponseLoggingExceptionFilterProvider: Provider = {
     provide: APP_FILTER,
-    useClass: HttpExceptionLogger,
+    useClass: ResponseLoggingExceptionFilter,
 };
