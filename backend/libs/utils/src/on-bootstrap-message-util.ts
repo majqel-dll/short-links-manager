@@ -1,7 +1,7 @@
 import { Logger } from "@libs/logger";
 
 export function onBootstrapMessageUtil(
-    logger: Logger, name: string
+    name: string, logger: Logger
 ): void {
     const warning = process.env.NODE_ENV
         ? `Some actions may not be saved or could affect the real environment.`

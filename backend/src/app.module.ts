@@ -1,18 +1,46 @@
-import { ConfigModule } from '@nestjs/config';
-import { V1ApiModule } from './v1/v1-api.module';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, OnModuleInit, RequestMethod } from '@nestjs/common';
+import { onBootstrapMessageUtil } from '@libs/utils';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { JwtModule } from '@nestjs/jwt';
+import { Logger, LoggerModule } from '@libs/logger';
+import { V1ApiModule } from './v1/v1-api.module';
 import { DatabaseModule } from '@libs/database';
+import { InjectLogger } from '@libs/decorators';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    JwtModule.register({ secret: process.env.SECRET }),
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot(),
+    JwtModule.register({
+      global: true,
+      secret: process.env.SECRET,
+      signOptions: {
+        algorithm: `HS512`,
+        expiresIn: `30d`,
+      }
+    }),
+    LoggerModule.forFeature(AppModule),
     DatabaseModule,
     V1ApiModule
   ]
 })
 
-export class AppModule { }
+export class AppModule implements OnModuleInit, NestModule {
+
+  constructor(
+    @InjectLogger(AppModule) private readonly logger: Logger,
+  ) { }
+
+  public configure(consumer: MiddlewareConsumer) {
+    consumer.apply().forRoutes(
+      { path: ``, method: RequestMethod.ALL },
+      { path: `*route`, method: RequestMethod.ALL },
+    );
+  };
+
+  public onModuleInit() {
+    void onBootstrapMessageUtil(AppModule.name, this.logger);
+  };
+
+}
