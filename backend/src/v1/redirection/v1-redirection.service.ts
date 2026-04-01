@@ -1,6 +1,4 @@
 import { Injectable } from "@nestjs/common";
 
 @Injectable()
-export class V1RedirectionService {
-
-}
+export class V1RedirectionService {}

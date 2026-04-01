@@ -3,11 +3,7 @@ import { V1AuthService } from "./v1-auth.service";
 import { Module } from "@nestjs/common";
 
 @Module({
-    controllers: [
-        V1AuthController
-    ],
-    providers: [
-        V1AuthService
-    ]
+    controllers: [V1AuthController],
+    providers: [V1AuthService],
 })
-export class V1AuthModule { }
+export class V1AuthModule {}

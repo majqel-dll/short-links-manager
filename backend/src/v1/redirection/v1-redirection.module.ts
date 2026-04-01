@@ -4,12 +4,7 @@ import { Module } from "@nestjs/common";
 
 @Module({
     imports: [],
-    controllers: [
-        V1RedirectionController,
-    ],
-    providers: [
-        V1RedirectionService,
-    ]
+    controllers: [V1RedirectionController],
+    providers: [V1RedirectionService],
 })
-
-export class V1RedirectionModule { }
+export class V1RedirectionModule {}

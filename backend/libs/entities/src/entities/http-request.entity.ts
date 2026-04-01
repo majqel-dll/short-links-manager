@@ -9,12 +9,11 @@ import { LogEntity } from "./log.entity";
 
 @Entity(DatabaseTableEnum.HTTP_REQUEST)
 export class HttpRequestEntity extends BasicEntityProperties {
-
     @Column({ type: `varchar`, length: 48, unique: true, nullable: false })
     @Index()
     public requestUuid?: string;
 
-    @Column({ type: "timestamptz", nullable: true, default: null, })
+    @Column({ type: "timestamptz", nullable: true, default: null })
     public requestTimestamp?: Date;
 
     @Column({ type: `varchar`, nullable: true, default: null, length: 8 })
@@ -51,10 +50,10 @@ export class HttpRequestEntity extends BasicEntityProperties {
     @Column({ type: `json`, nullable: true, default: null, select: false })
     public body?: JSON;
 
-    @OneToOne(() => HttpResponseEntity, response => response.request)
+    @OneToOne(() => HttpResponseEntity, (response) => response.request)
     public response?: HttpResponseEntity;
 
-    @OneToOne(() => HttpRequestHeaderEntity, headers => headers.request)
+    @OneToOne(() => HttpRequestHeaderEntity, (headers) => headers.request)
     @JoinColumn()
     public headers?: HttpRequestHeaderEntity;
 
@@ -69,11 +68,10 @@ export class HttpRequestEntity extends BasicEntityProperties {
     @Column({ type: `int`, nullable: true, default: null })
     public userId?: number;
 
-    @ManyToOne(() => UserEntity, user => user.requests, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => UserEntity, (user) => user.requests, { nullable: true, onDelete: `SET NULL` })
     @JoinColumn({ name: `userId` })
     public user?: UserEntity;
 
-    @OneToMany(() => LogEntity, log => log.request, { nullable: true })
+    @OneToMany(() => LogEntity, (log) => log.request, { nullable: true })
     public logs?: LogEntity[];
-
-};
+}

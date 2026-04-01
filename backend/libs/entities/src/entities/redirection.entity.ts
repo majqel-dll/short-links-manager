@@ -5,7 +5,6 @@ import { UserEntity } from "./user.entity";
 
 @Entity(DatabaseTableEnum.REDIRECTION)
 export class RedirectionEntity extends BasicEntityProperties {
-
     @Column({ type: `varchar`, length: 2048, nullable: false })
     public targetUrl: string;
 
@@ -17,11 +16,10 @@ export class RedirectionEntity extends BasicEntityProperties {
     @Index()
     public userId: number;
 
-    @ManyToOne(() => UserEntity, user => user.redirections, { nullable: true, onDelete: `CASCADE` })
+    @ManyToOne(() => UserEntity, (user) => user.redirections, { nullable: true, onDelete: `CASCADE` })
     @JoinColumn({ name: `userId` })
     public user: UserEntity;
 
     @Column({ type: `varchar`, length: 64, nullable: true, default: null })
     public category?: string;
-
 }

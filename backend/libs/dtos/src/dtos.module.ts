@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { DtosService } from './dtos.service';
+import { Module } from "@nestjs/common";
+import { DtosService } from "./dtos.service";
 
 @Module({
-  providers: [DtosService],
-  exports: [DtosService],
+    providers: [DtosService],
+    exports: [DtosService],
 })
 export class DtosModule {}

@@ -4,12 +4,7 @@ import { Module } from "@nestjs/common";
 
 @Module({
     imports: [],
-    controllers: [
-        V1CodeController
-    ],
-    providers: [
-        V1CodeService
-    ]
+    controllers: [V1CodeController],
+    providers: [V1CodeService],
 })
-
-export class V1CodeModule { }
+export class V1CodeModule {}

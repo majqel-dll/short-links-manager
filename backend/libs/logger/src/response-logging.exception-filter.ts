@@ -11,14 +11,13 @@ import { Repository } from "typeorm";
 
 @Catch()
 export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
-
     constructor(
         @InjectRepository(HttpResponseEntity)
         private readonly httpResponseRepository: Repository<HttpResponseEntity>,
         @InjectLogger(ResponseLoggingExceptionFilter) private readonly logger: Logger,
     ) {
         super();
-    };
+    }
 
     public catch(exception: unknown, host: ArgumentsHost): void {
         const startTime: number = Date.now();
@@ -26,15 +25,9 @@ export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implemen
         const request = host.switchToHttp().getRequest();
         void this.noticeErrorResponse(exception, request, response, startTime);
         super.catch(exception, host);
-    };
+    }
 
-    public async noticeErrorResponse(
-        error: unknown,
-        request: Request,
-        response: Response,
-        startTime: number,
-    ): Promise<void> {
-
+    public async noticeErrorResponse(error: unknown, request: Request, response: Response, startTime: number): Promise<void> {
         const duration = Date.now() - startTime;
         const statusCode = Number(getCodeFromExceptionOrNull(error) ?? response?.statusCode);
         const responseType = detectResponseType(error);
@@ -43,15 +36,17 @@ export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implemen
 
         const message = `Responded ${responseType} (${statusCode}) after ${duration}ms, with ${size} bytes of data.`;
         const responseRecord = this.httpResponseRepository.create({
-            size, error, statusCode, duration, requestUuid,
+            size,
+            error,
+            statusCode,
+            duration,
+            requestUuid,
         });
 
         await this.httpResponseRepository.save(responseRecord);
         this.logger.log(message, { startTime, tag: LogTypeEnum.NOTIFICATION });
-
-    };
-
-};
+    }
+}
 
 export const ResponseLoggingExceptionFilterProvider: Provider = {
     provide: APP_FILTER,

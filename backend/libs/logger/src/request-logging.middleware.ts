@@ -12,7 +12,6 @@ import { Logger } from "@libs/logger";
 
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
-
     constructor(
         @InjectRepository(HttpRequestHeaderEntity)
         private readonly headersRepository: Repository<HttpRequestHeaderEntity>,
@@ -23,51 +22,44 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         @InjectLogger(RequestLoggingMiddleware)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { };
+    ) {}
 
     public onModuleInit(): void {
-        this.logger.log(`Monitoring middleware has been initialized.`,
-            { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION });
-    };
+        this.logger.log(`Monitoring middleware has been initialized.`, { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION });
+    }
 
     private async extractUserId(req: Request): Promise<number> {
-
         const startTime: number = Date.now();
         try {
-
             let token = req.cookies?.[`accessToken`];
             if (!token) {
                 const header = req.headers?.[`authorization`];
                 token = header?.split(` `).at(1);
-            };
+            }
 
-            if (!token) return null;
+            if (!token) {
+                return null;
+            }
 
-            const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token,
-                { secret: process.env.SECRET });
+            const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, { secret: process.env.SECRET });
 
             return payload.id;
-
         } catch (error) {
-
-            this.logger.error(`Failed to extract user key in monitoring middleware.`,
-                { startTime, tag: LogTypeEnum.AUTHORIZATION_FAIL, error }
-            );
+            this.logger.error(`Failed to extract user key in monitoring middleware.`, {
+                startTime,
+                tag: LogTypeEnum.AUTHORIZATION_FAIL,
+                error,
+            });
             return null;
-
         }
     }
 
     private async saveRequestData(req: Request): Promise<void> {
-
         const startTime: number = Date.now();
         try {
-
             const userId = await this.extractUserId(req);
             const cloudFlareIp = req?.headers?.["cf-connecting-ip"];
-            const ip = (Array.isArray(cloudFlareIp)
-                ? cloudFlareIp.at(0)
-                : cloudFlareIp) ?? req.ip;
+            const ip = (Array.isArray(cloudFlareIp) ? cloudFlareIp.at(0) : cloudFlareIp) ?? req.ip;
 
             let existingIp: HttpIpAddressEntity | null = null;
             if (ip) {
@@ -84,7 +76,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 origin: headers?.origin ?? null,
                 host: headers?.host ?? null,
                 contentType: headers?.["content-type"] ?? null,
-            } as DeepPartial<HttpRequestHeaderEntity>)
+            } as DeepPartial<HttpRequestHeaderEntity>);
 
             const requestEntry = this.requestRepository.create({
                 requestUuid: req.executionId,
@@ -104,12 +96,12 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
             } as DeepPartial<HttpRequestEntity>);
 
             const requestRecord = await this.requestRepository.save(requestEntry);
-            if (!req.userId) { req.userId = userId }
+            if (!req.userId) {
+                req.userId = userId;
+            }
             req.requestEntityId = requestRecord.id;
 
-
             this.logger.log(`Request has been spotted and registered.`, { startTime, tag: LogTypeEnum.NOTIFICATION });
-
         } catch (error) {
             this.logger.error(`Failed to save request properties in database.`, { startTime, error, tag: LogTypeEnum.NOTIFICATION });
             this.logger.warn(`---------------------------------`, { startTime, tag: LogTypeEnum.NOTIFICATION });
@@ -129,7 +121,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 this.logger.warn(`Requested body: ${JSON.stringify(req.body)}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
             }
         }
-    };
+    }
 
     public use(req: Request, res: Response, next: NextFunction): void {
         const requestId = uuidv4();
@@ -137,6 +129,5 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         req.executionId = requestId;
         void this.saveRequestData(req);
         next();
-    };
-
+    }
 }

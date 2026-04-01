@@ -13,8 +13,7 @@ import { LogEntity } from "./log.entity";
 
 @Entity(DatabaseTableEnum.USER)
 export class UserEntity extends BasicEntityProperties {
-
-    @Column({ type: `uuid`, unique: true, generated: true, default: () => 'gen_random_uuid()' })
+    @Column({ type: `uuid`, unique: true, generated: true, default: () => "gen_random_uuid()" })
     public uuid: string;
 
     @Column({ type: `varchar`, length: 64, nullable: true, default: null })
@@ -41,27 +40,26 @@ export class UserEntity extends BasicEntityProperties {
     @Exclude()
     public lastLoginAt: Date;
 
-    @OneToMany(() => SessionEntity, session => session.user)
+    @OneToMany(() => SessionEntity, (session) => session.user)
     public sessions?: SessionEntity[];
 
-    @OneToMany(() => HttpRequestEntity, httpRequest => httpRequest.user)
+    @OneToMany(() => HttpRequestEntity, (httpRequest) => httpRequest.user)
     public requests?: HttpRequestEntity[];
 
-    @OneToMany(() => RedirectionEntity, redirection => redirection.user)
+    @OneToMany(() => RedirectionEntity, (redirection) => redirection.user)
     public redirections?: RedirectionEntity[];
 
-    @OneToMany(() => CodeEntity, code => code.user)
+    @OneToMany(() => CodeEntity, (code) => code.user)
     public codes?: CodeEntity[];
 
-    @OneToMany(() => LogEntity, log => log.user)
+    @OneToMany(() => LogEntity, (log) => log.user)
     public logs?: LogEntity[];
 
-    @ManyToMany(() => PermissionEntity, permission => permission.users, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => PermissionEntity, (permission) => permission.users, { nullable: true, onDelete: `CASCADE` })
     @JoinTable({ name: DatabaseRelationTableEnum.PERMISSIONS_ON_USERS })
     public permissions?: PermissionEntity[];
 
-    @ManyToMany(() => RoleEntity, role => role.users, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => RoleEntity, (role) => role.users, { nullable: true, onDelete: `CASCADE` })
     @JoinTable({ name: DatabaseRelationTableEnum.ROLES_ON_USERS })
-    public roles?: RoleEntity[]
-
-};
+    public roles?: RoleEntity[];
+}

@@ -1,7 +1,6 @@
 import { BeforeUpdate, Column, CreateDateColumn, PrimaryGeneratedColumn } from "typeorm";
 
 export class BasicEntityProperties {
-
     @PrimaryGeneratedColumn({ type: "int" })
     public id: number;
 
@@ -15,5 +14,4 @@ export class BasicEntityProperties {
     protected updateUpdatedAtProperty() {
         this.updatedAt = new Date();
     }
-
 }

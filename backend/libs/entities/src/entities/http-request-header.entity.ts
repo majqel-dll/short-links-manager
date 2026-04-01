@@ -5,7 +5,6 @@ import { Column, Entity, Index, OneToOne } from "typeorm";
 import { HttpRequestEntity } from "./http-request.entity";
 @Entity(DatabaseTableEnum.HTTP_REQUEST_HEADER)
 export class HttpRequestHeaderEntity extends BasicEntityProperties {
-
     @Column({ type: `text`, nullable: true, default: null, transformer })
     public userAgent?: string;
 
@@ -28,7 +27,6 @@ export class HttpRequestHeaderEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, nullable: true, default: null, length: 128 })
     public contentType?: string;
 
-    @OneToOne(() => HttpRequestEntity, request => request.headers)
+    @OneToOne(() => HttpRequestEntity, (request) => request.headers)
     public request?: HttpRequestEntity;
-
 }

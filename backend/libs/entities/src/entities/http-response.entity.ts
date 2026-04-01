@@ -5,7 +5,6 @@ import { DatabaseTableEnum } from "@libs/enums/database";
 
 @Entity(DatabaseTableEnum.HTTP_RESPONSE)
 export class HttpResponseEntity extends BasicEntityProperties {
-
     @Column({ type: `int`, nullable: true, default: null })
     public size?: number;
 
@@ -21,11 +20,10 @@ export class HttpResponseEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, length: 48, nullable: true, default: null })
     public requestUuid?: string;
 
-    @OneToOne(() => HttpRequestEntity, request => request.response, {
+    @OneToOne(() => HttpRequestEntity, (request) => request.response, {
         eager: true,
-        createForeignKeyConstraints: false
+        createForeignKeyConstraints: false,
     })
     @JoinColumn({ name: `requestUuid`, referencedColumnName: `requestUuid` })
-    public request?: HttpRequestEntity
-
-};
+    public request?: HttpRequestEntity;
+}

@@ -7,31 +7,16 @@ import { InjectLogger } from "@libs/decorators";
 import { V1UserModule } from "./user";
 import { V1AuthModule } from "./auth";
 
-const AllV1ApiModules = [
-    V1AuthModule,
-    V1PermissionModule,
-    V1RedirectionModule,
-    V1UserModule,
-]
+const AllV1ApiModules = [V1AuthModule, V1PermissionModule, V1RedirectionModule, V1UserModule];
 
 @Module({
-    imports: [
-        LoggerModule.forFeature([
-            V1ApiModule
-        ]),
-        ...AllV1ApiModules,
-    ],
+    imports: [LoggerModule.forFeature([V1ApiModule]), ...AllV1ApiModules],
     exports: AllV1ApiModules,
 })
-
 export class V1ApiModule implements OnModuleInit {
-
-    constructor(
-        @InjectLogger(V1ApiModule) private readonly logger: Logger
-    ) { }
+    constructor(@InjectLogger(V1ApiModule) private readonly logger: Logger) {}
 
     public async onModuleInit() {
-        onBootstrapMessageUtil(this.logger, `V1 api module`)
-    };
-
+        onBootstrapMessageUtil(this.logger, `V1 api module`);
+    }
 }

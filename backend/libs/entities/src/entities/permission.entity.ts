@@ -7,17 +7,15 @@ import { RoleEntity } from "./role.entity";
 
 @Entity(DatabaseTableEnum.PERMISSION)
 export class PermissionEntity extends BasicEntityProperties {
-
     @Column({ type: `varchar`, unique: true, length: 64, nullable: false })
     public value: string;
 
     @Column({ type: `enum`, enum: PermissionEnum, nullable: true, default: null })
     public assignedEnum?: PermissionEnum;
 
-    @ManyToMany(() => UserEntity, user => user.permissions, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => UserEntity, (user) => user.permissions, { nullable: true, onDelete: `CASCADE` })
     public users?: UserEntity[];
 
-    @ManyToMany(() => RoleEntity, role => role.permissions, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => RoleEntity, (role) => role.permissions, { nullable: true, onDelete: `CASCADE` })
     public roles?: RoleEntity[];
-
-};
+}

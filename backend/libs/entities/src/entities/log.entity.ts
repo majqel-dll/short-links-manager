@@ -7,7 +7,6 @@ import { UserEntity } from "./user.entity";
 
 @Entity(DatabaseTableEnum.LOG)
 export class LogEntity extends BasicEntityProperties {
-
     @Column({ type: `text`, nullable: false })
     public content: string;
 
@@ -26,15 +25,14 @@ export class LogEntity extends BasicEntityProperties {
     @Column({ type: `int`, nullable: true, default: null })
     public userId?: number;
 
-    @ManyToOne(() => UserEntity, user => user.logs, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => UserEntity, (user) => user.logs, { nullable: true, onDelete: `SET NULL` })
     @JoinColumn({ name: `userId` })
     public user?: UserEntity;
 
     @Column({ type: `int`, nullable: true, default: null })
     public requestId?: number;
 
-    @ManyToOne(() => HttpRequestEntity, request => request.logs, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => HttpRequestEntity, (request) => request.logs, { nullable: true, onDelete: `SET NULL` })
     @JoinColumn({ name: `requestId` })
     public request?: HttpRequestEntity;
-
-};
+}

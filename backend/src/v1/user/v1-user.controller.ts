@@ -2,20 +2,17 @@ import { Controller } from "@nestjs/common";
 
 @Controller(`v1/user`)
 export class V1UserController {
+    public getUserData() {}
 
-    public getUserData() { }
+    public changeUserData() {}
 
-    public changeUserData() { }
+    public deleteAccount() {}
 
-    public deleteAccount() { }
+    public getUserAvatar() {}
 
-    public getUserAvatar() { }
+    public postUserAvatar() {}
 
-    public postUserAvatar() { }
+    public updateUserAvatar() {}
 
-    public updateUserAvatar() { }
-
-    public deleteUserAvatar() { }
-
-
+    public deleteUserAvatar() {}
 }
