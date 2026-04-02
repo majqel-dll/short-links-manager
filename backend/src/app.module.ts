@@ -3,7 +3,9 @@ import {
     Logger,
     LoggerModule,
     RequestLoggingMiddleware,
+    ResponseLoggingExceptionFilter,
     ResponseLoggingExceptionFilterProvider,
+    ResponseLoggingInterceptor,
     ResponseLoggingInterceptorProvider,
 } from "@libs/logger";
 import { onBootstrapMessageUtil } from "@libs/utils";
@@ -26,7 +28,7 @@ import { JwtModule } from "@nestjs/jwt";
                 expiresIn: `30d`,
             },
         }),
-        LoggerModule.forFeature([AppModule, RequestLoggingMiddleware]),
+        LoggerModule.forFeature([AppModule, RequestLoggingMiddleware, ResponseLoggingExceptionFilter, ResponseLoggingInterceptor]),
         DatabaseModule,
         V1ApiModule,
     ],

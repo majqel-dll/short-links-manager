@@ -1,7 +1,6 @@
 import { IsDefined, IsString, IsStrongPassword } from "class-validator";
 
 export class ResetPasswordDto {
-
     @IsDefined()
     @IsString()
     @IsStrongPassword()
@@ -15,5 +14,4 @@ export class ResetPasswordDto {
     @IsDefined()
     @IsString()
     public key: string;
-
-};
+}

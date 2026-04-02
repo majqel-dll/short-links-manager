@@ -1,8 +1,8 @@
 import { BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { BasicEntityProperties } from "../partials/basic-entity-properties";
+import { HttpIpAddressEntity } from "./http-ip-address.entity";
 import { DatabaseTableEnum } from "@libs/enums";
 import { UserEntity } from "./user.entity";
-import { HttpIpAddressEntity } from "./http-ip-address.entity";
 
 @Entity(DatabaseTableEnum.SESSION)
 export class SessionEntity extends BasicEntityProperties {

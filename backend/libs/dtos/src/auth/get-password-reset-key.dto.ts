@@ -2,7 +2,6 @@ import { IsDefined, IsEnum, IsString } from "class-validator";
 import { PasswordResetEnum } from "@libs/enums";
 
 export class GetPasswordResetKeyDto {
-
     @IsDefined()
     @IsString()
     public login: string;
@@ -10,5 +9,4 @@ export class GetPasswordResetKeyDto {
     @IsDefined()
     @IsEnum(PasswordResetEnum)
     public method: PasswordResetEnum;
-
 }

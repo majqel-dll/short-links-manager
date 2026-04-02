@@ -1,6 +1,5 @@
 import { IsDefined, IsString } from "class-validator";
 export class SignInDto {
-
     @IsString()
     @IsDefined()
     public login: string;
@@ -8,5 +7,4 @@ export class SignInDto {
     @IsString()
     @IsDefined()
     public password: string;
-
 }
