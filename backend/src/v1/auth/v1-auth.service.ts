@@ -1,6 +1,11 @@
-import { ActiveUserPayload, RefreshTokenPayload } from "@libs/types";
+import { ActiveUserPayload, RefreshTokenPayload, SignInResponse } from "@libs/types";
 import { UserEntity, SessionEntity } from "@libs/entities";
-import { InternalServerErrorException, UnauthorizedException, ConflictException, Injectable } from "@nestjs/common";
+import {
+    InternalServerErrorException,
+    UnauthorizedException,
+    ConflictException,
+    Injectable,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SignUpDto, SignInDto } from "@libs/dtos";
 import { InjectLogger } from "@libs/decorators";
@@ -31,7 +36,11 @@ export class V1AuthService {
         }
 
         try {
-            const passwordHash = await argon2.hash(password, { type: argon2.argon2id, timeCost: 3, memoryCost: 2 ** 16 });
+            const passwordHash = await argon2.hash(password, {
+                type: argon2.argon2id,
+                timeCost: 3,
+                memoryCost: 2 ** 16,
+            });
             const newUser = this.userRepository.create({ email, login, passwordHash });
             await this.userRepository.save(newUser);
         } catch (error) {
@@ -45,11 +54,16 @@ export class V1AuthService {
                 error,
             });
 
-            throw new InternalServerErrorException(`Failed to create new account due to an unexpected error.`);
+            throw new InternalServerErrorException(
+                `Failed to create new account due to an unexpected error.`,
+            );
         }
     }
 
-    public async generateRefreshAndAccessToken({ login, password }: SignInDto): Promise<unknown> {
+    public async generateRefreshAndAccessToken({
+        login,
+        password,
+    }: SignInDto): Promise<SignInResponse> {
         const user = await this.userRepository.findOne({
             where: [{ login }, { email: login }],
             relations: { permissions: true, roles: { permissions: true } },
@@ -65,11 +79,15 @@ export class V1AuthService {
         }
 
         if (user.activatedAt === null) {
-            throw new UnauthorizedException(`Account is not activated. Please wait for administrator activation.`);
+            throw new UnauthorizedException(
+                `Account is not activated. Please wait for administrator activation.`,
+            );
         }
 
         if (user.blockedAt !== null) {
-            throw new UnauthorizedException(`Account is blocked. Please contact support for more information.`);
+            throw new UnauthorizedException(
+                `Account is blocked. Please contact support for more information.`,
+            );
         }
 
         const sessionUuid = uuidv4();
@@ -81,7 +99,9 @@ export class V1AuthService {
             permissions: [
                 ...new Set(
                     ...user.permissions.map(({ value }) => value),
-                    ...user.roles.flatMap(({ permissions }) => permissions.map(({ value }) => value)),
+                    ...user.roles.flatMap(({ permissions }) =>
+                        permissions.map(({ value }) => value),
+                    ),
                 ),
             ],
         };

@@ -32,7 +32,10 @@ export class LogEntity extends BasicEntityProperties {
     @Column({ type: `int`, nullable: true, default: null })
     public requestId?: number;
 
-    @ManyToOne(() => HttpRequestEntity, (request) => request.logs, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => HttpRequestEntity, (request) => request.logs, {
+        nullable: true,
+        onDelete: `SET NULL`,
+    })
     @JoinColumn({ name: `requestId` })
     public request?: HttpRequestEntity;
 }

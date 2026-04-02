@@ -1,4 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Provider } from "@nestjs/common";
+import {
+    CallHandler,
+    ExecutionContext,
+    Injectable,
+    NestInterceptor,
+    Provider,
+} from "@nestjs/common";
 import { calculateSize, detectResponseType } from "@libs/utils";
 import { HttpResponseEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -30,10 +36,22 @@ export class ResponseLoggingInterceptor implements NestInterceptor {
         const response: Response = httpCtx.getResponse();
         const request: Request = httpCtx.getRequest();
 
-        return next.handle().pipe(tap((data) => void this.noticeResponse(data, response, startTime, request?.executionId)));
+        return next
+            .handle()
+            .pipe(
+                tap(
+                    (data) =>
+                        void this.noticeResponse(data, response, startTime, request?.executionId),
+                ),
+            );
     }
 
-    private async noticeResponse(data: unknown, response: Response, startTime: number, requestUuid?: string): Promise<void> {
+    private async noticeResponse(
+        data: unknown,
+        response: Response,
+        startTime: number,
+        requestUuid?: string,
+    ): Promise<void> {
         const duration = Date.now() - startTime;
         const statusCode = response?.statusCode;
         const responseType = detectResponseType(data);

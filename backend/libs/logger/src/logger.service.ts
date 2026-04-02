@@ -17,7 +17,11 @@ export class Logger {
         this.logger = new NestLogger(passedName || this.appName);
     }
 
-    private async saveLog(message: unknown, label: LogLabelEnum, config?: ErrorConfig): Promise<void> {
+    private async saveLog(
+        message: unknown,
+        label: LogLabelEnum,
+        config?: ErrorConfig,
+    ): Promise<void> {
         if (typeof message === `object`) {
             message = JSON.stringify(message);
         }

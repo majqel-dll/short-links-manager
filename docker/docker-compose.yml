@@ -5,11 +5,14 @@ include:
   - app-backend-compose.yml
   - app-frontend-compose.yml
   - app-router-compose.yml
+  - app-minio-compose.yml
   - app-database-compose.yml
 
 volumes:
   main-database-volume:
-  caddy_config:
+  caddy-config:
+  minio-data:
+  minio-config:
 
 networks:
   short-links-manager-network:

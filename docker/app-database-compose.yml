@@ -13,7 +13,6 @@ x-database-base: &database-base
         - main-database-volume:/var/lib/postgresql/data
 
 services:
-
     short-links-manager-database-dev:
         <<: *database-base
         profiles: [dev, database-dev]

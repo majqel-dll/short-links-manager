@@ -27,7 +27,11 @@ export class SessionEntity extends BasicEntityProperties {
     @Column({ type: `int`, nullable: true, default: null })
     public ipId?: number;
 
-    @ManyToOne(() => HttpIpAddressEntity, (ip) => ip.sessions, { nullable: true, onDelete: `SET NULL`, eager: true })
+    @ManyToOne(() => HttpIpAddressEntity, (ip) => ip.sessions, {
+        nullable: true,
+        onDelete: `SET NULL`,
+        eager: true,
+    })
     @JoinColumn({ name: `ipId` })
     public ip?: HttpIpAddressEntity;
 

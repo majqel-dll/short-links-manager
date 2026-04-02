@@ -13,9 +13,15 @@ export class PermissionEntity extends BasicEntityProperties {
     @Column({ type: `enum`, enum: PermissionEnum, nullable: true, default: null })
     public assignedEnum?: PermissionEnum;
 
-    @ManyToMany(() => UserEntity, (user) => user.permissions, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => UserEntity, (user) => user.permissions, {
+        nullable: true,
+        onDelete: `CASCADE`,
+    })
     public users?: UserEntity[];
 
-    @ManyToMany(() => RoleEntity, (role) => role.permissions, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => RoleEntity, (role) => role.permissions, {
+        nullable: true,
+        onDelete: `CASCADE`,
+    })
     public roles?: RoleEntity[];
 }

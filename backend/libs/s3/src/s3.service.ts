@@ -22,7 +22,11 @@ export class S3Service {
         }
     }
 
-    public async putObject(bucketName: string, objectName: string, data: Buffer | Stream.Readable): Promise<unknown> {
+    public async putObject(
+        bucketName: string,
+        objectName: string,
+        data: Buffer | Stream.Readable,
+    ): Promise<unknown> {
         try {
             const createdObject = await this.s3.putObject(bucketName, objectName, data);
             return {
@@ -30,7 +34,9 @@ export class S3Service {
                 etag: createdObject.etag,
             };
         } catch (error) {
-            this.logger.error(`Failed to put object: ${objectName}, in bucket: ${bucketName}.`, { error });
+            this.logger.error(`Failed to put object: ${objectName}, in bucket: ${bucketName}.`, {
+                error,
+            });
             return null;
         }
     }
@@ -50,7 +56,11 @@ export class S3Service {
         }
     }
 
-    public async deleteObject(bucketName: string, objectName: string, options?: RemoveOptions): Promise<boolean> {
+    public async deleteObject(
+        bucketName: string,
+        objectName: string,
+        options?: RemoveOptions,
+    ): Promise<boolean> {
         try {
             if (options) {
                 await this.s3.removeObject(bucketName, objectName, options);
@@ -59,7 +69,9 @@ export class S3Service {
             }
             return true;
         } catch (error) {
-            this.logger.error(`Failed to delete object: ${objectName}, from: ${bucketName}.`, { error });
+            this.logger.error(`Failed to delete object: ${objectName}, from: ${bucketName}.`, {
+                error,
+            });
             return false;
         }
     }

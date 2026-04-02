@@ -25,7 +25,10 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
     ) {}
 
     public onModuleInit(): void {
-        this.logger.log(`Monitoring middleware has been initialized.`, { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION });
+        this.logger.log(`Monitoring middleware has been initialized.`, {
+            startTime: Date.now(),
+            tag: LogTypeEnum.INTERNAL_ACTION,
+        });
     }
 
     private async extractUserId(req: Request): Promise<number> {
@@ -41,7 +44,9 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 return null;
             }
 
-            const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, { secret: process.env.SECRET });
+            const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, {
+                secret: process.env.SECRET,
+            });
 
             return payload.id;
         } catch (error) {
@@ -101,24 +106,52 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
             }
             req.requestEntityId = requestRecord.id;
 
-            this.logger.log(`Request has been spotted and registered.`, { startTime, tag: LogTypeEnum.NOTIFICATION });
+            this.logger.log(`Request has been spotted and registered.`, {
+                startTime,
+                tag: LogTypeEnum.NOTIFICATION,
+            });
         } catch (error) {
-            this.logger.error(`Failed to save request properties in database.`, { startTime, error, tag: LogTypeEnum.NOTIFICATION });
-            this.logger.warn(`---------------------------------`, { startTime, tag: LogTypeEnum.NOTIFICATION });
-            this.logger.warn(`Requested path: ${req?.path ?? `unknown`}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
-            this.logger.warn(`Requested method: ${req?.method ?? `unknown`}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
-            this.logger.warn(`Requested from IP: ${req?.ip ?? `unknown`}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
+            this.logger.error(`Failed to save request properties in database.`, {
+                startTime,
+                error,
+                tag: LogTypeEnum.NOTIFICATION,
+            });
+            this.logger.warn(`---------------------------------`, {
+                startTime,
+                tag: LogTypeEnum.NOTIFICATION,
+            });
+            this.logger.warn(`Requested path: ${req?.path ?? `unknown`}`, {
+                startTime,
+                tag: LogTypeEnum.NOTIFICATION,
+            });
+            this.logger.warn(`Requested method: ${req?.method ?? `unknown`}`, {
+                startTime,
+                tag: LogTypeEnum.NOTIFICATION,
+            });
+            this.logger.warn(`Requested from IP: ${req?.ip ?? `unknown`}`, {
+                startTime,
+                tag: LogTypeEnum.NOTIFICATION,
+            });
 
             if (req.headers) {
-                this.logger.warn(`Request headers: ${JSON.stringify(req.headers)}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
+                this.logger.warn(`Request headers: ${JSON.stringify(req.headers)}`, {
+                    startTime,
+                    tag: LogTypeEnum.NOTIFICATION,
+                });
             }
 
             if (req.params) {
-                this.logger.warn(`Request params: ${JSON.stringify(req.params)}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
+                this.logger.warn(`Request params: ${JSON.stringify(req.params)}`, {
+                    startTime,
+                    tag: LogTypeEnum.NOTIFICATION,
+                });
             }
 
             if (req.body) {
-                this.logger.warn(`Requested body: ${JSON.stringify(req.body)}`, { startTime, tag: LogTypeEnum.NOTIFICATION });
+                this.logger.warn(`Requested body: ${JSON.stringify(req.body)}`, {
+                    startTime,
+                    tag: LogTypeEnum.NOTIFICATION,
+                });
             }
         }
     }

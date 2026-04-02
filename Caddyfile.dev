@@ -15,6 +15,14 @@ http://:80 {
         }
     }
 
+    @minio path /minio* /minio/*
+    handle @minio {
+        uri strip_prefix /minio
+        reverse_proxy short-links-manager-minio-dev:9001 {
+            header_up X-Forwarded-Proto "http"
+        }
+    }
+
     @panel path /panel* /panel/*
     handle @panel {
         uri strip_prefix /panel

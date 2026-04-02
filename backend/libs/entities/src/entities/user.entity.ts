@@ -55,7 +55,10 @@ export class UserEntity extends BasicEntityProperties {
     @OneToMany(() => LogEntity, (log) => log.user)
     public logs?: LogEntity[];
 
-    @ManyToMany(() => PermissionEntity, (permission) => permission.users, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => PermissionEntity, (permission) => permission.users, {
+        nullable: true,
+        onDelete: `CASCADE`,
+    })
     @JoinTable({ name: DatabaseRelationTableEnum.PERMISSIONS_ON_USERS })
     public permissions?: PermissionEntity[];
 

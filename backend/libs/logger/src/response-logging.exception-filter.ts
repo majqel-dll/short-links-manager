@@ -27,7 +27,12 @@ export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implemen
         super.catch(exception, host);
     }
 
-    public async noticeErrorResponse(error: unknown, request: Request, response: Response, startTime: number): Promise<void> {
+    public async noticeErrorResponse(
+        error: unknown,
+        request: Request,
+        response: Response,
+        startTime: number,
+    ): Promise<void> {
         const duration = Date.now() - startTime;
         const statusCode = Number(getCodeFromExceptionOrNull(error) ?? response?.statusCode);
         const responseType = detectResponseType(error);

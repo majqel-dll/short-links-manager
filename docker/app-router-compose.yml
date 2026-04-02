@@ -12,7 +12,7 @@ services:
     <<: *app-router-base
     profiles: [dev]
     volumes:
-      - caddy_config:/config
+      - caddy-config:/config
       - ../Caddyfile.dev:/etc/caddy/Caddyfile
 
   short-links-manager-router-prod:

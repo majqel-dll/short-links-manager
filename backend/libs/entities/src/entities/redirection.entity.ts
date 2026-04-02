@@ -16,7 +16,10 @@ export class RedirectionEntity extends BasicEntityProperties {
     @Index()
     public userId: number;
 
-    @ManyToOne(() => UserEntity, (user) => user.redirections, { nullable: true, onDelete: `CASCADE` })
+    @ManyToOne(() => UserEntity, (user) => user.redirections, {
+        nullable: true,
+        onDelete: `CASCADE`,
+    })
     @JoinColumn({ name: `userId` })
     public user: UserEntity;
 

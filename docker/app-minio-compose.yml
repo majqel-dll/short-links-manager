@@ -1,0 +1,25 @@
+x-minio-base: &minio-base
+  image: minio/minio:latest
+  container_name: minio
+  restart: always
+  tty: true
+  environment:
+    - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+    - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+  volumes:
+    - minio-data:/data
+    - minio-config:/root/.minio
+  command: server /data --console-address ":9001"
+  networks:
+    - short-links-manager-network
+
+services:
+  short-links-manager-minio-dev:
+    <<: *minio-base
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+
+  short-links-manager-minio-prod:
+    <<: *minio-base
+    profiles: [prod, minio-prod]
