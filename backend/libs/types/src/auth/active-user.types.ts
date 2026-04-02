@@ -1,8 +1,7 @@
 export type ActiveUserPayload = {
     id: number;
-    userUuid: string;
-    loginAttemptUuid: string;
-    createdAt: Date;
+    sessionUuid: string;
+    createdAt: string;
     roles: string[];
     permissions: string[];
 };

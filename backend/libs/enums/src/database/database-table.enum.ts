@@ -11,4 +11,5 @@ export enum DatabaseTableEnum {
     HTTP_REQUEST_HEADER = `monitoring_http_requests_headers`,
     HTTP_RESPONSE = `monitoring_http_responses`,
     IP_ADDRESS = `monitoring_ip_addresses`,
+    REFRESH_TOKEN_USAGE = `refresh_token_usage`,
 }
