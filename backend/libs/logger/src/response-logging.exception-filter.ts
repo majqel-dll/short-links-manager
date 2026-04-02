@@ -10,11 +10,15 @@ import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
 
 @Catch()
-export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
+export class ResponseLoggingExceptionFilter
+    extends BaseExceptionFilter
+    implements ExceptionFilter
+{
     constructor(
         @InjectRepository(HttpResponseEntity)
         private readonly httpResponseRepository: Repository<HttpResponseEntity>,
-        @InjectLogger(ResponseLoggingExceptionFilter) private readonly logger: Logger,
+        @InjectLogger(ResponseLoggingExceptionFilter)
+        private readonly logger: Logger,
     ) {
         super();
     }
@@ -34,7 +38,9 @@ export class ResponseLoggingExceptionFilter extends BaseExceptionFilter implemen
         startTime: number,
     ): Promise<void> {
         const duration = Date.now() - startTime;
-        const statusCode = Number(getCodeFromExceptionOrNull(error) ?? response?.statusCode);
+        const statusCode = Number(
+            getCodeFromExceptionOrNull(error) ?? response?.statusCode,
+        );
         const responseType = detectResponseType(error);
         const size = calculateSize(error);
         const requestUuid = request.executionId;

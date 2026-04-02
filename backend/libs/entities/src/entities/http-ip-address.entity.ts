@@ -12,7 +12,9 @@ export class HttpIpAddressEntity extends BasicEntityProperties {
     @Column({ type: `timestamptz`, nullable: true, default: null })
     public blockedAt?: Date;
 
-    @OneToMany(() => HttpRequestEntity, (request) => request.ip, { nullable: true })
+    @OneToMany(() => HttpRequestEntity, (request) => request.ip, {
+        nullable: true,
+    })
     public httpRequests?: HttpRequestEntity[];
 
     @OneToMany(() => SessionEntity, (session) => session.ip, { nullable: true })

@@ -16,7 +16,9 @@ export class RoleEntity extends BasicEntityProperties {
     @ManyToMany(() => UserEntity, (user) => user.roles, { onDelete: `CASCADE` })
     public users: UserEntity[];
 
-    @ManyToMany(() => PermissionEntity, (permission) => permission.roles, { onDelete: `CASCADE` })
+    @ManyToMany(() => PermissionEntity, (permission) => permission.roles, {
+        onDelete: `CASCADE`,
+    })
     @JoinTable({ name: DatabaseRelationTableEnum.PERMISSIONS_ON_ROLES })
     public permissions: PermissionEntity[];
 }

@@ -11,7 +11,8 @@ export class Logger {
     private logger: NestLogger;
 
     constructor(
-        @InjectRepository(LogEntity) private readonly logRepository: Repository<LogEntity>,
+        @InjectRepository(LogEntity)
+        private readonly logRepository: Repository<LogEntity>,
         private readonly passedName?: string,
     ) {
         this.logger = new NestLogger(passedName || this.appName);
@@ -41,7 +42,10 @@ export class Logger {
         try {
             await this.logRepository.save(log);
         } catch (error) {
-            this.error(`Failed to save log in database.`, { error: error as Error, save: false });
+            this.error(`Failed to save log in database.`, {
+                error: error as Error,
+                save: false,
+            });
         }
     }
 

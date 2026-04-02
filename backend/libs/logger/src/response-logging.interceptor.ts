@@ -30,7 +30,10 @@ export class ResponseLoggingInterceptor implements NestInterceptor {
         });
     }
 
-    public intercept(context: ExecutionContext, next: CallHandler<unknown>): Observable<unknown> {
+    public intercept(
+        context: ExecutionContext,
+        next: CallHandler<unknown>,
+    ): Observable<unknown> {
         const startTime: number = Date.now();
         const httpCtx = context.switchToHttp();
         const response: Response = httpCtx.getResponse();
@@ -41,7 +44,12 @@ export class ResponseLoggingInterceptor implements NestInterceptor {
             .pipe(
                 tap(
                     (data) =>
-                        void this.noticeResponse(data, response, startTime, request?.executionId),
+                        void this.noticeResponse(
+                            data,
+                            response,
+                            startTime,
+                            request?.executionId,
+                        ),
                 ),
             );
     }

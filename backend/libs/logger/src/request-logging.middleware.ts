@@ -1,4 +1,8 @@
-import { HttpRequestEntity, HttpRequestHeaderEntity, HttpIpAddressEntity } from "@libs/entities";
+import {
+    HttpRequestEntity,
+    HttpRequestHeaderEntity,
+    HttpIpAddressEntity,
+} from "@libs/entities";
 import { Injectable, NestMiddleware, OnModuleInit } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -64,12 +68,15 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         try {
             const userId = await this.extractUserId(req);
             const cloudFlareIp = req?.headers?.["cf-connecting-ip"];
-            const ip = (Array.isArray(cloudFlareIp) ? cloudFlareIp.at(0) : cloudFlareIp) ?? req.ip;
+            const ip =
+                (Array.isArray(cloudFlareIp) ? cloudFlareIp.at(0) : cloudFlareIp) ?? req.ip;
 
             let existingIp: HttpIpAddressEntity | null = null;
             if (ip) {
                 await this.ipRepository.upsert({ value: ip }, [`value`]);
-                existingIp = await this.ipRepository.findOne({ where: { value: ip } });
+                existingIp = await this.ipRepository.findOne({
+                    where: { value: ip },
+                });
             }
 
             const { headers } = req;

@@ -25,7 +25,10 @@ export class LogEntity extends BasicEntityProperties {
     @Column({ type: `int`, nullable: true, default: null })
     public userId?: number;
 
-    @ManyToOne(() => UserEntity, (user) => user.logs, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => UserEntity, (user) => user.logs, {
+        nullable: true,
+        onDelete: `SET NULL`,
+    })
     @JoinColumn({ name: `userId` })
     public user?: UserEntity;
 

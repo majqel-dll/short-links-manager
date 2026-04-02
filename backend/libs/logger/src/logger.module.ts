@@ -12,7 +12,9 @@ import { Repository } from "typeorm";
     imports: [DatabaseModule],
 })
 export class LoggerModule {
-    public static forFeature(targets: Type<LoggerTarget>[] | Type<LoggerTarget>): DynamicModule {
+    public static forFeature(
+        targets: Type<LoggerTarget>[] | Type<LoggerTarget>,
+    ): DynamicModule {
         if (!Array.isArray(targets)) {
             targets = [targets];
         }

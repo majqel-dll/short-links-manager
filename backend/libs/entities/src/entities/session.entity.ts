@@ -3,10 +3,12 @@ import { BasicEntityProperties } from "../partials/basic-entity-properties";
 import { HttpIpAddressEntity } from "./http-ip-address.entity";
 import { DatabaseTableEnum } from "@libs/enums";
 import { UserEntity } from "./user.entity";
+import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.SESSION)
 export class SessionEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, length: 48, nullable: false })
+    @Exclude()
     @Index()
     public sessionId: string;
 
@@ -17,14 +19,17 @@ export class SessionEntity extends BasicEntityProperties {
     public expiresAt: Date;
 
     @Column({ type: `int`, nullable: false })
+    @Exclude()
     @Index()
     public userId: number;
 
     @ManyToOne(() => UserEntity, (user) => user.sessions, { onDelete: `CASCADE` })
     @JoinColumn({ name: `userId` })
+    @Exclude()
     public user: UserEntity;
 
     @Column({ type: `int`, nullable: true, default: null })
+    @Exclude()
     public ipId?: number;
 
     @ManyToOne(() => HttpIpAddressEntity, (ip) => ip.sessions, {
@@ -32,6 +37,7 @@ export class SessionEntity extends BasicEntityProperties {
         onDelete: `SET NULL`,
         eager: true,
     })
+    @Exclude()
     @JoinColumn({ name: `ipId` })
     public ip?: HttpIpAddressEntity;
 

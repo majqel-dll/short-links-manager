@@ -30,7 +30,9 @@ export class V1AuthService {
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();
-        const existingUser = await this.userRepository.findOne({ where: [{ login }, { email }] });
+        const existingUser = await this.userRepository.findOne({
+            where: [{ login }, { email }],
+        });
         if (existingUser) {
             throw new ConflictException(`User with such login or email already exists.`);
         }
@@ -41,11 +43,17 @@ export class V1AuthService {
                 timeCost: 3,
                 memoryCost: 2 ** 16,
             });
-            const newUser = this.userRepository.create({ email, login, passwordHash });
+            const newUser = this.userRepository.create({
+                email,
+                login,
+                passwordHash,
+            });
             await this.userRepository.save(newUser);
         } catch (error) {
             if (error?.code === "23505") {
-                throw new ConflictException(`User with such login or email already exists.`);
+                throw new ConflictException(
+                    `User with such login or email already exists.`,
+                );
             }
 
             void this.logger.error(`Failed to create new account.`, {
@@ -106,7 +114,9 @@ export class V1AuthService {
             ],
         };
 
-        const refreshTokenExpirationDate: Date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
+        const refreshTokenExpirationDate: Date = new Date(
+            Date.now() + 1000 * 60 * 60 * 24 * 7,
+        );
         const refreshTokenPayload: RefreshTokenPayload = {
             expiringAt: refreshTokenExpirationDate.toISOString(),
             sessionUuid,
@@ -144,5 +154,75 @@ export class V1AuthService {
                 expiresIn: refreshTokenExpiresIn,
             },
         };
+    }
+
+    public async signOut({ id, sessionUuid }: ActiveUserPayload): Promise<void> {
+        const startTime = Date.now();
+        await this.sessionRepository
+            .update({ userId: id, sessionId: sessionUuid }, { isActive: false })
+            .catch((error) => {
+                this.logger.error(
+                    `Failed to terminate session ${sessionUuid} for user ${id}.`,
+                    {
+                        startTime,
+                        tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                        error,
+                    },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to terminate session due to an unexpected error.`,
+                );
+            });
+
+        this.logger.log(`Session ${sessionUuid} for user ${id} has been terminated.`, {
+            startTime,
+            tag: LogTypeEnum.INTERNAL_ACTION,
+        });
+    }
+
+    public async terminateAllSessionsForUser({ id }: ActiveUserPayload): Promise<void> {
+        const startTime: number = Date.now();
+        await this.sessionRepository
+            .update({ userId: id, isActive: true }, { isActive: false })
+            .catch((error) => {
+                this.logger.error(`Failed to terminate sessions for user ${id}.`, {
+                    startTime,
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                    error,
+                });
+                throw new InternalServerErrorException(
+                    `Failed to terminate sessions due to an unexpected error.`,
+                );
+            });
+
+        this.logger.log(`All sessions for user ${id} have been terminated.`, {
+            startTime,
+            tag: LogTypeEnum.INTERNAL_ACTION,
+        });
+    }
+
+    public async findActiveSessionForUser(userId: number): Promise<SessionEntity[]> {
+        const activeSessions = await this.sessionRepository
+            .find({ where: { userId, isActive: true } })
+            .catch((error) => {
+                this.logger.error(`Failed to find active sessions for user ${userId}.`, {
+                    startTime: Date.now(),
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                    error,
+                });
+                throw new InternalServerErrorException(
+                    `Failed to find active sessions due to an unexpected error.`,
+                );
+            });
+
+        this.logger.log(
+            `${activeSessions.length} Active sessions for user ${userId} have been retrieved.`,
+            {
+                startTime: Date.now(),
+                tag: LogTypeEnum.INTERNAL_ACTION,
+            },
+        );
+
+        return activeSessions;
     }
 }

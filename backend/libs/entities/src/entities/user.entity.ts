@@ -13,7 +13,12 @@ import { LogEntity } from "./log.entity";
 
 @Entity(DatabaseTableEnum.USER)
 export class UserEntity extends BasicEntityProperties {
-    @Column({ type: `uuid`, unique: true, generated: true, default: () => "gen_random_uuid()" })
+    @Column({
+        type: `uuid`,
+        unique: true,
+        generated: true,
+        default: () => "gen_random_uuid()",
+    })
     public uuid: string;
 
     @Column({ type: `varchar`, length: 64, nullable: true, default: null })
@@ -62,7 +67,10 @@ export class UserEntity extends BasicEntityProperties {
     @JoinTable({ name: DatabaseRelationTableEnum.PERMISSIONS_ON_USERS })
     public permissions?: PermissionEntity[];
 
-    @ManyToMany(() => RoleEntity, (role) => role.users, { nullable: true, onDelete: `CASCADE` })
+    @ManyToMany(() => RoleEntity, (role) => role.users, {
+        nullable: true,
+        onDelete: `CASCADE`,
+    })
     @JoinTable({ name: DatabaseRelationTableEnum.ROLES_ON_USERS })
     public roles?: RoleEntity[];
 }

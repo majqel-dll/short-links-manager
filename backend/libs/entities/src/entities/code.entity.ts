@@ -18,7 +18,10 @@ export class CodeEntity extends BasicEntityProperties {
     @Index()
     public userId?: number;
 
-    @ManyToOne(() => UserEntity, (user) => user.codes, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => UserEntity, (user) => user.codes, {
+        nullable: true,
+        onDelete: `SET NULL`,
+    })
     @JoinColumn({ name: `userId` })
     public user?: UserEntity;
 }

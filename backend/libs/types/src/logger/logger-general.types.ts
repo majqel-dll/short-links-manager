@@ -1,6 +1,8 @@
 import { type LogTypeEnum } from "@libs/enums";
 
-export type LogMessages = { [key in `error` | `warn` | `log`]: LogMessageContent };
+export type LogMessages = {
+    [key in `error` | `warn` | `log`]: LogMessageContent;
+};
 
 export type LogMessageContent = {
     [key: string]: LogMessageFunction;

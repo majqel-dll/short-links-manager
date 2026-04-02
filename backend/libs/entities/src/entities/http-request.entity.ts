@@ -68,7 +68,10 @@ export class HttpRequestEntity extends BasicEntityProperties {
     @Column({ type: `int`, nullable: true, default: null })
     public userId?: number;
 
-    @ManyToOne(() => UserEntity, (user) => user.requests, { nullable: true, onDelete: `SET NULL` })
+    @ManyToOne(() => UserEntity, (user) => user.requests, {
+        nullable: true,
+        onDelete: `SET NULL`,
+    })
     @JoinColumn({ name: `userId` })
     public user?: UserEntity;
 
