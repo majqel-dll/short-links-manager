@@ -1,11 +1,12 @@
 import crypto from "crypto";
 
 const algorithm = "aes-256-gcm";
-const key = Buffer.from(process.env.SECRET, "hex");
+const key = crypto.createHash("sha256").update(process.env.SECRET ?? "").digest();
 const ivLength = 16;
 
 export const EncryptionTransformer = {
     to(value?: string): string | null {
+
         if (!value) {
             return null;
         }
@@ -14,7 +15,6 @@ export const EncryptionTransformer = {
         const cipher = crypto.createCipheriv(algorithm, key, iv);
 
         const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
-
         const authTag = cipher.getAuthTag();
 
         return Buffer.concat([iv, authTag, encrypted]).toString("base64");

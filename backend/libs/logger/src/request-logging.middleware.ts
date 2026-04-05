@@ -54,11 +54,13 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
 
             return payload.id;
         } catch (error) {
+
             this.logger.error(`Failed to extract user key in monitoring middleware.`, {
                 startTime,
                 tag: LogTypeEnum.AUTHORIZATION_FAIL,
-                error,
+                error: error as Error,
             });
+
             return null;
         }
     }
@@ -120,7 +122,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         } catch (error) {
             this.logger.error(`Failed to save request properties in database.`, {
                 startTime,
-                error,
+                error: error as Error,
                 tag: LogTypeEnum.NOTIFICATION,
             });
             this.logger.warn(`---------------------------------`, {

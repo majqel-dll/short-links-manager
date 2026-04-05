@@ -9,11 +9,11 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 @Injectable()
-export class PermissionGuardService implements CanActivate {
+export class PermissionGuard implements CanActivate {
 
     constructor(
         @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
-        @InjectLogger(PermissionGuardService) private readonly logger: Logger,
+        @InjectLogger(PermissionGuard) private readonly logger: Logger,
         private readonly reflector: Reflector,
     ) { }
 

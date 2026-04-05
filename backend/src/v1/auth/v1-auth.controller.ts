@@ -9,13 +9,14 @@ import {
     UseGuards,
 } from "@nestjs/common";
 import { type ActiveUserPayload, SignInResponse } from "@libs/types";
+import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { ActiveUser, Auth } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
 import { SignInDto, SignUpDto } from "@libs/dtos";
 import { AuthTypeEnum } from "@libs/enums";
 
 @Controller(`v1/auth`)
-@UseGuards()
+@UseGuards(AuthGuard, PermissionGuard)
 export class V1AuthController {
     constructor(private readonly authService: V1AuthService) { }
 
