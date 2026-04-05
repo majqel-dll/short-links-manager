@@ -90,7 +90,6 @@ export class BearerTokenGuardService implements CanActivate {
             } as ActiveUserPayload;
         }
 
-        this.logger.debug(request[MetadataKeyEnum.USER_KEY])
         return true;
 
     }
