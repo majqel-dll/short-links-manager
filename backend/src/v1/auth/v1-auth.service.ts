@@ -1,19 +1,20 @@
 import { ActiveUserPayload, RefreshTokenPayload, SignInResponse } from "@libs/types";
-import { UserEntity, SessionEntity } from "@libs/entities";
+import { UserEntity, SessionEntity, RoleEntity, PermissionEntity } from "@libs/entities";
+import { LogTypeEnum, PermissionEnum, RoleEnum } from "@libs/enums";
 import {
     InternalServerErrorException,
     UnauthorizedException,
     ConflictException,
     Injectable,
+    NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SignUpDto, SignInDto } from "@libs/dtos";
 import { InjectLogger } from "@libs/decorators";
 import { randomUUID as uuidv4 } from "crypto";
-import { LogTypeEnum } from "@libs/enums";
+import { In, Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { Logger } from "@libs/logger";
-import { Repository } from "typeorm";
 import argon2 from "argon2";
 
 @Injectable()
@@ -23,6 +24,10 @@ export class V1AuthService {
         private readonly sessionRepository: Repository<SessionEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
+        @InjectRepository(RoleEntity)
+        private readonly roleRepository: Repository<RoleEntity>,
+        @InjectRepository(PermissionEntity)
+        private readonly permissionRepository: Repository<PermissionEntity>,
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
@@ -44,11 +49,31 @@ export class V1AuthService {
                 timeCost: 3,
                 memoryCost: 2 ** 16,
             });
+            const [roles, permissions] = await Promise.all([
+                this.roleRepository.find({
+                    where: { assignedEnum: In([RoleEnum.GUEST]) },
+                }),
+                this.permissionRepository.find({
+                    where: {
+                        assignedEnum: In([
+                            PermissionEnum.READ_OWN_REDIRECTION,
+                            PermissionEnum.CREATE_BASIC_REDIRECTION,
+                            PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
+                            PermissionEnum.MANAGE_OWN_ACCOUNT,
+                            PermissionEnum.DELETE_OWN_ACCOUNT,
+                        ]),
+                    },
+                }),
+            ]);
+
             const newUser = this.userRepository.create({
                 email,
                 login,
                 passwordHash,
+                roles,
+                permissions,
             });
+
             await this.userRepository.save(newUser);
         } catch (error) {
             if (typeof error === `object` && `code` in error && error?.code === "23505") {
@@ -118,6 +143,7 @@ export class V1AuthService {
         const refreshTokenExpirationDate: Date = new Date(
             Date.now() + 1000 * 60 * 60 * 24 * 7,
         );
+
         const refreshTokenPayload: RefreshTokenPayload = {
             expiringAt: refreshTokenExpirationDate.toISOString(),
             sessionUuid,
@@ -126,9 +152,9 @@ export class V1AuthService {
         };
 
         const session = this.sessionRepository.create({
-            userId: user.id,
             expiresAt: refreshTokenExpirationDate,
             sessionId: sessionUuid,
+            userId: user.id,
         });
 
         const tokenExpiresIn = `15m`;
@@ -172,7 +198,7 @@ export class V1AuthService {
 
     public async signOut({ id, sessionUuid }: ActiveUserPayload): Promise<void> {
         const startTime = Date.now();
-        await this.sessionRepository
+        const updateResult = await this.sessionRepository
             .update({ userId: id, sessionId: sessionUuid }, { isActive: false })
             .catch((error) => {
                 void this.logger.error(
@@ -187,6 +213,12 @@ export class V1AuthService {
                     `Failed to terminate session due to an unexpected error.`,
                 );
             });
+
+        if (updateResult.affected === 0) {
+            throw new NotFoundException(
+                `Session ${sessionUuid} for current user not found.`,
+            );
+        }
 
         void this.logger.log(`Session ${sessionUuid} for user ${id} has been terminated.`, {
             startTime,

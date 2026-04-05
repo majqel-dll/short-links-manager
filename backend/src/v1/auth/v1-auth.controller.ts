@@ -6,6 +6,7 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Param,
     Post,
     UseGuards,
     UseInterceptors,
@@ -20,7 +21,7 @@ import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard, PermissionGuard)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) {}
+    constructor(private readonly authService: V1AuthService) { }
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -48,7 +49,7 @@ export class V1AuthController {
     }
 
     @Delete(`sign-out`)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
     public async terminateSession(
         @ActiveUser() activeUser: ActiveUserPayload,
@@ -57,13 +58,36 @@ export class V1AuthController {
         return { message: "Current session terminated successfully." };
     }
 
+    @Delete(`sign-out/all`)
+    @HttpCode(HttpStatus.OK)
+    @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
+    public async terminateAllSessions(
+        @ActiveUser() activeUser: ActiveUserPayload,
+    ): Promise<{ message: string }> {
+        await this.authService.terminateAllSessionsForUser(activeUser);
+        return { message: "All sessions terminated successfully." };
+    }
+
+    @Delete(`sign-out/:sessionId`)
+    @HttpCode(HttpStatus.OK)
+    @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
+    public async terminateSpecifiedSession(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`sessionId`) sessionUuid: string,
+    ): Promise<{ message: string }> {
+        await this.authService.signOut({ ...activeUser, sessionUuid });
+        return { message: `Specified session ${sessionUuid} terminated successfully.` };
+    }
+
     @Post(`password/change`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async changePassword(@ActiveUser() activeUser: ActiveUserPayload) {}
+    public async changePassword(@ActiveUser() activeUser: ActiveUserPayload) { }
 
     @Post(`token/refresh`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async refreshAccessToken() {}
+    public async refreshAccessToken() {
+
+    }
 }

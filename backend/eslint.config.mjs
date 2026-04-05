@@ -1,4 +1,5 @@
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslintNestJs from "@darraghor/eslint-plugin-nestjs-typed";
 import tseslint from 'typescript-eslint';
 import eslint from '@eslint/js';
 import globals from 'globals';
@@ -10,6 +11,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
+  eslintNestJs.configs.flatRecommended,
   {
     languageOptions: {
       globals: {

@@ -1,6 +1,6 @@
 import { InjectLogger } from "@libs/decorators";
-import { UserEntity } from "@libs/entities";
-import { LogTypeEnum, MetadataKeyEnum, PermissionEnum } from "@libs/enums";
+import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
+import { LogTypeEnum, MetadataKeyEnum, PermissionEnum, RoleEnum } from "@libs/enums";
 import { Logger } from "@libs/logger";
 import { ActiveUserPayload } from "@libs/types";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
@@ -12,11 +12,18 @@ import { Repository } from "typeorm";
 @Injectable()
 export class PermissionGuard implements CanActivate {
     constructor(
+        @InjectRepository(PermissionEntity)
+        private readonly permissionRepository: Repository<PermissionEntity>,
+        @InjectRepository(RoleEntity)
+        private readonly roleRepository: Repository<RoleEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(PermissionGuard) private readonly logger: Logger,
         private readonly reflector: Reflector,
-    ) {}
+    ) {
+        void this.synchronizePermissions();
+        void this.synchronizeRoles();
+    }
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -111,6 +118,112 @@ export class PermissionGuard implements CanActivate {
             }
 
             return false;
+        }
+    }
+
+    private async synchronizePermissions(): Promise<void> {
+        const startTime: number = Date.now();
+        try {
+            const currentPermissions = Object.values(PermissionEnum);
+            const savedPermissions = await this.permissionRepository.find();
+
+            const createdPermissions = await this.permissionRepository.save(
+                currentPermissions
+                    .map((permission) =>
+                        !savedPermissions.some(
+                            (savedPermission) => savedPermission.value === permission,
+                        )
+                            ? this.permissionRepository.create({
+                                  value: permission,
+                                  assignedEnum: permission,
+                              })
+                            : null,
+                    )
+                    .filter(Boolean),
+            );
+
+            if (createdPermissions.length > 0) {
+                this.logger.log(
+                    `Successfully created ${createdPermissions.length} permissions.`,
+                    { startTime, tag: LogTypeEnum.CREATED },
+                );
+            }
+
+            const permissionsToRemove = savedPermissions
+                .filter(
+                    (savedPermission) =>
+                        !currentPermissions.some(
+                            (permission) => permission === savedPermission.value,
+                        ),
+                )
+                .map((permission) => permission.id);
+
+            if (permissionsToRemove.length > 0) {
+                const removedPermissions =
+                    await this.permissionRepository.delete(permissionsToRemove);
+                if (removedPermissions.affected > 0) {
+                    this.logger.log(
+                        `Successfully removed ${removedPermissions.affected} permissions.`,
+                        { startTime, tag: LogTypeEnum.DELETED },
+                    );
+                }
+            }
+        } catch (error) {
+            this.logger.error(`Failed to synchronize permissions from enum in database.`, {
+                error: error as Error,
+                startTime,
+                tag: LogTypeEnum.SYNCHRONIZATION_FAIL,
+            });
+        }
+    }
+
+    private async synchronizeRoles(): Promise<void> {
+        const startTime: number = Date.now();
+        try {
+            const currentRoles = Object.values(RoleEnum);
+            const savedRoles = await this.roleRepository.find();
+
+            const createdRoles = await this.roleRepository.save(
+                currentRoles
+                    .map((role) =>
+                        !savedRoles.some((savedRole) => savedRole.name === role)
+                            ? this.roleRepository.create({
+                                  name: role,
+                                  assignedEnum: role,
+                              })
+                            : null,
+                    )
+                    .filter(Boolean),
+            );
+
+            if (createdRoles.length > 0) {
+                this.logger.log(`Successfully created ${createdRoles.length} roles.`, {
+                    startTime,
+                    tag: LogTypeEnum.CREATED,
+                });
+            }
+
+            const rolesToRemove = savedRoles
+                .filter(
+                    (savedRole) => !currentRoles.some((role) => role === savedRole.name),
+                )
+                .map((role) => role.id);
+
+            if (rolesToRemove.length > 0) {
+                const removedRoles = await this.roleRepository.delete(rolesToRemove);
+                if (removedRoles.affected > 0) {
+                    this.logger.log(
+                        `Successfully removed ${removedRoles.affected} roles.`,
+                        { startTime, tag: LogTypeEnum.DELETED },
+                    );
+                }
+            }
+        } catch (error) {
+            this.logger.error(`Failed to synchronize roles from enum in database.`, {
+                error: error as Error,
+                startTime,
+                tag: LogTypeEnum.SYNCHRONIZATION_FAIL,
+            });
         }
     }
 }

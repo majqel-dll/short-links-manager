@@ -25,7 +25,25 @@ import { JwtModule } from "@nestjs/jwt";
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
-        ThrottlerModule.forRoot(),
+        ThrottlerModule.forRoot({
+            throttlers: [
+                {
+                    name: "short",
+                    ttl: 1e3,
+                    limit: 5,
+                },
+                {
+                    name: "medium",
+                    ttl: 10e3,
+                    limit: 30,
+                },
+                {
+                    name: "long",
+                    ttl: 60e3,
+                    limit: 120,
+                },
+            ],
+        }),
         JwtModule.register({
             global: true,
             secret: process.env.SECRET,

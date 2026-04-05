@@ -45,11 +45,6 @@ export class BearerTokenGuardService implements CanActivate {
             });
             const user = await this.userRepository.findOne({
                 where: { id: payload?.id },
-                relations: {
-                    permissions: true,
-                    roles: { permissions: true },
-                    sessions: true,
-                },
             });
 
             if (!user) {
@@ -68,16 +63,11 @@ export class BearerTokenGuardService implements CanActivate {
 
             if (!request[MetadataKeyEnum.USER_KEY]) {
                 request[MetadataKeyEnum.USER_KEY] = {
-                    id: user.id,
+                    id: payload.id,
                     sessionUuid: payload.sessionUuid,
                     createdAt: payload.createdAt,
-                    roles: user.roles.map((role) => role.name),
-                    permissions: [
-                        ...user.permissions.map((p) => p.value),
-                        ...user.roles.flatMap((role) =>
-                            role.permissions.map((p) => p.value),
-                        ),
-                    ],
+                    roles: payload.roles,
+                    permissions: payload.permissions,
                 } as ActiveUserPayload;
             }
             return true;
