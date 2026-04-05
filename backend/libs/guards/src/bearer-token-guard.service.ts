@@ -91,14 +91,14 @@ export class BearerTokenGuardService implements CanActivate {
                 `name` in error &&
                 error?.name === `TokenExpiredError`
             ) {
-                this.logger.error(`Used token has already expired.`, {
+                void this.logger.error(`Used token has already expired.`, {
                     error,
                     startTime,
                     tag: LogTypeEnum.AUTHORIZATION_FAIL,
                 });
             }
 
-            this.logger.error(`Failed to verify specified user properties.`, {
+            void this.logger.error(`Failed to verify specified user properties.`, {
                 error,
                 startTime,
                 tag: LogTypeEnum.AUTHORIZATION_FAIL,

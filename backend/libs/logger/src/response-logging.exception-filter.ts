@@ -55,7 +55,7 @@ export class ResponseLoggingExceptionFilter
         });
 
         await this.httpResponseRepository.save(responseRecord);
-        this.logger.log(message, { startTime, tag: LogTypeEnum.NOTIFICATION });
+        void this.logger.log(message, { startTime, tag: LogTypeEnum.NOTIFICATION });
     }
 }
 

@@ -18,7 +18,7 @@ export class S3Service {
                 secretKey: process.env.MINIO_ROOT_PASSWORD,
             });
         } catch (error) {
-            this.logger.error(`Failed to initialize S3 connection.`, {
+            void this.logger.error(`Failed to initialize S3 connection.`, {
                 error,
                 startTime,
             });
@@ -37,7 +37,7 @@ export class S3Service {
                 etag: createdObject.etag,
             };
         } catch (error) {
-            this.logger.error(
+            void this.logger.error(
                 `Failed to put object: ${objectName}, in bucket: ${bucketName}.`,
                 {
                     error,
@@ -57,7 +57,7 @@ export class S3Service {
                 stream.on(`error`, reject);
             });
         } catch (error) {
-            this.logger.error(
+            void this.logger.error(
                 `Failed to get buffer of: ${objectName} from bucket: ${bucketName}`,
             );
             return null;
@@ -77,7 +77,7 @@ export class S3Service {
             }
             return true;
         } catch (error) {
-            this.logger.error(
+            void this.logger.error(
                 `Failed to delete object: ${objectName}, from: ${bucketName}.`,
                 {
                     error,

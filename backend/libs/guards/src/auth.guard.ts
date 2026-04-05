@@ -60,7 +60,7 @@ export class AuthGuard implements CanActivate {
         }
 
         Object.entries(authAttempts).map(([authType, error]) => {
-            this.logger.warn(`${authType} Authentication fail: ${error?.message}`, {
+            void this.logger.warn(`${authType} Authentication fail: ${error?.message}`, {
                 startTime,
                 tag: LogTypeEnum.AUTHORIZATION_FAIL,
             });

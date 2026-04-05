@@ -1,5 +1,6 @@
 import {
     Body,
+    ClassSerializerInterceptor,
     Controller,
     Delete,
     Get,
@@ -7,13 +8,14 @@ import {
     HttpStatus,
     Post,
     UseGuards,
+    UseInterceptors,
 } from "@nestjs/common";
 import { type ActiveUserPayload, SignInResponse } from "@libs/types";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import { ActiveUser, Auth } from "@libs/decorators";
+import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
 import { SignInDto, SignUpDto } from "@libs/dtos";
-import { AuthTypeEnum } from "@libs/enums";
+import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
 
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard, PermissionGuard)
@@ -23,8 +25,9 @@ export class V1AuthController {
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
+    @UseInterceptors(ClassSerializerInterceptor)
     public async getActiveSessions(@ActiveUser() activeUser: ActiveUserPayload) {
-        this.authService.findActiveSessionForUser(activeUser.id);
+        return this.authService.findActiveSessionForUser(activeUser.id);
     }
 
     @Post(`sign-in`)
@@ -37,8 +40,21 @@ export class V1AuthController {
     @Post(`sign-up`)
     @HttpCode(HttpStatus.CREATED)
     @Auth(AuthTypeEnum.NONE)
-    public async signUp(@Body() body: SignUpDto): Promise<void> {
+    public async signUp(@Body() body: SignUpDto): Promise<{ message: string }> {
         await this.authService.createNewAccount(body);
+        return {
+            message: "Account created successfully, and now is waiting for activation.",
+        };
+    }
+
+    @Delete(`sign-out`)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
+    public async terminateSession(
+        @ActiveUser() activeUser: ActiveUserPayload,
+    ): Promise<{ message: string }> {
+        await this.authService.signOut(activeUser);
+        return { message: "Current session terminated successfully." };
     }
 
     @Post(`password/change`)
@@ -50,9 +66,4 @@ export class V1AuthController {
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
     public async refreshAccessToken() {}
-
-    @Delete(`token`)
-    @HttpCode(HttpStatus.NO_CONTENT)
-    @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async terminateSession() {}
 }

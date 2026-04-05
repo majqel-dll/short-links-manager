@@ -29,14 +29,20 @@ export class CookieGuardService implements CanActivate {
         const request: Request = context.switchToHttp().getRequest();
         const message = onAuthRejectionMessage(AuthTypeEnum.BEARER, request);
 
+        const loggerPayload = {
+            userId: null,
+            startTime,
+            tag: LogTypeEnum.PERMISSIONS_DENIED,
+        };
+
         const token = request.cookies?.[`accessToken`];
         if (!token) {
-            this.logger.warn(message);
+            void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`Invalid authorization format.`);
         }
 
         const payload = await this.jwtService.verifyAsync(token).catch((error) => {
-            this.logger.error(`Received incorrect or malformed payload ${message}`, {
+            void this.logger.error(`Received incorrect or malformed payload ${message}`, {
                 error,
                 startTime,
                 tag: LogTypeEnum.PERMISSIONS_DENIED,
@@ -49,16 +55,19 @@ export class CookieGuardService implements CanActivate {
             relations: { permissions: true, roles: { permissions: true }, sessions: true },
         });
 
+        loggerPayload.userId = user.id ?? null;
         if (!user) {
-            this.logger.warn(message);
+            void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`User not found.`);
         }
 
         if (user.activatedAt === null) {
+            void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`User account is not activated. ${message}`);
         }
 
         if (user.blockedAt !== null) {
+            void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`User account is blocked. ${message}`);
         }
 

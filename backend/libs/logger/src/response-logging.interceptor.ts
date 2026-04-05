@@ -24,10 +24,13 @@ export class ResponseLoggingInterceptor implements NestInterceptor {
         @InjectLogger(ResponseLoggingInterceptor)
         private readonly logger: Logger,
     ) {
-        this.logger.log(`Response logging interceptor has been successfully initialized.`, {
-            startTime: Date.now(),
-            tag: LogTypeEnum.INTERNAL_ACTION,
-        });
+        void this.logger.log(
+            `Response logging interceptor has been successfully initialized.`,
+            {
+                startTime: Date.now(),
+                tag: LogTypeEnum.INTERNAL_ACTION,
+            },
+        );
     }
 
     public intercept(
@@ -74,7 +77,7 @@ export class ResponseLoggingInterceptor implements NestInterceptor {
         });
 
         await this.httpResponseRepository.save(responseRecord);
-        this.logger.log(message, { startTime, tag: LogTypeEnum.NOTIFICATION });
+        void this.logger.log(message, { startTime, tag: LogTypeEnum.NOTIFICATION });
     }
 }
 

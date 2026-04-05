@@ -33,6 +33,7 @@ export class V1AuthService {
         const existingUser = await this.userRepository.findOne({
             where: [{ login }, { email }],
         });
+
         if (existingUser) {
             throw new ConflictException(`User with such login or email already exists.`);
         }
@@ -144,6 +145,19 @@ export class V1AuthService {
             expiresIn: tokenExpiresIn,
         });
 
+        void this.userRepository
+            .update({ id: user.id }, { lastLoginAt: new Date() })
+            .catch((error) => {
+                void this.logger.error(
+                    `Failed to update last login date for user ${user.id}.`,
+                    {
+                        startTime: Date.now(),
+                        tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                        error,
+                    },
+                );
+            });
+
         return {
             accessToken: {
                 value: accessToken,
@@ -161,7 +175,7 @@ export class V1AuthService {
         await this.sessionRepository
             .update({ userId: id, sessionId: sessionUuid }, { isActive: false })
             .catch((error) => {
-                this.logger.error(
+                void this.logger.error(
                     `Failed to terminate session ${sessionUuid} for user ${id}.`,
                     {
                         startTime,
@@ -174,7 +188,7 @@ export class V1AuthService {
                 );
             });
 
-        this.logger.log(`Session ${sessionUuid} for user ${id} has been terminated.`, {
+        void this.logger.log(`Session ${sessionUuid} for user ${id} has been terminated.`, {
             startTime,
             tag: LogTypeEnum.INTERNAL_ACTION,
         });
@@ -185,7 +199,7 @@ export class V1AuthService {
         await this.sessionRepository
             .update({ userId: id, isActive: true }, { isActive: false })
             .catch((error) => {
-                this.logger.error(`Failed to terminate sessions for user ${id}.`, {
+                void this.logger.error(`Failed to terminate sessions for user ${id}.`, {
                     startTime,
                     tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
                     error,
@@ -195,7 +209,7 @@ export class V1AuthService {
                 );
             });
 
-        this.logger.log(`All sessions for user ${id} have been terminated.`, {
+        void this.logger.log(`All sessions for user ${id} have been terminated.`, {
             startTime,
             tag: LogTypeEnum.INTERNAL_ACTION,
         });
@@ -205,17 +219,20 @@ export class V1AuthService {
         const activeSessions = await this.sessionRepository
             .find({ where: { userId, isActive: true } })
             .catch((error) => {
-                this.logger.error(`Failed to find active sessions for user ${userId}.`, {
-                    startTime: Date.now(),
-                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                    error,
-                });
+                void this.logger.error(
+                    `Failed to find active sessions for user ${userId}.`,
+                    {
+                        startTime: Date.now(),
+                        tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                        error,
+                    },
+                );
                 throw new InternalServerErrorException(
                     `Failed to find active sessions due to an unexpected error.`,
                 );
             });
 
-        this.logger.log(
+        void this.logger.log(
             `${activeSessions.length} Active sessions for user ${userId} have been retrieved.`,
             {
                 startTime: Date.now(),

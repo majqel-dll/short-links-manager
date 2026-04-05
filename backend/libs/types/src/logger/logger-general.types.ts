@@ -16,6 +16,7 @@ type LogMessageFunction =
 export type LoggerConfig = {
     context?: unknown;
     save?: boolean;
+    userId?: number;
     startTime?: number;
     tag?: LogTypeEnum;
 };

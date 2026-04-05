@@ -6,6 +6,7 @@ import { ActiveUserPayload } from "@libs/types";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { InjectRepository } from "@nestjs/typeorm";
+import { log } from "console";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -36,7 +37,17 @@ export class PermissionGuard implements CanActivate {
             const request = context.switchToHttp().getRequest();
             const user: ActiveUserPayload = request[MetadataKeyEnum.USER_KEY];
 
+            const loggerPayload = {
+                userId: user.id ?? null,
+                startTime,
+                tag: LogTypeEnum.PERMISSIONS_DENIED,
+            };
+
             if (!user) {
+                this.logger.warn(
+                    `Unauthenticated user attempted to access a resource requiring permissions.`,
+                    loggerPayload,
+                );
                 return false;
             }
 
@@ -50,6 +61,26 @@ export class PermissionGuard implements CanActivate {
             });
 
             if (!userWithRoles) {
+                this.logger.warn(
+                    `User with specified key not found during permission validation.`,
+                    loggerPayload,
+                );
+                return false;
+            }
+
+            if (userWithRoles.activatedAt === null) {
+                this.logger.warn(
+                    `Non-activated user attempted to access a resource requiring permissions.`,
+                    loggerPayload,
+                );
+                return false;
+            }
+
+            if (userWithRoles.blockedAt !== null) {
+                this.logger.warn(
+                    `Blocked user attempted to access a resource requiring permissions.`,
+                    loggerPayload,
+                );
                 return false;
             }
 
@@ -69,11 +100,14 @@ export class PermissionGuard implements CanActivate {
             );
         } catch (error) {
             if (error instanceof Error || typeof error === `string`) {
-                this.logger.error(`An error occured during permission validatin attempt.`, {
-                    error,
-                    startTime,
-                    tag: LogTypeEnum.VALIDATION_FAIL,
-                });
+                void this.logger.error(
+                    `An error occured during permission validatin attempt.`,
+                    {
+                        error,
+                        startTime,
+                        tag: LogTypeEnum.VALIDATION_FAIL,
+                    },
+                );
             }
 
             return false;

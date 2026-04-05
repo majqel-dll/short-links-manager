@@ -29,7 +29,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
     ) {}
 
     public onModuleInit(): void {
-        this.logger.log(`Monitoring middleware has been initialized.`, {
+        void this.logger.log(`Monitoring middleware has been initialized.`, {
             startTime: Date.now(),
             tag: LogTypeEnum.INTERNAL_ACTION,
         });
@@ -54,7 +54,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
 
             return payload.id;
         } catch (error) {
-            this.logger.error(`Failed to extract user key in monitoring middleware.`, {
+            void this.logger.error(`Failed to extract user key in monitoring middleware.`, {
                 startTime,
                 tag: LogTypeEnum.AUTHORIZATION_FAIL,
                 error: error as Error,
@@ -114,49 +114,49 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
             }
             req.requestEntityId = requestRecord.id;
 
-            this.logger.log(`Request has been spotted and registered.`, {
+            void this.logger.log(`Request has been spotted and registered.`, {
                 startTime,
                 tag: LogTypeEnum.NOTIFICATION,
             });
         } catch (error) {
-            this.logger.error(`Failed to save request properties in database.`, {
+            void this.logger.error(`Failed to save request properties in database.`, {
                 startTime,
                 error: error as Error,
                 tag: LogTypeEnum.NOTIFICATION,
             });
-            this.logger.warn(`---------------------------------`, {
+            void this.logger.warn(`---------------------------------`, {
                 startTime,
                 tag: LogTypeEnum.NOTIFICATION,
             });
-            this.logger.warn(`Requested path: ${req?.path ?? `unknown`}`, {
+            void this.logger.warn(`Requested path: ${req?.path ?? `unknown`}`, {
                 startTime,
                 tag: LogTypeEnum.NOTIFICATION,
             });
-            this.logger.warn(`Requested method: ${req?.method ?? `unknown`}`, {
+            void this.logger.warn(`Requested method: ${req?.method ?? `unknown`}`, {
                 startTime,
                 tag: LogTypeEnum.NOTIFICATION,
             });
-            this.logger.warn(`Requested from IP: ${req?.ip ?? `unknown`}`, {
+            void this.logger.warn(`Requested from IP: ${req?.ip ?? `unknown`}`, {
                 startTime,
                 tag: LogTypeEnum.NOTIFICATION,
             });
 
             if (req.headers) {
-                this.logger.warn(`Request headers: ${JSON.stringify(req.headers)}`, {
+                void this.logger.warn(`Request headers: ${JSON.stringify(req.headers)}`, {
                     startTime,
                     tag: LogTypeEnum.NOTIFICATION,
                 });
             }
 
             if (req.params) {
-                this.logger.warn(`Request params: ${JSON.stringify(req.params)}`, {
+                void this.logger.warn(`Request params: ${JSON.stringify(req.params)}`, {
                     startTime,
                     tag: LogTypeEnum.NOTIFICATION,
                 });
             }
 
             if (req.body) {
-                this.logger.warn(`Requested body: ${JSON.stringify(req.body)}`, {
+                void this.logger.warn(`Requested body: ${JSON.stringify(req.body)}`, {
                     startTime,
                     tag: LogTypeEnum.NOTIFICATION,
                 });
