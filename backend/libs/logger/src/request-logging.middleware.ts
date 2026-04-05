@@ -54,7 +54,6 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
 
             return payload.id;
         } catch (error) {
-
             this.logger.error(`Failed to extract user key in monitoring middleware.`, {
                 startTime,
                 tag: LogTypeEnum.AUTHORIZATION_FAIL,

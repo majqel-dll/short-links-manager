@@ -26,7 +26,7 @@ export class V1AuthService {
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();
@@ -50,7 +50,6 @@ export class V1AuthService {
             });
             await this.userRepository.save(newUser);
         } catch (error) {
-
             if (typeof error === `object` && `code` in error && error?.code === "23505") {
                 throw new ConflictException(
                     `User with such login or email already exists.`,
@@ -58,7 +57,9 @@ export class V1AuthService {
             }
 
             void this.logger.error(`Failed to create new account.`, {
-                startTime, tag: LogTypeEnum.CREATE_FAIL, error: error as Error,
+                startTime,
+                tag: LogTypeEnum.CREATE_FAIL,
+                error: error as Error,
             });
 
             throw new InternalServerErrorException(

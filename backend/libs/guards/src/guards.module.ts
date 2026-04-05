@@ -7,20 +7,10 @@ import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { AuthGuard } from "./auth.guard";
 
-const providers = [
-    BearerTokenGuardService,
-    CookieGuardService,
-    PermissionGuard,
-    AuthGuard,
-]
+const providers = [BearerTokenGuardService, CookieGuardService, PermissionGuard, AuthGuard];
 @Module({
-    imports: [
-        DatabaseModule,
-        JwtModule,
-        LoggerModule.forFeature(providers),
-    ],
-    providers: providers,
+    imports: [DatabaseModule, JwtModule, LoggerModule.forFeature(providers)],
+    providers,
     exports: providers,
 })
-
-export class GuardsModule { }
+export class GuardsModule {}

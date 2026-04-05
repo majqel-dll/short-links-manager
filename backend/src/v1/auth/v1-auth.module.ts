@@ -9,8 +9,9 @@ import { Module } from "@nestjs/common";
     imports: [
         GuardsModule,
         LoggerModule.forFeature([V1AuthService, V1AuthController]),
-        DatabaseModule],
+        DatabaseModule,
+    ],
     controllers: [V1AuthController],
     providers: [V1AuthService],
 })
-export class V1AuthModule { }
+export class V1AuthModule {}

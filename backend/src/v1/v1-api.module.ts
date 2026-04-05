@@ -17,4 +17,4 @@ const AllV1ApiModules = [
     imports: AllV1ApiModules,
     exports: AllV1ApiModules,
 })
-export class V1ApiModule { }
+export class V1ApiModule {}

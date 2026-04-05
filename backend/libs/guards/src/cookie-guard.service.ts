@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+    CanActivate,
+    ExecutionContext,
+    Injectable,
+    UnauthorizedException,
+} from "@nestjs/common";
 import { AuthTypeEnum, LogTypeEnum, MetadataKeyEnum } from "@libs/enums";
 import { onAuthRejectionMessage } from "@libs/utils";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -12,17 +17,14 @@ import { Request } from "express";
 
 @Injectable()
 export class CookieGuardService implements CanActivate {
-
     constructor(
-        @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
+        @InjectRepository(UserEntity)
+        private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(CookieGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
-    public async canActivate(
-        context: ExecutionContext
-    ): Promise<boolean> {
-
+    public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
         const request: Request = context.switchToHttp().getRequest();
         const message = onAuthRejectionMessage(AuthTypeEnum.BEARER, request);
@@ -31,11 +33,14 @@ export class CookieGuardService implements CanActivate {
         if (!token) {
             this.logger.warn(message);
             throw new UnauthorizedException(`Invalid authorization format.`);
-        };
+        }
 
-        const payload = await this.jwtService.verifyAsync(token).catch(error => {
-            this.logger.error(`Received incorrect or malformed payload ${message}`,
-                { error, startTime, tag: LogTypeEnum.PERMISSIONS_DENIED })
+        const payload = await this.jwtService.verifyAsync(token).catch((error) => {
+            this.logger.error(`Received incorrect or malformed payload ${message}`, {
+                error,
+                startTime,
+                tag: LogTypeEnum.PERMISSIONS_DENIED,
+            });
             throw new UnauthorizedException(`Invalid authorization format.`);
         });
 
@@ -47,7 +52,7 @@ export class CookieGuardService implements CanActivate {
         if (!user) {
             this.logger.warn(message);
             throw new UnauthorizedException(`User not found.`);
-        };
+        }
 
         if (user.activatedAt === null) {
             throw new UnauthorizedException(`User account is not activated. ${message}`);
@@ -62,10 +67,10 @@ export class CookieGuardService implements CanActivate {
                 id: user.id,
                 sessionUuid: payload.sessionUuid,
                 createdAt: payload.createdAt,
-                roles: user.roles.map(role => role.name),
+                roles: user.roles.map((role) => role.name),
                 permissions: [
-                    ...user.permissions.map(p => p.value),
-                    ...user.roles.flatMap(role => role.permissions.map(p => p.value)),
+                    ...user.permissions.map((p) => p.value),
+                    ...user.roles.flatMap((role) => role.permissions.map((p) => p.value)),
                 ],
             } as ActiveUserPayload;
         }

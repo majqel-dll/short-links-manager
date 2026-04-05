@@ -1,12 +1,14 @@
 import crypto from "crypto";
 
 const algorithm = "aes-256-gcm";
-const key = crypto.createHash("sha256").update(process.env.SECRET ?? "").digest();
+const key = crypto
+    .createHash("sha256")
+    .update(process.env.SECRET ?? "")
+    .digest();
 const ivLength = 16;
 
 export const EncryptionTransformer = {
     to(value?: string): string | null {
-
         if (!value) {
             return null;
         }
