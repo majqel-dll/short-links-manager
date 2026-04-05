@@ -2,8 +2,8 @@ import { Controller, Delete, Get, Post, Put } from "@nestjs/common";
 
 @Controller()
 export class V1RedirectionController {
-    @Get(`:redirection`)
-    public async redirectClientTo() {}
+    @Get(`v1/redirection`)
+    public async getRedirections() {}
 
     @Post(`v1/redirection`)
     public async createRedirection() {}
@@ -13,4 +13,7 @@ export class V1RedirectionController {
 
     @Delete(`v1/redirection`)
     public async deleteRedirection() {}
+
+    @Get(`:redirection`)
+    public async redirectClientTo() {}
 }

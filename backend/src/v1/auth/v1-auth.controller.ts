@@ -21,7 +21,7 @@ import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard, PermissionGuard)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) { }
+    constructor(private readonly authService: V1AuthService) {}
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -82,12 +82,10 @@ export class V1AuthController {
     @Post(`password/change`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async changePassword(@ActiveUser() activeUser: ActiveUserPayload) { }
+    public async changePassword(@ActiveUser() activeUser: ActiveUserPayload) {}
 
     @Post(`token/refresh`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async refreshAccessToken() {
-
-    }
+    public async refreshAccessToken() {}
 }

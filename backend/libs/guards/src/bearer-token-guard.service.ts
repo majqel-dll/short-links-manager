@@ -22,7 +22,7 @@ export class BearerTokenGuardService implements CanActivate {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(BearerTokenGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -31,70 +31,67 @@ export class BearerTokenGuardService implements CanActivate {
         const message = onAuthRejectionMessage(AuthTypeEnum.BEARER, request);
 
         if (!authHeader) {
-            throw new UnauthorizedException(`Authorization header missing. ${message}`);
+            throw new UnauthorizedException(`Authorization header missing.`);
         }
 
         const [type, token] = authHeader.split(` `);
         if (type !== "Bearer" || !token) {
-            throw new UnauthorizedException(`Invalid authorization format. ${message}`);
+            throw new UnauthorizedException(`Invalid authorization format.`);
         }
 
-        try {
-            const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, {
-                secret: process.env.SECRET,
-            });
-            const user = await this.userRepository.findOne({
-                where: { id: payload?.id },
-            });
-
-            if (!user) {
-                throw new UnauthorizedException(`User not found. ${message}`);
-            }
-
-            if (user.activatedAt === null) {
-                throw new UnauthorizedException(
-                    `User account is not activated. ${message}`,
-                );
-            }
-
-            if (user.blockedAt !== null) {
-                throw new UnauthorizedException(`User account is blocked. ${message}`);
-            }
-
-            if (!request[MetadataKeyEnum.USER_KEY]) {
-                request[MetadataKeyEnum.USER_KEY] = {
-                    id: payload.id,
-                    sessionUuid: payload.sessionUuid,
-                    createdAt: payload.createdAt,
-                    roles: payload.roles,
-                    permissions: payload.permissions,
-                } as ActiveUserPayload;
-            }
-            return true;
-        } catch (error) {
-            if (typeof error !== `object` && typeof error !== `string`) {
-                return false;
-            }
-
-            if (
-                typeof error === `object` &&
-                `name` in error &&
-                error?.name === `TokenExpiredError`
-            ) {
-                void this.logger.error(`Used token has already expired.`, {
-                    error,
-                    startTime,
-                    tag: LogTypeEnum.AUTHORIZATION_FAIL,
-                });
-            }
-
-            void this.logger.error(`Failed to verify specified user properties.`, {
+        const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, {
+            secret: process.env.SECRET,
+        }).catch((error) => {
+            void this.logger.error(`Received incorrect or malformed payload ${message}`, {
                 error,
                 startTime,
-                tag: LogTypeEnum.AUTHORIZATION_FAIL,
+                tag: LogTypeEnum.PERMISSIONS_DENIED,
             });
+            throw new UnauthorizedException(`Invalid authorization format.`);
+        });
 
-            return false;
+        if (!(`permissions` in payload) || !(`roles` in payload)) {
+            throw new UnauthorizedException(`Refresh token used as access token.`);
         }
+
+        const user = await this.userRepository.findOne({
+            where: { id: payload?.id },
+        });
+
+        const loggerPayload = {
+            userId: user?.id ?? null,
+            startTime,
+            tag: LogTypeEnum.PERMISSIONS_DENIED,
+        };
+
+        loggerPayload.userId = user.id ?? null;
+        if (!user) {
+            void this.logger.warn(message, loggerPayload);
+            throw new UnauthorizedException(`User not found.`);
+        }
+
+        if (user.activatedAt === null) {
+            void this.logger.warn(message, loggerPayload);
+            throw new UnauthorizedException(`User account is not activated.`);
+        }
+
+        if (user.blockedAt !== null) {
+            void this.logger.warn(message, loggerPayload);
+            throw new UnauthorizedException(`User account is blocked.`);
+        }
+
+        if (!request[MetadataKeyEnum.USER_KEY]) {
+            request[MetadataKeyEnum.USER_KEY] = {
+                id: payload.id,
+                sessionUuid: payload.sessionUuid,
+                createdAt: payload.createdAt,
+                roles: payload.roles,
+                permissions: payload.permissions,
+            } as ActiveUserPayload;
+        }
+
+        this.logger.debug(request[MetadataKeyEnum.USER_KEY])
+        return true;
+
     }
 }

@@ -22,7 +22,7 @@ export class CookieGuardService implements CanActivate {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(CookieGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -50,6 +50,10 @@ export class CookieGuardService implements CanActivate {
             throw new UnauthorizedException(`Invalid authorization format.`);
         });
 
+        if (!(`permissions` in payload) || !(`roles` in payload)) {
+            throw new UnauthorizedException(`Refresh token used as access token.`);
+        }
+
         const user = await this.userRepository.findOne({
             where: { id: payload?.id },
         });
@@ -62,12 +66,12 @@ export class CookieGuardService implements CanActivate {
 
         if (user.activatedAt === null) {
             void this.logger.warn(message, loggerPayload);
-            throw new UnauthorizedException(`User account is not activated. ${message}`);
+            throw new UnauthorizedException(`User account is not activated.`);
         }
 
         if (user.blockedAt !== null) {
             void this.logger.warn(message, loggerPayload);
-            throw new UnauthorizedException(`User account is blocked. ${message}`);
+            throw new UnauthorizedException(`User account is blocked.`);
         }
 
         if (!request[MetadataKeyEnum.USER_KEY]) {
