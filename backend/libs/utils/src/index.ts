@@ -6,3 +6,4 @@ export * from "./get-code-from-exception.util";
 export * from "./remove-dangerous-signs.util";
 export * from "./wait.util";
 export * from "./on-bootstrap-message-util";
+export * from "./on-auth-rejection-message.util";

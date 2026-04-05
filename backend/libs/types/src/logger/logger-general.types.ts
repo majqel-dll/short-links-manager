@@ -21,5 +21,5 @@ export type LoggerConfig = {
 };
 
 export type ErrorConfig = LoggerConfig & {
-    error?: Error | string;
+    error?: Error | object | string;
 };

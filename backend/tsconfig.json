@@ -57,6 +57,12 @@
       "@libs/enums/*": [
         "./libs/enums/src/*"
       ],
+      "@libs/guards": [
+        "./libs/guards/src"
+      ],
+      "@libs/guards/*": [
+        "./libs/guards/src/*"
+      ],
       "@libs/logger": [
         "./libs/logger/src"
       ],
