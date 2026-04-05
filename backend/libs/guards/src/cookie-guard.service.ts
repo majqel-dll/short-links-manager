@@ -27,7 +27,7 @@ export class CookieGuardService implements CanActivate {
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
         const request: Request = context.switchToHttp().getRequest();
-        const message = onAuthRejectionMessage(AuthTypeEnum.BEARER, request);
+        const message = onAuthRejectionMessage(AuthTypeEnum.COOKIE, request);
 
         const loggerPayload = {
             userId: null,
