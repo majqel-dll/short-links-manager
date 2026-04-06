@@ -26,7 +26,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         @InjectLogger(RequestLoggingMiddleware)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public onModuleInit(): void {
         void this.logger.log(`Monitoring middleware has been initialized.`, {
@@ -54,12 +54,19 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
 
             return payload.id;
         } catch (error) {
-            void this.logger.error(`Failed to extract user key in monitoring middleware.`, {
+
+            let message = `Failed to extract user key in monitoring middleware.`;
+            const errorPayload = {
                 startTime,
                 tag: LogTypeEnum.AUTHORIZATION_FAIL,
                 error: error as Error,
-            });
+            };
 
+            if (error instanceof Error && error.name === "TokenExpiredError") {
+                message = `Received expired token in monitoring middleware.`;
+            }
+
+            void this.logger.error(message, errorPayload);
             return null;
         }
     }

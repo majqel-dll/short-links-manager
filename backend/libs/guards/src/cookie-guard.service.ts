@@ -42,7 +42,6 @@ export class CookieGuardService implements CanActivate {
         }
 
         const payload = await this.jwtService.verifyAsync(token).catch((error) => {
-            this.logger.debug(error);
             void this.logger.error(`Received incorrect or malformed payload ${message}`, {
                 error,
                 startTime,
