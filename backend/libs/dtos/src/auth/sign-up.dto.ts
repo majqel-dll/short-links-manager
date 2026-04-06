@@ -2,7 +2,6 @@ import { IsDefined, IsEmail, IsString, IsStrongPassword } from "class-validator"
 import { ApiProperty } from "@nestjs/swagger";
 
 export class SignUpDto {
-
     @ApiProperty({
         description:
             "User's email address. Must be a valid email format and unique across all accounts.",
@@ -35,5 +34,4 @@ export class SignUpDto {
     @IsString()
     @IsStrongPassword()
     public password: string;
-
 }

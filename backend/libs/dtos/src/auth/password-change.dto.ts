@@ -2,7 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsDefined, IsString, IsStrongPassword } from "class-validator";
 
 export class PasswordChangeDto {
-
     @ApiProperty({
         description:
             "Current account password used to verify identity before making the change.",
@@ -37,5 +36,4 @@ export class PasswordChangeDto {
     @IsString()
     @IsStrongPassword()
     public newPasswordConfirm: string;
-
 }

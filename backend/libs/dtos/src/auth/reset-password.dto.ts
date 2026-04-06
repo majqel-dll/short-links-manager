@@ -2,7 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsDefined, IsString, IsStrongPassword } from "class-validator";
 
 export class ResetPasswordDto {
-
     @ApiProperty({
         description:
             "New password to set for the account. Must contain at least 8 characters, " +
@@ -37,5 +36,4 @@ export class ResetPasswordDto {
     @IsDefined()
     @IsString()
     public key: string;
-
 }

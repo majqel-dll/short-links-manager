@@ -3,7 +3,6 @@ import { PasswordResetEnum } from "@libs/enums";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class GetPasswordResetKeyDto {
-
     @ApiProperty({
         description:
             "Username or email address of the account for which the password reset key should be generated.",
@@ -25,5 +24,4 @@ export class GetPasswordResetKeyDto {
     @IsDefined()
     @IsEnum(PasswordResetEnum)
     public method: PasswordResetEnum;
-
 }

@@ -2,7 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsDefined, IsString } from "class-validator";
 
 export class RefreshTokenDto {
-
     @ApiProperty({
         description:
             "A valid refresh token issued during the previous sign-in. " +
@@ -13,5 +12,4 @@ export class RefreshTokenDto {
     @IsDefined()
     @IsString()
     public refreshToken: string;
-
 }

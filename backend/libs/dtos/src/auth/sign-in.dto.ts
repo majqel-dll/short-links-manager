@@ -2,7 +2,6 @@ import { IsDefined, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class SignInDto {
-
     @ApiProperty({
         description: "Username or email address associated with the account.",
         example: "john_doe",
@@ -19,5 +18,4 @@ export class SignInDto {
     @IsString()
     @IsDefined()
     public password: string;
-
 }

@@ -156,6 +156,7 @@ export class V1AuthService {
 
         const session = this.sessionRepository.create({
             expiresAt: refreshTokenExpirationDate,
+            loginAttemptUuid: refreshTokenPayload.loginAttemptUuid,
             sessionUuid,
             userId: user.id,
         });
