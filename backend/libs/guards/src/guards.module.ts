@@ -9,7 +9,11 @@ import { AuthGuard } from "./auth.guard";
 
 const providers = [BearerTokenGuardService, CookieGuardService, PermissionGuard, AuthGuard];
 @Module({
-    imports: [DatabaseModule, JwtModule, LoggerModule.forFeature(providers)],
+    imports: [
+        DatabaseModule,
+        JwtModule.register({ secret: process.env.SECRET }),
+        LoggerModule.forFeature(providers),
+    ],
     providers,
     exports: providers,
 })

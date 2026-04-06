@@ -39,16 +39,19 @@ export class BearerTokenGuardService implements CanActivate {
             throw new UnauthorizedException(`Invalid authorization format.`);
         }
 
-        const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, {
-            secret: process.env.SECRET,
-        }).catch((error) => {
-            void this.logger.error(`Received incorrect or malformed payload ${message}`, {
-                error,
-                startTime,
-                tag: LogTypeEnum.PERMISSIONS_DENIED,
+        const payload: ActiveUserPayload = await this.jwtService
+            .verifyAsync(token)
+            .catch((error) => {
+                void this.logger.error(
+                    `Received incorrect or malformed payload ${message}`,
+                    {
+                        error,
+                        startTime,
+                        tag: LogTypeEnum.PERMISSIONS_DENIED,
+                    },
+                );
+                throw new UnauthorizedException(`Invalid authorization format.`);
             });
-            throw new UnauthorizedException(`Invalid authorization format.`);
-        });
 
         if (!(`permissions` in payload) || !(`roles` in payload)) {
             throw new UnauthorizedException(`Refresh token used as access token.`);
@@ -91,6 +94,5 @@ export class BearerTokenGuardService implements CanActivate {
         }
 
         return true;
-
     }
 }

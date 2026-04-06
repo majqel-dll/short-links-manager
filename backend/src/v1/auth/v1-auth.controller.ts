@@ -8,6 +8,7 @@ import {
     HttpStatus,
     Param,
     Post,
+    Res,
     UseGuards,
     UseInterceptors,
 } from "@nestjs/common";
@@ -17,6 +18,7 @@ import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
 import { SignInDto, SignUpDto } from "@libs/dtos";
 import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
+import { type Response } from "express";
 
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard, PermissionGuard)
@@ -34,8 +36,17 @@ export class V1AuthController {
     @Post(`sign-in`)
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(AuthTypeEnum.NONE)
-    public async signIn(@Body() body: SignInDto): Promise<SignInResponse> {
-        return await this.authService.generateRefreshAndAccessToken(body);
+    public async signIn(
+        @Body() body: SignInDto,
+        @Res({ passthrough: true }) res: Response,
+    ): Promise<SignInResponse> {
+        const credentials = await this.authService.generateRefreshAndAccessToken(body);
+        res.cookie(`accessToken`, credentials.accessToken.value, {
+            httpOnly: true,
+            secure: true,
+            sameSite: `strict`,
+        });
+        return credentials;
     }
 
     @Post(`sign-up`)
