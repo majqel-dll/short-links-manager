@@ -1,3 +1,4 @@
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ConsoleLogger, ValidationPipe } from "@nestjs/common";
 import { useContainer } from "class-validator";
 import { NestFactory } from "@nestjs/core";
@@ -29,6 +30,19 @@ async function bootstrap() {
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
     app.use(cookieParser());
     app.use(helmet());
+
+    const config = new DocumentBuilder()
+        .setTitle(`Short-links-manager API`)
+        .setDescription(`API documentation for the Short-links-manager application.`)
+        .setVersion(`1.0`)
+        .build();
+
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup("api/docs", app, documentFactory, {
+        jsonDocumentUrl: `swagger/json`,
+        customSiteTitle: `Short-links-manager API`,
+        customCss: `.swagger-ui .topbar { display: none !important; }`,
+    });
 
     await app.listen(3000);
 }

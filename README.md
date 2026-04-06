@@ -26,7 +26,7 @@ Furthermore, users can manage their profiles. Both account registration and pass
 All available functionalities and system behavior are described in the [`Swagger`](https://swagger.io/) documentation. It provides a user-friendly interface to explore and test API endpoints directly from the browser. You can check available routes, required parameters, and expected responses. The documentation is automatically generated and accessible at:
 
 ```http
-GET http://localhost/api
+GET http://localhost/api/docs
 ```
 
 Access to the application’s database is available via [`adminer`](https://www.adminer.org/pl/) at the address below, using the credentials specified in the [.env](./backend/.env.d.ts) file or in [docker-compose.yml](./docker-compose.yml)

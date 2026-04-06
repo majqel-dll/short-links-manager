@@ -340,6 +340,7 @@ export class V1AuthService {
             { userId: existingUser.id, isActive: true },
             { isActive: false },
         );
+
         this.logger.log(`Successfully changed password for user ${existingUser.id}`, {
             startTime,
             tag: LogTypeEnum.INTERNAL_ACTION,

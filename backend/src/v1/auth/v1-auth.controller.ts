@@ -16,7 +16,7 @@ import { type ActiveUserPayload, SignInResponse } from "@libs/types";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
-import { PasswordChangeDto, SignInDto, SignUpDto } from "@libs/dtos";
+import { PasswordChangeDto, RefreshTokenDto, SignInDto, SignUpDto } from "@libs/dtos";
 import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
 import { type Response } from "express";
 
@@ -97,11 +97,22 @@ export class V1AuthController {
         @ActiveUser() activeUser: ActiveUserPayload,
         @Body() payload: PasswordChangeDto,
     ) {
-        await this.authService;
+        await this.authService.changePassword(activeUser, payload);
     }
 
     @Post(`token/refresh`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async refreshAccessToken() {}
+    public async refreshAccessToken(
+        @Body() body: RefreshTokenDto,
+        @Res({ passthrough: true }) res: Response,
+    ): Promise<SignInResponse> {
+        const credentials = await this.authService.refreshToken(body);
+        res.cookie(`accessToken`, credentials.accessToken.value, {
+            httpOnly: true,
+            secure: true,
+            sameSite: `strict`,
+        });
+        return credentials;
+    }
 }
