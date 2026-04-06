@@ -63,6 +63,18 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
             };
 
             if (error instanceof Error && error.name === "TokenExpiredError") {
+
+                let token = req.cookies?.[`accessToken`];
+                if (!token) {
+                    const header = req.headers?.[`authorization`];
+                    token = header?.split(` `).at(1);
+                }
+
+                const payload: ActiveUserPayload = await this.jwtService.decode(token)
+                if (payload?.id) {
+                    return payload.id;
+                }
+
                 message = `Received expired token in monitoring middleware.`;
             }
 

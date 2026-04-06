@@ -9,7 +9,7 @@ import { onAuthRejectionMessage } from "@libs/utils";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ActiveUserPayload } from "@libs/types";
 import { InjectLogger } from "@libs/decorators";
-import { UserEntity } from "@libs/entities";
+import { SessionEntity, UserEntity } from "@libs/entities";
 import { JwtService } from "@nestjs/jwt";
 import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
@@ -18,11 +18,13 @@ import { Request } from "express";
 @Injectable()
 export class CookieGuardService implements CanActivate {
     constructor(
+        @InjectRepository(SessionEntity)
+        private readonly sessionRepository: Repository<SessionEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(CookieGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -72,6 +74,18 @@ export class CookieGuardService implements CanActivate {
         if (user.blockedAt !== null) {
             void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`User account is blocked.`);
+        }
+
+        const session = await this.sessionRepository.findOne({
+            where: {
+                sessionUuid: payload.sessionUuid,
+                user: { id: payload.id }
+            }
+        });
+
+        if (!session || !session.isActive || session.expiresAt < new Date()) {
+            void this.logger.warn(message, loggerPayload);
+            throw new UnauthorizedException(`Session is invalid, inactive, or expired.`);
         }
 
         if (!request[MetadataKeyEnum.USER_KEY]) {
