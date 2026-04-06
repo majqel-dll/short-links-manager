@@ -16,7 +16,7 @@ import { type ActiveUserPayload, SignInResponse } from "@libs/types";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
-import { SignInDto, SignUpDto } from "@libs/dtos";
+import { PasswordChangeDto, SignInDto, SignUpDto } from "@libs/dtos";
 import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
 import { type Response } from "express";
 
@@ -79,12 +79,12 @@ export class V1AuthController {
         return { message: "All sessions terminated successfully." };
     }
 
-    @Delete(`sign-out/:sessionId`)
+    @Delete(`sign-out/:sessionUuid`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
     public async terminateSpecifiedSession(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`sessionId`) sessionUuid: string,
+        @Param(`sessionUuid`) sessionUuid: string,
     ): Promise<{ message: string }> {
         await this.authService.signOut({ ...activeUser, sessionUuid });
         return { message: `Specified session ${sessionUuid} terminated successfully.` };
@@ -93,7 +93,12 @@ export class V1AuthController {
     @Post(`password/change`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    public async changePassword(@ActiveUser() activeUser: ActiveUserPayload) {}
+    public async changePassword(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Body() payload: PasswordChangeDto,
+    ) {
+        await this.authService;
+    }
 
     @Post(`token/refresh`)
     @HttpCode(HttpStatus.OK)

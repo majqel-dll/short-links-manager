@@ -10,7 +10,11 @@ export class SessionEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, length: 48, nullable: false })
     @Exclude()
     @Index()
-    public sessionId: string;
+    public sessionUuid: string;
+
+    @Column({ type: `varchar`, length: 48, nullable: false })
+    @Exclude()
+    public loginAttemptUuid: string;
 
     @Column({ type: `boolean`, default: true })
     public isActive: boolean;

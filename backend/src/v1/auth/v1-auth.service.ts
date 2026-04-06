@@ -7,9 +7,11 @@ import {
     ConflictException,
     Injectable,
     NotFoundException,
+    ForbiddenException,
+    BadRequestException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { SignUpDto, SignInDto } from "@libs/dtos";
+import { SignUpDto, SignInDto, PasswordChangeDto, RefreshTokenDto } from "@libs/dtos";
 import { InjectLogger } from "@libs/decorators";
 import { randomUUID as uuidv4 } from "crypto";
 import { In, Repository } from "typeorm";
@@ -146,14 +148,15 @@ export class V1AuthService {
 
         const refreshTokenPayload: RefreshTokenPayload = {
             expiringAt: refreshTokenExpirationDate.toISOString(),
-            sessionUuid,
             createdAt: new Date().toISOString(),
+            loginAttemptUuid: uuidv4(),
+            sessionUuid,
             userId: user.id,
         };
 
         const session = this.sessionRepository.create({
             expiresAt: refreshTokenExpirationDate,
-            sessionId: sessionUuid,
+            sessionUuid,
             userId: user.id,
         });
 
@@ -196,10 +199,13 @@ export class V1AuthService {
         };
     }
 
-    public async signOut({ id, sessionUuid }: ActiveUserPayload): Promise<void> {
+    public async signOut({
+        id,
+        sessionUuid,
+    }: Pick<ActiveUserPayload, "id" | "sessionUuid">): Promise<void> {
         const startTime = Date.now();
         const updateResult = await this.sessionRepository
-            .update({ userId: id, sessionId: sessionUuid }, { isActive: false })
+            .update({ userId: id, sessionUuid }, { isActive: false })
             .catch((error) => {
                 void this.logger.error(
                     `Failed to terminate session ${sessionUuid} for user ${id}.`,
@@ -273,5 +279,205 @@ export class V1AuthService {
         );
 
         return activeSessions;
+    }
+
+    public async changePassword(
+        user: ActiveUserPayload,
+        { newPassword, newPasswordConfirm, oldPassword }: PasswordChangeDto,
+    ): Promise<void> {
+        const startTime = Date.now();
+        const existingUser = await this.userRepository.findOne({
+            where: { id: user.id },
+        });
+
+        if (newPasswordConfirm !== newPassword) {
+            throw new BadRequestException(`Both passwords must match.`);
+        }
+
+        if (!existingUser) {
+            throw new UnauthorizedException(`Incorrect login or password.`);
+        }
+
+        const isPasswordCorrect = await argon2.verify(
+            existingUser.passwordHash,
+            oldPassword,
+        );
+        if (!isPasswordCorrect) {
+            throw new UnauthorizedException(`Incorrect login or password.`);
+        }
+
+        if (existingUser.activatedAt === null) {
+            throw new ForbiddenException(`Wait for administrator acceptation.`);
+        }
+
+        if (existingUser.blockedAt !== null) {
+            throw new ForbiddenException(`This account is banned.`);
+        }
+
+        const passwordHash = await argon2
+            .hash(newPassword, { type: argon2.argon2id, timeCost: 3, memoryCost: 2 ** 16 })
+            .catch((error) => {
+                this.logger.error(`Failed to encrypt new password.`, {
+                    startTime,
+                    error,
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                });
+                throw new InternalServerErrorException(`Failed to update password.`);
+            });
+
+        await this.userRepository
+            .update({ id: existingUser.id }, { passwordHash })
+            .catch((error) => {
+                this.logger.error(`Failed to save new password.`, {
+                    startTime,
+                    error,
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                });
+                throw new InternalServerErrorException(`Failed to update password.`);
+            });
+
+        await this.sessionRepository.update(
+            { userId: existingUser.id, isActive: true },
+            { isActive: false },
+        );
+        this.logger.log(`Successfully changed password for user ${existingUser.id}`, {
+            startTime,
+            tag: LogTypeEnum.INTERNAL_ACTION,
+        });
+    }
+
+    public async refreshToken({ refreshToken }: RefreshTokenDto): Promise<SignInResponse> {
+        const startTime: number = Date.now();
+        const payload: RefreshTokenPayload = await this.jwtService
+            .verifyAsync(refreshToken)
+            .catch((error) => {
+                this.logger.error(`Failed to read passed key.`, {
+                    startTime,
+                    error,
+                    tag: LogTypeEnum.AUTHORIZATION_FAIL,
+                });
+                throw new ForbiddenException();
+            });
+
+        if (!payload?.sessionUuid || !payload.loginAttemptUuid) {
+            throw new BadRequestException(`Incorrect token.`);
+        }
+
+        const { sessionUuid, loginAttemptUuid } = payload;
+        const session = await this.sessionRepository.findOne({
+            where: { loginAttemptUuid, isActive: true },
+            relations: { user: { permissions: true, roles: { permissions: true } } },
+        });
+
+        if (!session) {
+            throw new BadRequestException(`Specified key doesn't exist.`);
+        }
+
+        const user = session.user;
+        if (user.blockedAt) {
+            throw new ForbiddenException(`This account is banned.`);
+        }
+
+        if (session.sessionUuid !== sessionUuid) {
+            this.logger.warn(`Specified key has been used second time. Killing session.`, {
+                startTime,
+                tag: LogTypeEnum.PERMISSIONS_FAIL,
+            });
+
+            await this.signOut({
+                sessionUuid: session.sessionUuid,
+                id: user.id,
+            });
+
+            throw new ForbiddenException();
+        }
+
+        if (!session.isKeyFresh()) {
+            this.sessionRepository.update({ id: session.id }, { isActive: false });
+            throw new ForbiddenException(`Specified token has already expired.`);
+        }
+
+        const newSessionUuid = uuidv4();
+        const refreshTokenExpiringDate: Date = new Date(
+            Date.now() + 1000 * 60 * 60 * 24 * 7,
+        );
+        const refreshTokenPayload: RefreshTokenPayload = {
+            expiringAt: refreshTokenExpiringDate.toISOString(),
+            createdAt: new Date().toISOString(),
+            loginAttemptUuid: uuidv4(),
+            sessionUuid: newSessionUuid,
+            userId: user.id,
+        };
+
+        await this.sessionRepository
+            .update(
+                { id: session.id },
+                { sessionUuid: newSessionUuid, expiresAt: refreshTokenExpiringDate },
+            )
+            .catch((error) => {
+                this.logger.error(`Failed to save new refresh token.`, {
+                    error,
+                    startTime,
+                    tag: LogTypeEnum.AUTHORIZATION_FAIL,
+                });
+                throw new InternalServerErrorException();
+            });
+
+        const tokenExpiresIn = `15m`;
+        const refreshTokenExpiresIn = `7d`;
+
+        const newRefreshToken = await this.jwtService
+            .signAsync(refreshTokenPayload, {
+                secret: process.env.SECRET,
+                expiresIn: refreshTokenExpiresIn,
+            })
+            .catch((error) => {
+                this.logger.error(`Failed to sign new refresh token token payload.`, {
+                    error,
+                    startTime,
+                    tag: LogTypeEnum.AUTHORIZATION_FAIL,
+                });
+                throw new InternalServerErrorException();
+            });
+
+        const tokenPayload: ActiveUserPayload = {
+            id: user.id,
+            sessionUuid,
+            createdAt: new Date().toISOString(),
+            roles: user.roles.map(({ name }) => name),
+            permissions: [
+                ...new Set(
+                    ...user.permissions.map(({ value }) => value),
+                    ...user.roles.flatMap(({ permissions }) =>
+                        permissions.map(({ value }) => value),
+                    ),
+                ),
+            ],
+        };
+
+        const newToken = await this.jwtService
+            .signAsync(tokenPayload, {
+                secret: process.env.SECRET,
+                expiresIn: tokenExpiresIn,
+            })
+            .catch((error) => {
+                this.logger.error(`Failed to sign new access token payload.`, {
+                    error,
+                    startTime,
+                    tag: LogTypeEnum.AUTHORIZATION_FAIL,
+                });
+                throw new InternalServerErrorException();
+            });
+
+        return {
+            accessToken: {
+                value: newToken,
+                expiresIn: tokenExpiresIn,
+            },
+            refreshToken: {
+                value: newRefreshToken,
+                expiresIn: refreshTokenExpiresIn,
+            },
+        } as SignInResponse;
     }
 }

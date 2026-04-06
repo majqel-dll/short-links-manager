@@ -41,20 +41,15 @@ export class CookieGuardService implements CanActivate {
             throw new UnauthorizedException(`Invalid authorization format.`);
         }
 
-        const payload = await this.jwtService
-            .verifyAsync(token)
-            .catch((error) => {
-                this.logger.debug(error);
-                void this.logger.error(
-                    `Received incorrect or malformed payload ${message}`,
-                    {
-                        error,
-                        startTime,
-                        tag: LogTypeEnum.PERMISSIONS_DENIED,
-                    },
-                );
-                throw new UnauthorizedException(`Invalid authorization format.`);
+        const payload = await this.jwtService.verifyAsync(token).catch((error) => {
+            this.logger.debug(error);
+            void this.logger.error(`Received incorrect or malformed payload ${message}`, {
+                error,
+                startTime,
+                tag: LogTypeEnum.PERMISSIONS_DENIED,
             });
+            throw new UnauthorizedException(`Invalid authorization format.`);
+        });
 
         if (!(`permissions` in payload) || !(`roles` in payload)) {
             throw new UnauthorizedException(`Refresh token used as access token.`);

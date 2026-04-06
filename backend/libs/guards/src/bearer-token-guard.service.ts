@@ -22,7 +22,7 @@ export class BearerTokenGuardService implements CanActivate {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(BearerTokenGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
