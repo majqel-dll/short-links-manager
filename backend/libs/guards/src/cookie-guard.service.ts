@@ -24,7 +24,7 @@ export class CookieGuardService implements CanActivate {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(CookieGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -79,8 +79,8 @@ export class CookieGuardService implements CanActivate {
         const session = await this.sessionRepository.findOne({
             where: {
                 sessionUuid: payload.sessionUuid,
-                user: { id: payload.id }
-            }
+                user: { id: payload.id },
+            },
         });
 
         if (!session || !session.isActive || session.expiresAt < new Date()) {

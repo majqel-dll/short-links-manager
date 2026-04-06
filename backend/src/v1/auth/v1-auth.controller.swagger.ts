@@ -1,4 +1,8 @@
-import { type ApiOperationOptions, type ApiResponseOptions, type ApiParamOptions } from "@nestjs/swagger";
+import {
+    type ApiOperationOptions,
+    type ApiResponseOptions,
+    type ApiParamOptions,
+} from "@nestjs/swagger";
 
 const TokenPairSchema = {
     type: "object",
@@ -61,9 +65,22 @@ export const GetSessionsOkResponse: ApiResponseOptions = {
             properties: {
                 id: { type: "number", example: 42 },
                 isActive: { type: "boolean", example: true },
-                expiresAt: { type: "string", format: "date-time", example: "2026-04-13T12:00:00.000Z" },
-                createdAt: { type: "string", format: "date-time", example: "2026-04-06T12:00:00.000Z" },
-                updatedAt: { type: "string", format: "date-time", nullable: true, example: null },
+                expiresAt: {
+                    type: "string",
+                    format: "date-time",
+                    example: "2026-04-13T12:00:00.000Z",
+                },
+                createdAt: {
+                    type: "string",
+                    format: "date-time",
+                    example: "2026-04-06T12:00:00.000Z",
+                },
+                updatedAt: {
+                    type: "string",
+                    format: "date-time",
+                    nullable: true,
+                    example: null,
+                },
             },
         },
     },
@@ -98,8 +115,11 @@ export const SignUpOperation: ApiOperationOptions = {
 };
 
 export const SignUpCreatedResponse: ApiResponseOptions = {
-    description: "Account created successfully. The account is pending administrator activation.",
-    schema: MessageSchema("Account created successfully, and now is waiting for activation."),
+    description:
+        "Account created successfully. The account is pending administrator activation.",
+    schema: MessageSchema(
+        "Account created successfully, and now is waiting for activation.",
+    ),
 };
 
 export const SignUpConflictResponse: ApiResponseOptions = {
@@ -155,7 +175,8 @@ export const SignOutSessionOkResponse: ApiResponseOptions = {
 };
 
 export const SignOutSessionNotFoundResponse: ApiResponseOptions = {
-    description: "The specified session was not found or does not belong to the authenticated user.",
+    description:
+        "The specified session was not found or does not belong to the authenticated user.",
 };
 
 export const ChangePasswordOperation: ApiOperationOptions = {
@@ -167,7 +188,8 @@ export const ChangePasswordOperation: ApiOperationOptions = {
 };
 
 export const ChangePasswordNoContentResponse: ApiResponseOptions = {
-    description: "Password changed successfully. All active sessions have been invalidated.",
+    description:
+        "Password changed successfully. All active sessions have been invalidated.",
 };
 
 export const ChangePasswordBadRequestResponse: ApiResponseOptions = {
@@ -201,7 +223,8 @@ export const RefreshTokenOkResponse: ApiResponseOptions = {
 };
 
 export const RefreshTokenBadRequestResponse: ApiResponseOptions = {
-    description: "The provided refresh token is malformed or the associated session no longer exists.",
+    description:
+        "The provided refresh token is malformed or the associated session no longer exists.",
 };
 
 export const RefreshTokenForbiddenResponse: ApiResponseOptions = {

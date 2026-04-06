@@ -33,7 +33,7 @@ export class V1AuthService {
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();

@@ -72,8 +72,7 @@ import {
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard)
 export class V1AuthController {
-
-    constructor(private readonly authService: V1AuthService) { }
+    constructor(private readonly authService: V1AuthService) {}
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -217,5 +216,4 @@ export class V1AuthController {
         });
         return credentials;
     }
-
 }
