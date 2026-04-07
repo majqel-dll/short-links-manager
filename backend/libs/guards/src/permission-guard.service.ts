@@ -1,12 +1,11 @@
-import { InjectLogger } from "@libs/decorators";
-import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { LogTypeEnum, MetadataKeyEnum, PermissionEnum, RoleEnum } from "@libs/enums";
-import { Logger } from "@libs/logger";
-import { ActiveUserPayload } from "@libs/types";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
+import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
-import { log } from "console";
+import { ActiveUserPayload } from "@libs/types";
+import { InjectLogger } from "@libs/decorators";
+import { Reflector } from "@nestjs/core";
+import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
 
 @Injectable()
