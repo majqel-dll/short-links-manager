@@ -13,6 +13,7 @@ volumes:
   caddy-config:
   minio-data:
   minio-config:
+  caddy-logs:
 
 networks:
   short-links-manager-network:

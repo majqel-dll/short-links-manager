@@ -14,6 +14,7 @@ services:
     volumes:
       - caddy-config:/config
       - ../Caddyfile.dev:/etc/caddy/Caddyfile
+      - ../logs/caddy:/var/log/caddy
 
   short-links-manager-router-prod:
     <<: *app-router-base
@@ -21,3 +22,4 @@ services:
     volumes:
       - caddy_config:/config
       - ../Caddyfile.prod:/etc/caddy/Caddyfile
+      - ../logs/caddy:/var/log/caddy

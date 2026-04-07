@@ -28,6 +28,10 @@ yarn-error.log
 
 # Miscellaneous
 /.angular/cache
+
+# Logs
+/logs/**
+!/logs/**/.gitkeep
 .sass-cache/
 /connect.lock
 /coverage

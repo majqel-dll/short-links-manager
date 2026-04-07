@@ -6,8 +6,16 @@ http://:80 {
 
     encode zstd gzip
     header Strict-Transport-Security "max-age=0"
+
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 64mb
+            roll_keep 10
+        }
+        format json
+    }
     
-    @adminer path /adminer*
+    @adminer path /adminer* /adminer/*
     handle @adminer {
         uri strip_prefix /adminer
         reverse_proxy short-links-manager-adminer-prod:8080 {
