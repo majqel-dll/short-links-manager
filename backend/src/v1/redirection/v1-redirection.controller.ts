@@ -1,4 +1,5 @@
 import {
+    Body,
     Controller,
     Delete,
     Get,
@@ -11,10 +12,11 @@ import {
     Req,
 } from "@nestjs/common";
 import { V1RedirectionService } from "./v1-redirection.service";
-import { AuthTypeEnum } from "@libs/enums";
+import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
 import { ApiTags } from "@nestjs/swagger";
-import { Auth } from "@libs/decorators";
+import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { type Request } from "express";
+import { type ActiveUserPayload } from "@libs/types";
 
 @ApiTags(`Redirection`)
 @Controller()
@@ -24,23 +26,49 @@ export class V1RedirectionController {
 
     @Get(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
-    public async getRedirections() { }
+    @Permission(
+        PermissionEnum.READ_OWN_REDIRECTION,
+        PermissionEnum.READ_OTHER_REDIRECTION
+    )
+    public async getRedirections(@ActiveUser() user: ActiveUserPayload) { }
 
-    @Get(`v1/redirection/:id`)
+    @Get(`v1/redirection/:redirectionId`)
     @HttpCode(HttpStatus.OK)
-    public async getRedirectionById(@Param(`id`) id: string) { }
+    @Permission(
+        PermissionEnum.READ_OWN_REDIRECTION,
+        PermissionEnum.READ_OTHER_REDIRECTION
+    )
+    public async getRedirectionById(
+        @ActiveUser() user: ActiveUserPayload,
+        @Param(`redirectionId`) redirectionId: string,
+    ) { }
 
     @Post(`v1/redirection`)
     @HttpCode(HttpStatus.CREATED)
-    public async createRedirection() { }
+    @Permission(
+        PermissionEnum.CREATE_BASIC_REDIRECTION,
+        PermissionEnum.CREATE_PREMIUM_REDIRECTION,
+    )
+    public async createRedirection(@ActiveUser() user: ActiveUserPayload, @Body() body) { }
 
     @Put(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
-    public async updateRedirection() { }
+    @Permission(
+        PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
+        PermissionEnum.MANAGE_OWN_PREMIUM_REDIRECTION,
+    )
+    public async updateRedirection(@ActiveUser() user: ActiveUserPayload, @Body() body) { }
 
-    @Delete(`v1/redirection`)
+    @Delete(`v1/redirection/:redirectionId`)
     @HttpCode(HttpStatus.NO_CONTENT)
-    public async deleteRedirection() { }
+    @Permission(
+        PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
+        PermissionEnum.MANAGE_OWN_PREMIUM_REDIRECTION,
+    )
+    public async deleteRedirection(
+        @ActiveUser() user: ActiveUserPayload,
+        @Param(`redirectionId`) redirectionId: string,
+    ) { }
 
     @Get(`:route`)
     @HttpCode(HttpStatus.PERMANENT_REDIRECT)

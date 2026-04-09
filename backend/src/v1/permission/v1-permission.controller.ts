@@ -1,8 +1,4 @@
-import {
-    ChangeUserPermissionsActionEnum,
-    AuthTypeEnum,
-    PermissionEnum,
-} from "@libs/enums";
+import { ChangeUserPermissionsActionEnum, AuthTypeEnum, PermissionEnum } from "@libs/enums";
 import {
     Body,
     ClassSerializerInterceptor,
@@ -19,7 +15,11 @@ import {
 import { V1PermissionService } from "./v1-permission.service";
 import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import { BasicSearchQueryParamsDto, ChangeRoleDto, ChangeUserPermissionsDto } from "@libs/dtos";
+import {
+    BasicSearchQueryParamsDto,
+    ChangeRoleDto,
+    ChangeUserPermissionsDto,
+} from "@libs/dtos";
 import { Auth, Permission } from "@libs/decorators";
 import {
     ApiBadRequestResponse,
@@ -67,8 +67,7 @@ import { GetEntitiesResponse } from "@libs/types";
 @ApiForbiddenResponse(CommonPermissionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonPermissionInternalServerErrorResponse)
 export class V1PermissionController {
-
-    constructor(private readonly permissionService: V1PermissionService) { }
+    constructor(private readonly permissionService: V1PermissionService) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)

@@ -5,15 +5,16 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from "@nestjs/common";
-import { ChangeUserPermissionsParams, GetEntitiesResponse, GetEntityResponseMeta } from "@libs/types";
+import {
+    ChangeUserPermissionsParams,
+    GetEntitiesResponse,
+    GetEntityResponseMeta,
+} from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { In, Repository } from "typeorm";
 import { Logger } from "@libs/logger";
-import {
-    ChangeUserPermissionsActionEnum,
-    LogTypeEnum,
-} from "@libs/enums";
+import { ChangeUserPermissionsActionEnum, LogTypeEnum } from "@libs/enums";
 import { BasicSearchQueryParamsDto, ChangeRoleDto } from "@libs/dtos";
 
 @Injectable()
@@ -27,13 +28,16 @@ export class V1PermissionService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(V1PermissionService)
         private readonly logger: Logger,
-    ) { }
+    ) {}
 
     public async getPermissions({
         take,
         skip,
     }: BasicSearchQueryParamsDto): Promise<GetEntitiesResponse<PermissionEntity>> {
-        const [permissions, total] = await this.permissionRepository.findAndCount({ take, skip });
+        const [permissions, total] = await this.permissionRepository.findAndCount({
+            take,
+            skip,
+        });
         if (permissions.length === 0) {
             throw new NotFoundException(`No permissions found in the database.`);
         }
@@ -43,10 +47,9 @@ export class V1PermissionService {
             currentPage: skip ?? 0,
             pageSize: take ?? total,
             totalPages: take ? Math.ceil(total / take) : 1,
-        }
+        };
 
         return { data: permissions, meta };
-
     }
 
     public async getRoles({
@@ -63,7 +66,7 @@ export class V1PermissionService {
             currentPage: skip ?? 0,
             pageSize: take ?? total,
             totalPages: take ? Math.ceil(total / take) : 1,
-        }
+        };
 
         return { data: roles, meta };
     }
