@@ -2,7 +2,6 @@ import { RoleEnum } from "@libs/enums";
 import { IsDefined, IsEnum, IsInt } from "class-validator";
 
 export class ChangeRoleDto {
-
     @IsDefined()
     @IsEnum(RoleEnum)
     public role: RoleEnum;
@@ -10,5 +9,4 @@ export class ChangeRoleDto {
     @IsDefined()
     @IsInt()
     public userId: number;
-
 }

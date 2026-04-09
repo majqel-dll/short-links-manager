@@ -22,19 +22,60 @@ import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { ChangeRoleDto, ChangeUserPermissionsDto } from "@libs/dtos";
 import { Auth, Permission } from "@libs/decorators";
-import { ApiTags } from "@nestjs/swagger";
+import {
+    ApiBadRequestResponse,
+    ApiBearerAuth,
+    ApiForbiddenResponse,
+    ApiCookieAuth,
+    ApiInternalServerErrorResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
+import {
+    AttachPermissionBadRequestResponse,
+    AttachPermissionInternalServerErrorResponse,
+    AttachPermissionOkResponse,
+    AttachPermissionOperation,
+    CommonPermissionForbiddenResponse,
+    CommonPermissionInternalServerErrorResponse,
+    CommonPermissionUnauthorizedResponse,
+    DetachPermissionBadRequestResponse,
+    DetachPermissionInternalServerErrorResponse,
+    DetachPermissionOkResponse,
+    DetachPermissionOperation,
+    GetAllPermissionsNotFoundResponse,
+    GetAllPermissionsOkResponse,
+    GetAllPermissionsOperation,
+    GetAllRolesNotFoundResponse,
+    GetAllRolesOkResponse,
+    GetAllRolesOperation,
+    UpdateUserRoleNotFoundResponse,
+    UpdateUserRoleOkResponse,
+    UpdateUserRoleOperation,
+} from "./v1-permission.controller.swagger";
 
 @ApiTags(`Permission`)
 @Controller(`v1/permission`)
 @UseGuards(AuthGuard, PermissionGuard)
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
+@ApiBearerAuth()
+@ApiCookieAuth()
+@ApiUnauthorizedResponse(CommonPermissionUnauthorizedResponse)
+@ApiForbiddenResponse(CommonPermissionForbiddenResponse)
+@ApiInternalServerErrorResponse(CommonPermissionInternalServerErrorResponse)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) { }
+    constructor(private readonly permissionService: V1PermissionService) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_PERMISSIONS)
     @UseInterceptors(ClassSerializerInterceptor)
+    @ApiOperation(GetAllPermissionsOperation)
+    @ApiOkResponse(GetAllPermissionsOkResponse)
+    @ApiNotFoundResponse(GetAllPermissionsNotFoundResponse)
     public async getAllPermissions(
         @Query() queryParams: BasicSearchQueryParamsDto,
     ): Promise<PermissionEntity[]> {
@@ -44,25 +85,32 @@ export class V1PermissionController {
     @Get(`roles`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_ROLES)
+    @ApiOperation(GetAllRolesOperation)
+    @ApiOkResponse(GetAllRolesOkResponse)
+    @ApiNotFoundResponse(GetAllRolesNotFoundResponse)
     public async getAllRoles(
         @Query() queryParams: BasicSearchQueryParamsDto,
     ): Promise<RoleEntity[]> {
         return await this.permissionService.getRoles(queryParams);
     }
 
-
     @Put(`role/change`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_ROLES)
-    public async updateUserRole(
-        @Body() body: ChangeRoleDto
-    ): Promise<void> {
+    @ApiOperation(UpdateUserRoleOperation)
+    @ApiOkResponse(UpdateUserRoleOkResponse)
+    @ApiNotFoundResponse(UpdateUserRoleNotFoundResponse)
+    public async updateUserRole(@Body() body: ChangeRoleDto): Promise<void> {
         this.permissionService.changeUserRole(body);
     }
 
     @Post(`attach`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_PERMISSIONS)
+    @ApiOperation(AttachPermissionOperation)
+    @ApiOkResponse(AttachPermissionOkResponse)
+    @ApiBadRequestResponse(AttachPermissionBadRequestResponse)
+    @ApiInternalServerErrorResponse(AttachPermissionInternalServerErrorResponse)
     public async attachPermissionToUser(
         @Body() { userToPermissionPairs }: ChangeUserPermissionsDto,
     ): Promise<void> {
@@ -75,6 +123,10 @@ export class V1PermissionController {
     @Post(`detach`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_PERMISSIONS)
+    @ApiOperation(DetachPermissionOperation)
+    @ApiOkResponse(DetachPermissionOkResponse)
+    @ApiBadRequestResponse(DetachPermissionBadRequestResponse)
+    @ApiInternalServerErrorResponse(DetachPermissionInternalServerErrorResponse)
     public async detachPermissionFromUser(
         @Body() { userToPermissionPairs }: ChangeUserPermissionsDto,
     ): Promise<void> {
