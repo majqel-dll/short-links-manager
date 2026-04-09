@@ -1,5 +1,5 @@
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { ChangeUserPermissionsParams } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
@@ -10,6 +10,7 @@ import {
     ChangeUserPermissionsActionEnum,
     LogTypeEnum,
 } from "@libs/enums";
+import { ChangeRoleDto } from "@libs/dtos";
 
 @Injectable()
 export class V1PermissionService {
@@ -22,7 +23,7 @@ export class V1PermissionService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(V1PermissionService)
         private readonly logger: Logger,
-    ) {}
+    ) { }
 
     public async getPermissions({
         take,
@@ -46,6 +47,48 @@ export class V1PermissionService {
         }
 
         return roles;
+    }
+
+    public async changeUserRole(
+        { userId, role }: ChangeRoleDto
+    ): Promise<void> {
+
+        const startTime = Date.now();
+        const roleEntity = await this.roleRepository.findOne({
+            where: { assignedEnum: role }
+        }).catch((error) => {
+            void this.logger.error(`Failed to fetch role with assignedEnum: ${role} from the database.`, {
+                error: error as Error, startTime, tag: LogTypeEnum.DATABASE_FAIL,
+            });
+            throw new NotFoundException(`Failed to fetch role with assignedEnum: ${role} from the database.`);
+        });
+
+        const user = await this.userRepository.findOne({
+            where: { id: userId },
+            relations: { roles: true },
+        }).catch((error) => {
+            void this.logger.error(`Failed to fetch user with id: ${userId} from the database.`, {
+                error: error as Error, startTime, tag: LogTypeEnum.DATABASE_FAIL,
+            });
+            throw new NotFoundException(`Failed to fetch user with id: ${userId} from the database.`);
+        });
+
+        if (user.roles.some(({ assignedEnum }) => assignedEnum === role)) {
+            this.logger.warn(`User with id: ${userId} already has role with assignedEnum: ${role} attached.`, {
+                startTime, tag: LogTypeEnum.PERMISSIONS_FAIL,
+            });
+            throw new ConflictException(`User with id: ${userId} already has role with assignedEnum: ${role} attached.`);
+        }
+
+        user.roles = [roleEntity];
+
+        await this.userRepository.save(user).catch((error) => {
+            this.logger.error(`Failed to save user role change in the database.`, {
+                error: error as Error, startTime, tag: LogTypeEnum.DATABASE_FAIL,
+            });
+            throw new NotFoundException(`Failed to save user role change in the database.`);
+        });
+
     }
 
     public async changeUserPermissions({

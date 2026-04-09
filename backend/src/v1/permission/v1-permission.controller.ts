@@ -12,6 +12,7 @@ import {
     HttpCode,
     HttpStatus,
     Post,
+    Put,
     Query,
     UseGuards,
     UseInterceptors,
@@ -19,7 +20,7 @@ import {
 import { V1PermissionService } from "./v1-permission.service";
 import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import { ChangeUserPermissionsDto } from "@libs/dtos";
+import { ChangeRoleDto, ChangeUserPermissionsDto } from "@libs/dtos";
 import { Auth, Permission } from "@libs/decorators";
 import { ApiTags } from "@nestjs/swagger";
 
@@ -28,7 +29,7 @@ import { ApiTags } from "@nestjs/swagger";
 @UseGuards(AuthGuard, PermissionGuard)
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) {}
+    constructor(private readonly permissionService: V1PermissionService) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)
@@ -42,11 +43,21 @@ export class V1PermissionController {
 
     @Get(`roles`)
     @HttpCode(HttpStatus.OK)
-    @Permission(PermissionEnum.MANAGE_PERMISSIONS)
+    @Permission(PermissionEnum.MANAGE_ROLES)
     public async getAllRoles(
         @Query() queryParams: BasicSearchQueryParamsDto,
     ): Promise<RoleEntity[]> {
         return await this.permissionService.getRoles(queryParams);
+    }
+
+
+    @Put(`role/change`)
+    @HttpCode(HttpStatus.OK)
+    @Permission(PermissionEnum.MANAGE_ROLES)
+    public async updateUserRole(
+        @Body() body: ChangeRoleDto
+    ): Promise<void> {
+        this.permissionService.changeUserRole(body);
     }
 
     @Post(`attach`)
