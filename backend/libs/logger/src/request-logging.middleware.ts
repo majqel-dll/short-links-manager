@@ -120,7 +120,10 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 protocol: req?.protocol ?? null,
                 params: req?.params ?? null,
                 query: req?.query ?? null,
-                body: req?.body ?? null,
+                body:
+                    req?.body && typeof req.body === `object`
+                        ? this.cleanBody(req.body)
+                        : null,
                 ipId: existingIp?.id ?? null,
                 userId: userId ?? null,
             } as DeepPartial<HttpRequestEntity>);
@@ -179,6 +182,22 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 });
             }
         }
+    }
+
+    private cleanBody<T extends object>(body: T): T {
+        const keys = [
+            `password`,
+            `newPassword`,
+            `confirmNewPassword`,
+            `currentPassword`,
+            `token`,
+        ];
+        keys.forEach((key) => {
+            if (key in body) {
+                delete body[key];
+            }
+        });
+        return body;
     }
 
     public use(req: Request, res: Response, next: NextFunction): void {

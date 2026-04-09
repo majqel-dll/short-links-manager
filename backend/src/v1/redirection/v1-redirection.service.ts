@@ -13,6 +13,8 @@ export class V1RedirectionService implements OnApplicationBootstrap {
     constructor(
         @InjectRepository(RedirectionEntity)
         private readonly redirectionRepository: Repository<RedirectionEntity>,
+        @InjectRepository(HttpRequestEntity)
+        private readonly httpRequestRepository: Repository<HttpRequestEntity>,
         @InjectLogger(V1RedirectionService)
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
@@ -35,6 +37,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
 
             const mostCommonRedirections = await this.redirectionRepository
                 .createQueryBuilder("redirection")
+                .leftJoinAndSelect("redirection.user", "user")
                 .addSelect(
                     (sub) =>
                         sub
@@ -52,13 +55,17 @@ export class V1RedirectionService implements OnApplicationBootstrap {
 
             const allDayInMiliseconds = 24 * 60 * 60 * 1000;
             const cacheResults = await Promise.allSettled(
-                mostCommonRedirections.map(async ({ route, targetUrl }) => {
-                    return this.cacheManager.set(
-                        route,
-                        targetUrl,
-                        timeToTheNextMidnightInMs ?? allDayInMiliseconds,
-                    );
-                }),
+                mostCommonRedirections.map(
+                    async ({ id, route, isPremium, user, targetUrl }) => {
+                        return this.cacheManager.set(
+                            route,
+                            isPremium
+                                ? `${id}$$$:${targetUrl}`
+                                : `${id}$$$:${user?.login}/${targetUrl}`,
+                            timeToTheNextMidnightInMs ?? allDayInMiliseconds,
+                        );
+                    },
+                ),
             );
 
             const failedCaches = cacheResults.filter(
@@ -86,6 +93,46 @@ export class V1RedirectionService implements OnApplicationBootstrap {
                 tag: LogTypeEnum.SYNCHRONIZATION_FAIL,
                 startTime,
             });
+        }
+    }
+
+    public async findRedirectionByRoute(route: string): Promise<string> {
+        const cachedRedirection = await this.cacheManager.get<string>(route);
+        if (cachedRedirection) {
+            return cachedRedirection;
+        }
+
+        const redirection = await this.redirectionRepository.findOne({
+            where: { route },
+        });
+
+        if (redirection) {
+            const { id, targetUrl } = redirection;
+            await this.cacheManager.set(
+                route,
+                `${id}$$$:${targetUrl}`,
+                24 * 60 * 60 * 1000,
+            );
+            return `${id}$$$:${targetUrl}`;
+        }
+
+        return null;
+    }
+
+    public async connectRedirectionWithRequest(
+        requestId: number,
+        redirectionId: number,
+    ): Promise<void> {
+        try {
+            await this.httpRequestRepository.update({ id: requestId }, { redirectionId });
+        } catch (error) {
+            this.logger.error(
+                `Failed to connect redirection with id: ${redirectionId} with request with id: ${requestId} in the database.`,
+                {
+                    error: error as Error,
+                    tag: LogTypeEnum.DATABASE_FAIL,
+                },
+            );
         }
     }
 }

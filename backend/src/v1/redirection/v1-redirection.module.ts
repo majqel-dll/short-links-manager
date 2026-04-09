@@ -4,6 +4,7 @@ import { CacheModule } from "@nestjs/cache-manager";
 import { DatabaseModule } from "@libs/database";
 import { LoggerModule } from "@libs/logger";
 import { CacheableMemory } from "cacheable";
+import { GuardsModule } from "@libs/guards";
 import { Module } from "@nestjs/common";
 import KeyvRedis from "@keyv/redis";
 import { Keyv } from "keyv";
@@ -11,6 +12,7 @@ import { Keyv } from "keyv";
 @Module({
     imports: [
         DatabaseModule,
+        GuardsModule,
         LoggerModule.forFeature([V1RedirectionService, V1RedirectionController]),
         CacheModule.register({
             stores: [

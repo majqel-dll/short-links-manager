@@ -13,6 +13,9 @@ export class RedirectionEntity extends BasicEntityProperties {
     @Index()
     public route: string;
 
+    @Column({ type: `boolean`, default: false })
+    public isPremium: boolean;
+
     @Column({ type: `varchar`, length: 64, nullable: true, default: null })
     public category?: string;
 
