@@ -1,4 +1,4 @@
-import { LogTypeEnum, MetadataKeyEnum, PermissionEnum, RoleEnum } from "@libs/enums";
+import { LogTypeEnum, MetadataKeyEnum, PermissionEnum, PermissionOnRole, RoleEnum } from "@libs/enums";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -128,9 +128,9 @@ export class PermissionGuard implements CanActivate {
                             (savedPermission) => savedPermission.value === permission,
                         )
                             ? this.permissionRepository.create({
-                                  value: permission,
-                                  assignedEnum: permission,
-                              })
+                                value: permission,
+                                assignedEnum: permission,
+                            })
                             : null,
                     )
                     .filter(Boolean),
@@ -182,9 +182,9 @@ export class PermissionGuard implements CanActivate {
                     .map((role) =>
                         !savedRoles.some((savedRole) => savedRole.name === role)
                             ? this.roleRepository.create({
-                                  name: role,
-                                  assignedEnum: role,
-                              })
+                                name: role,
+                                assignedEnum: role,
+                            })
                             : null,
                     )
                     .filter(Boolean),
@@ -212,6 +212,31 @@ export class PermissionGuard implements CanActivate {
                     );
                 }
             }
+
+            const allPermissions = await this.permissionRepository.find();
+            const permissionsMap = new Map<PermissionEnum, PermissionEntity>(
+                allPermissions.map((permission) => [permission.assignedEnum, permission]),
+            );
+
+            const savedRolesWithPermissions = await this.roleRepository.find({
+                relations: { permissions: true },
+            });
+            const rolesMap = new Map<string, RoleEntity>(
+                savedRolesWithPermissions.map((role) => [role.assignedEnum, role]),
+            );
+
+            await this.roleRepository.save(
+                Object.entries(PermissionOnRole)
+                    .map(([roleEnum, permissions]) => {
+                        const role = rolesMap.get(roleEnum);
+                        if (!role) return null;
+                        role.permissions = permissions.map((p) => permissionsMap.get(p));
+                        return role;
+                    })
+                    .filter(Boolean),
+            );
+
+
         } catch (error) {
             this.logger.error(`Failed to synchronize roles from enum in database.`, {
                 error: error as Error,
