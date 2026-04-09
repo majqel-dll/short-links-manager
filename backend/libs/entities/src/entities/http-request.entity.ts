@@ -74,7 +74,6 @@ export class HttpRequestEntity extends BasicEntityProperties {
     @JoinColumn({ name: `redirectionId` })
     public redirection?: RedirectionEntity;
 
-
     @Column({ type: `int`, nullable: true, default: null })
     public userId?: number;
 
@@ -87,6 +86,4 @@ export class HttpRequestEntity extends BasicEntityProperties {
 
     @OneToMany(() => LogEntity, (log) => log.request, { nullable: true })
     public logs?: LogEntity[];
-
-
 }

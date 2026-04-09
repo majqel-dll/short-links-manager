@@ -23,12 +23,8 @@ import { Keyv } from "keyv";
             ],
         }),
     ],
-    controllers: [
-        V1RedirectionController],
+    controllers: [V1RedirectionController],
 
-    providers: [
-        V1RedirectionService
-    ],
-
+    providers: [V1RedirectionService],
 })
-export class V1RedirectionModule { }
+export class V1RedirectionModule {}

@@ -34,5 +34,4 @@ export class RedirectionEntity extends BasicEntityProperties {
         nullable: true,
     })
     public httpRequests?: HttpRequestEntity[];
-
 }
