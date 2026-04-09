@@ -38,8 +38,6 @@ const RoleSchema = {
     },
 } as const;
 
-// GET /v1/permission
-
 export const GetAllPermissionsOperation: ApiOperationOptions = {
     summary: "List all permissions",
     description:
@@ -51,16 +49,28 @@ export const GetAllPermissionsOperation: ApiOperationOptions = {
 export const GetAllPermissionsOkResponse: ApiResponseOptions = {
     description: "Permissions retrieved successfully.",
     schema: {
-        type: "array",
-        items: PermissionSchema,
+        type: "object",
+        properties: {
+            data: {
+                type: "array",
+                items: PermissionSchema,
+            },
+            meta: {
+                type: "object",
+                properties: {
+                    totalRecords: { type: "number", example: 20 },
+                    currentPage: { type: "number", example: 0 },
+                    pageSize: { type: "number", example: 10 },
+                    totalPages: { type: "number", example: 2 },
+                },
+            },
+        },
     },
 };
 
 export const GetAllPermissionsNotFoundResponse: ApiResponseOptions = {
     description: "No permissions found in the database.",
 };
-
-// GET /v1/permission/roles
 
 export const GetAllRolesOperation: ApiOperationOptions = {
     summary: "List all roles",
@@ -73,16 +83,28 @@ export const GetAllRolesOperation: ApiOperationOptions = {
 export const GetAllRolesOkResponse: ApiResponseOptions = {
     description: "Roles retrieved successfully.",
     schema: {
-        type: "array",
-        items: RoleSchema,
+        type: "object",
+        properties: {
+            data: {
+                type: "array",
+                items: RoleSchema,
+            },
+            meta: {
+                type: "object",
+                properties: {
+                    totalRecords: { type: "number", example: 4 },
+                    currentPage: { type: "number", example: 0 },
+                    pageSize: { type: "number", example: 4 },
+                    totalPages: { type: "number", example: 1 },
+                },
+            },
+        },
     },
 };
 
 export const GetAllRolesNotFoundResponse: ApiResponseOptions = {
     description: "No roles found in the database.",
 };
-
-// PUT /v1/permission/role/change
 
 export const UpdateUserRoleOperation: ApiOperationOptions = {
     summary: "Change user role",
@@ -98,8 +120,6 @@ export const UpdateUserRoleOkResponse: ApiResponseOptions = {
 export const UpdateUserRoleNotFoundResponse: ApiResponseOptions = {
     description: "The specified user or role was not found.",
 };
-
-// POST /v1/permission/attach
 
 export const AttachPermissionOperation: ApiOperationOptions = {
     summary: "Attach permissions to users",
@@ -127,8 +147,6 @@ export const AttachPermissionInternalServerErrorResponse: ApiResponseOptions = {
         "Pairs that were valid have already been persisted.",
 };
 
-// POST /v1/permission/detach
-
 export const DetachPermissionOperation: ApiOperationOptions = {
     summary: "Detach permissions from users",
     description:
@@ -154,8 +172,6 @@ export const DetachPermissionInternalServerErrorResponse: ApiResponseOptions = {
         "One or more user-permission pairs could not be detached because the referenced user or permission was not found. " +
         "Pairs that were valid have already been persisted.",
 };
-
-// Common
 
 export const CommonPermissionUnauthorizedResponse: ApiResponseOptions = {
     description: "Missing, expired, or invalid authentication token.",

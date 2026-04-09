@@ -1,7 +1,6 @@
 import {
-    AuthTypeEnum,
-    BasicSearchQueryParamsDto,
     ChangeUserPermissionsActionEnum,
+    AuthTypeEnum,
     PermissionEnum,
 } from "@libs/enums";
 import {
@@ -20,7 +19,7 @@ import {
 import { V1PermissionService } from "./v1-permission.service";
 import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import { ChangeRoleDto, ChangeUserPermissionsDto } from "@libs/dtos";
+import { BasicSearchQueryParamsDto, ChangeRoleDto, ChangeUserPermissionsDto } from "@libs/dtos";
 import { Auth, Permission } from "@libs/decorators";
 import {
     ApiBadRequestResponse,
@@ -35,8 +34,8 @@ import {
     ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import {
-    AttachPermissionBadRequestResponse,
     AttachPermissionInternalServerErrorResponse,
+    AttachPermissionBadRequestResponse,
     AttachPermissionOkResponse,
     AttachPermissionOperation,
     CommonPermissionForbiddenResponse,
@@ -56,6 +55,7 @@ import {
     UpdateUserRoleOkResponse,
     UpdateUserRoleOperation,
 } from "./v1-permission.controller.swagger";
+import { GetEntitiesResponse } from "@libs/types";
 
 @ApiTags(`Permission`)
 @Controller(`v1/permission`)
@@ -67,7 +67,8 @@ import {
 @ApiForbiddenResponse(CommonPermissionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonPermissionInternalServerErrorResponse)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) {}
+
+    constructor(private readonly permissionService: V1PermissionService) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)
@@ -76,9 +77,9 @@ export class V1PermissionController {
     @ApiOperation(GetAllPermissionsOperation)
     @ApiOkResponse(GetAllPermissionsOkResponse)
     @ApiNotFoundResponse(GetAllPermissionsNotFoundResponse)
-    public async getAllPermissions(
+    public async getPermissions(
         @Query() queryParams: BasicSearchQueryParamsDto,
-    ): Promise<PermissionEntity[]> {
+    ): Promise<GetEntitiesResponse<PermissionEntity>> {
         return await this.permissionService.getPermissions(queryParams);
     }
 
@@ -88,9 +89,9 @@ export class V1PermissionController {
     @ApiOperation(GetAllRolesOperation)
     @ApiOkResponse(GetAllRolesOkResponse)
     @ApiNotFoundResponse(GetAllRolesNotFoundResponse)
-    public async getAllRoles(
+    public async getRoles(
         @Query() queryParams: BasicSearchQueryParamsDto,
-    ): Promise<RoleEntity[]> {
+    ): Promise<GetEntitiesResponse<RoleEntity>> {
         return await this.permissionService.getRoles(queryParams);
     }
 
@@ -101,7 +102,7 @@ export class V1PermissionController {
     @ApiOkResponse(UpdateUserRoleOkResponse)
     @ApiNotFoundResponse(UpdateUserRoleNotFoundResponse)
     public async updateUserRole(@Body() body: ChangeRoleDto): Promise<void> {
-        this.permissionService.changeUserRole(body);
+        await this.permissionService.changeUserRole(body);
     }
 
     @Post(`attach`)

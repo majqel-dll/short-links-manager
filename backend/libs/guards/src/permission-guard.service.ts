@@ -134,9 +134,9 @@ export class PermissionGuard implements CanActivate {
                             (savedPermission) => savedPermission.value === permission,
                         )
                             ? this.permissionRepository.create({
-                                  value: permission,
-                                  assignedEnum: permission,
-                              })
+                                value: permission,
+                                assignedEnum: permission,
+                            })
                             : null,
                     )
                     .filter(Boolean),
@@ -188,9 +188,9 @@ export class PermissionGuard implements CanActivate {
                     .map((role) =>
                         !savedRoles.some((savedRole) => savedRole.name === role)
                             ? this.roleRepository.create({
-                                  name: role,
-                                  assignedEnum: role,
-                              })
+                                name: role,
+                                assignedEnum: role,
+                            })
                             : null,
                     )
                     .filter(Boolean),

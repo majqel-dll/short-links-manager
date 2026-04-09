@@ -5,17 +5,16 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from "@nestjs/common";
-import { ChangeUserPermissionsParams } from "@libs/types";
+import { ChangeUserPermissionsParams, GetEntitiesResponse, GetEntityResponseMeta } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { In, Repository } from "typeorm";
 import { Logger } from "@libs/logger";
 import {
-    BasicSearchQueryParamsDto,
     ChangeUserPermissionsActionEnum,
     LogTypeEnum,
 } from "@libs/enums";
-import { ChangeRoleDto } from "@libs/dtos";
+import { BasicSearchQueryParamsDto, ChangeRoleDto } from "@libs/dtos";
 
 @Injectable()
 export class V1PermissionService {
@@ -28,30 +27,45 @@ export class V1PermissionService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(V1PermissionService)
         private readonly logger: Logger,
-    ) {}
+    ) { }
 
     public async getPermissions({
         take,
         skip,
-    }: BasicSearchQueryParamsDto): Promise<PermissionEntity[]> {
-        const permissions = await this.permissionRepository.find({ take, skip });
+    }: BasicSearchQueryParamsDto): Promise<GetEntitiesResponse<PermissionEntity>> {
+        const [permissions, total] = await this.permissionRepository.findAndCount({ take, skip });
         if (permissions.length === 0) {
             throw new NotFoundException(`No permissions found in the database.`);
         }
 
-        return permissions;
+        const meta: GetEntityResponseMeta = {
+            totalRecords: total,
+            currentPage: skip ?? 0,
+            pageSize: take ?? total,
+            totalPages: take ? Math.ceil(total / take) : 1,
+        }
+
+        return { data: permissions, meta };
+
     }
 
     public async getRoles({
         take,
         skip,
-    }: BasicSearchQueryParamsDto): Promise<RoleEntity[]> {
-        const roles = await this.roleRepository.find({ take, skip });
+    }: BasicSearchQueryParamsDto): Promise<GetEntitiesResponse<RoleEntity>> {
+        const [roles, total] = await this.roleRepository.findAndCount({ take, skip });
         if (roles.length === 0) {
             throw new NotFoundException(`No roles found in the database.`);
         }
 
-        return roles;
+        const meta: GetEntityResponseMeta = {
+            totalRecords: total,
+            currentPage: skip ?? 0,
+            pageSize: take ?? total,
+            totalPages: take ? Math.ceil(total / take) : 1,
+        }
+
+        return { data: roles, meta };
     }
 
     public async changeUserRole({ userId, role }: ChangeRoleDto): Promise<void> {
