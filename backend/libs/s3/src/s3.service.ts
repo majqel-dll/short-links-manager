@@ -19,7 +19,7 @@ export class S3Service {
             });
         } catch (error) {
             void this.logger.error(`Failed to initialize S3 connection.`, {
-                error,
+                error: error as Error,
                 startTime,
             });
         }
@@ -40,7 +40,7 @@ export class S3Service {
             void this.logger.error(
                 `Failed to put object: ${objectName}, in bucket: ${bucketName}.`,
                 {
-                    error,
+                    error: error as Error,
                 },
             );
             return null;
@@ -59,6 +59,9 @@ export class S3Service {
         } catch (error) {
             void this.logger.error(
                 `Failed to get buffer of: ${objectName} from bucket: ${bucketName}`,
+                {
+                    error: error as Error,
+                },
             );
             return null;
         }
@@ -80,7 +83,7 @@ export class S3Service {
             void this.logger.error(
                 `Failed to delete object: ${objectName}, from: ${bucketName}.`,
                 {
-                    error,
+                    error: error as Error,
                 },
             );
             return false;

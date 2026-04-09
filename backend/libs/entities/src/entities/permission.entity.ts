@@ -4,6 +4,7 @@ import { Column, Entity, ManyToMany } from "typeorm";
 import { PermissionEnum } from "@libs/enums";
 import { UserEntity } from "./user.entity";
 import { RoleEntity } from "./role.entity";
+import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.PERMISSION)
 export class PermissionEntity extends BasicEntityProperties {
@@ -11,6 +12,7 @@ export class PermissionEntity extends BasicEntityProperties {
     public value: string;
 
     @Column({ type: `enum`, enum: PermissionEnum, nullable: true, default: null })
+    @Exclude()
     public assignedEnum?: PermissionEnum;
 
     @ManyToMany(() => UserEntity, (user) => user.permissions, {
