@@ -4,6 +4,7 @@ import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
 import { PermissionEntity } from "./permission.entity";
 import { UserEntity } from "./user.entity";
 import { RoleEnum } from "@libs/enums";
+import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.ROLE)
 export class RoleEntity extends BasicEntityProperties {
@@ -11,6 +12,7 @@ export class RoleEntity extends BasicEntityProperties {
     public name: string;
 
     @Column({ type: `enum`, enum: RoleEnum, nullable: true, default: null })
+    @Exclude()
     public assignedEnum?: RoleEnum;
 
     @ManyToMany(() => UserEntity, (user) => user.roles, { onDelete: `CASCADE` })

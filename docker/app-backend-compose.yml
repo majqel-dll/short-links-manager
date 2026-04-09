@@ -9,6 +9,9 @@ x-app-backend-base: &app-backend-base
     MAIN_DATABASE_USER: ${MAIN_DATABASE_USER}
     MAIN_DATABASE_PASS: ${MAIN_DATABASE_PASS}
     MAIN_DATABASE_NAME: ${MAIN_DATABASE_NAME}
+    REDIS_HOST: ${REDIS_HOST}
+    REDIS_PORT: ${REDIS_PORT}
+    REDIS_PASSWORD: ${REDIS_PASSWORD}
   networks:
     - short-links-manager-network
 

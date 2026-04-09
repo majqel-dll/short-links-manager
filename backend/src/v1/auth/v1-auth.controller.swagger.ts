@@ -187,7 +187,7 @@ export const ChangePasswordOperation: ApiOperationOptions = {
         "On success, all existing active sessions are invalidated — the user must sign in again on all devices.",
 };
 
-export const ChangePasswordNoContentResponse: ApiResponseOptions = {
+export const ChangePasswordAcceptedResponse: ApiResponseOptions = {
     description:
         "Password changed successfully. All active sessions have been invalidated.",
 };

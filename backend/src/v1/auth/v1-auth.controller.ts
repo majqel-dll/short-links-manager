@@ -28,7 +28,6 @@ import {
     ApiCreatedResponse,
     ApiForbiddenResponse,
     ApiInternalServerErrorResponse,
-    ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
@@ -40,7 +39,7 @@ import {
 import {
     ChangePasswordBadRequestResponse,
     ChangePasswordForbiddenResponse,
-    ChangePasswordNoContentResponse,
+    ChangePasswordAcceptedResponse,
     ChangePasswordOperation,
     ChangePasswordUnauthorizedResponse,
     CommonInternalServerErrorResponse,
@@ -72,7 +71,7 @@ import {
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) {}
+    constructor(private readonly authService: V1AuthService) { }
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -177,12 +176,12 @@ export class V1AuthController {
     }
 
     @Post(`password/change`)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.ACCEPTED)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
     @ApiBearerAuth()
     @ApiCookieAuth()
     @ApiOperation(ChangePasswordOperation)
-    @ApiNoContentResponse(ChangePasswordNoContentResponse)
+    @ApiAcceptedResponse(ChangePasswordAcceptedResponse)
     @ApiBadRequestResponse(ChangePasswordBadRequestResponse)
     @ApiUnauthorizedResponse(ChangePasswordUnauthorizedResponse)
     @ApiForbiddenResponse(ChangePasswordForbiddenResponse)
@@ -190,7 +189,7 @@ export class V1AuthController {
     public async changePassword(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Body() payload: PasswordChangeDto,
-    ) {
+    ): Promise<void> {
         await this.authService.changePassword(activeUser, payload);
     }
 

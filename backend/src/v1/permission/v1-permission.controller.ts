@@ -17,10 +17,10 @@ import {
     UseInterceptors,
 } from "@nestjs/common";
 import { V1PermissionService } from "./v1-permission.service";
+import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { ChangeUserPermissionsDto } from "@libs/dtos";
 import { Auth, Permission } from "@libs/decorators";
-import { PermissionEntity } from "@libs/entities";
 import { ApiTags } from "@nestjs/swagger";
 
 @ApiTags(`Permission`)
@@ -28,7 +28,7 @@ import { ApiTags } from "@nestjs/swagger";
 @UseGuards(AuthGuard, PermissionGuard)
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) {}
+    constructor(private readonly permissionService: V1PermissionService) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)
@@ -37,7 +37,16 @@ export class V1PermissionController {
     public async getAllPermissions(
         @Query() queryParams: BasicSearchQueryParamsDto,
     ): Promise<PermissionEntity[]> {
-        return this.permissionService.getPermissions(queryParams);
+        return await this.permissionService.getPermissions(queryParams);
+    }
+
+    @Get(`roles`)
+    @HttpCode(HttpStatus.OK)
+    @Permission(PermissionEnum.MANAGE_PERMISSIONS)
+    public async getAllRoles(
+        @Query() queryParams: BasicSearchQueryParamsDto,
+    ): Promise<RoleEntity[]> {
+        return await this.permissionService.getRoles(queryParams);
     }
 
     @Post(`attach`)

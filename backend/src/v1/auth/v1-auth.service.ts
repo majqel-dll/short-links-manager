@@ -33,7 +33,7 @@ export class V1AuthService {
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();
@@ -51,29 +51,16 @@ export class V1AuthService {
                 timeCost: 3,
                 memoryCost: 2 ** 16,
             });
-            const [roles, permissions] = await Promise.all([
-                this.roleRepository.find({
-                    where: { assignedEnum: In([RoleEnum.GUEST]) },
-                }),
-                this.permissionRepository.find({
-                    where: {
-                        assignedEnum: In([
-                            PermissionEnum.READ_OWN_REDIRECTION,
-                            PermissionEnum.CREATE_BASIC_REDIRECTION,
-                            PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
-                            PermissionEnum.MANAGE_OWN_ACCOUNT,
-                            PermissionEnum.DELETE_OWN_ACCOUNT,
-                        ]),
-                    },
-                }),
-            ]);
+            
+            const roles = await this.roleRepository.findBy({
+                assignedEnum: RoleEnum.GUEST
+            });
 
             const newUser = this.userRepository.create({
                 email,
                 login,
                 passwordHash,
                 roles,
-                permissions,
             });
 
             await this.userRepository.save(newUser);

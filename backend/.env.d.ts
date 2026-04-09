@@ -13,6 +13,12 @@ declare namespace NodeJS {
     MAIN_DATABASE_USER: string;
     MAIN_DATABASE_PASS: string;
     MAIN_DATABASE_NAME: string;
-  
+
+    // REDIS
+
+    REDIS_HOST: string;
+    REDIS_PORT: number;
+    REDIS_PASSWORD: string;
+
   }
 }

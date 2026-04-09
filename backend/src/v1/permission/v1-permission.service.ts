@@ -1,5 +1,5 @@
+import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { PermissionEntity, UserEntity } from "@libs/entities";
 import { ChangeUserPermissionsParams } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
@@ -16,22 +16,35 @@ export class V1PermissionService {
     constructor(
         @InjectRepository(PermissionEntity)
         private readonly permissionRepository: Repository<PermissionEntity>,
+        @InjectRepository(RoleEntity)
+        private readonly roleRepository: Repository<RoleEntity>,
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(V1PermissionService)
         private readonly logger: Logger,
-    ) {}
+    ) { }
 
-    public async getPermissions({
-        take,
-        skip,
-    }: BasicSearchQueryParamsDto): Promise<PermissionEntity[]> {
+    public async getPermissions(
+        { take, skip }: BasicSearchQueryParamsDto
+    ): Promise<PermissionEntity[]> {
         const permissions = await this.permissionRepository.find({ take, skip });
         if (permissions.length === 0) {
             throw new NotFoundException(`No permissions found in the database.`);
         }
 
         return permissions;
+    }
+
+    public async getRoles(
+        { take, skip }: BasicSearchQueryParamsDto
+    ): Promise<RoleEntity[]> {
+
+        const roles = await this.roleRepository.find({ take, skip });
+        if (roles.length === 0) {
+            throw new NotFoundException(`No roles found in the database.`);
+        }
+
+        return roles;
     }
 
     public async changeUserPermissions({
