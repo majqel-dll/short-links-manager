@@ -1,7 +1,4 @@
-import {
-    type ApiOperationOptions,
-    type ApiResponseOptions,
-} from "@nestjs/swagger";
+import { type ApiOperationOptions, type ApiResponseOptions } from "@nestjs/swagger";
 
 const PermissionSchema = {
     type: "object",
@@ -120,7 +117,8 @@ export const AttachPermissionOkResponse: ApiResponseOptions = {
 };
 
 export const AttachPermissionBadRequestResponse: ApiResponseOptions = {
-    description: "Request body failed validation — userToPermissionPairs must contain at least one entry with valid integer IDs.",
+    description:
+        "Request body failed validation — userToPermissionPairs must contain at least one entry with valid integer IDs.",
 };
 
 export const AttachPermissionInternalServerErrorResponse: ApiResponseOptions = {
@@ -147,7 +145,8 @@ export const DetachPermissionOkResponse: ApiResponseOptions = {
 };
 
 export const DetachPermissionBadRequestResponse: ApiResponseOptions = {
-    description: "Request body failed validation — userToPermissionPairs must contain at least one entry with valid integer IDs.",
+    description:
+        "Request body failed validation — userToPermissionPairs must contain at least one entry with valid integer IDs.",
 };
 
 export const DetachPermissionInternalServerErrorResponse: ApiResponseOptions = {

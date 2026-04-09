@@ -66,7 +66,7 @@ import {
     providers: [ResponseLoggingExceptionFilterProvider, ResponseLoggingInterceptorProvider],
 })
 export class AppModule implements OnModuleInit, NestModule {
-    constructor(@InjectLogger(AppModule) private readonly logger: Logger) { }
+    constructor(@InjectLogger(AppModule) private readonly logger: Logger) {}
 
     public configure(consumer: MiddlewareConsumer) {
         consumer

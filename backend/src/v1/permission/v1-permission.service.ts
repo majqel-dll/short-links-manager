@@ -1,5 +1,10 @@
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import {
+    ConflictException,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from "@nestjs/common";
 import { ChangeUserPermissionsParams } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
@@ -58,7 +63,11 @@ export class V1PermissionService {
                 .catch((error) => {
                     void this.logger.error(
                         `Failed to fetch role with assignedEnum: ${role} from the database.`,
-                        { error: error as Error, startTime, tag: LogTypeEnum.DATABASE_FAIL },
+                        {
+                            error: error as Error,
+                            startTime,
+                            tag: LogTypeEnum.DATABASE_FAIL,
+                        },
                     );
                     throw new NotFoundException(
                         `Failed to fetch role with assignedEnum: ${role} from the database.`,
@@ -69,7 +78,11 @@ export class V1PermissionService {
                 .catch((error) => {
                     void this.logger.error(
                         `Failed to fetch user with id: ${userId} from the database.`,
-                        { error: error as Error, startTime, tag: LogTypeEnum.DATABASE_FAIL },
+                        {
+                            error: error as Error,
+                            startTime,
+                            tag: LogTypeEnum.DATABASE_FAIL,
+                        },
                     );
                     throw new NotFoundException(
                         `Failed to fetch user with id: ${userId} from the database.`,

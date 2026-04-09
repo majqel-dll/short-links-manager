@@ -1,4 +1,10 @@
-import { LogTypeEnum, MetadataKeyEnum, PermissionEnum, PermissionOnRole, RoleEnum } from "@libs/enums";
+import {
+    LogTypeEnum,
+    MetadataKeyEnum,
+    PermissionEnum,
+    PermissionOnRole,
+    RoleEnum,
+} from "@libs/enums";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -128,9 +134,9 @@ export class PermissionGuard implements CanActivate {
                             (savedPermission) => savedPermission.value === permission,
                         )
                             ? this.permissionRepository.create({
-                                value: permission,
-                                assignedEnum: permission,
-                            })
+                                  value: permission,
+                                  assignedEnum: permission,
+                              })
                             : null,
                     )
                     .filter(Boolean),
@@ -182,9 +188,9 @@ export class PermissionGuard implements CanActivate {
                     .map((role) =>
                         !savedRoles.some((savedRole) => savedRole.name === role)
                             ? this.roleRepository.create({
-                                name: role,
-                                assignedEnum: role,
-                            })
+                                  name: role,
+                                  assignedEnum: role,
+                              })
                             : null,
                     )
                     .filter(Boolean),
@@ -229,14 +235,14 @@ export class PermissionGuard implements CanActivate {
                 Object.entries(PermissionOnRole)
                     .map(([roleEnum, permissions]) => {
                         const role = rolesMap.get(roleEnum);
-                        if (!role) return null;
+                        if (!role) {
+                            return null;
+                        }
                         role.permissions = permissions.map((p) => permissionsMap.get(p));
                         return role;
                     })
                     .filter(Boolean),
             );
-
-
         } catch (error) {
             this.logger.error(`Failed to synchronize roles from enum in database.`, {
                 error: error as Error,
