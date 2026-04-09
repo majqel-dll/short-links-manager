@@ -28,7 +28,7 @@ import { ApiTags } from "@nestjs/swagger";
 @UseGuards(AuthGuard, PermissionGuard)
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) { }
+    constructor(private readonly permissionService: V1PermissionService) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)

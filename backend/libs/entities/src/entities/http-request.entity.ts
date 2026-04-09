@@ -6,6 +6,7 @@ import { HttpResponseEntity } from "./http-response.entity";
 import { DatabaseTableEnum } from "@libs/enums/database";
 import { UserEntity } from "./user.entity";
 import { LogEntity } from "./log.entity";
+import { RedirectionEntity } from "./redirection.entity";
 
 @Entity(DatabaseTableEnum.HTTP_REQUEST)
 export class HttpRequestEntity extends BasicEntityProperties {
@@ -65,6 +66,15 @@ export class HttpRequestEntity extends BasicEntityProperties {
     @JoinColumn({ name: `ipId` })
     public ip?: HttpIpAddressEntity;
 
+    @Column({ type: `int`, nullable: true, default: null, select: false })
+    @Index()
+    public redirectionId?: number;
+
+    @ManyToOne(() => RedirectionEntity)
+    @JoinColumn({ name: `redirectionId` })
+    public redirection?: RedirectionEntity;
+
+
     @Column({ type: `int`, nullable: true, default: null })
     public userId?: number;
 
@@ -77,4 +87,6 @@ export class HttpRequestEntity extends BasicEntityProperties {
 
     @OneToMany(() => LogEntity, (log) => log.request, { nullable: true })
     public logs?: LogEntity[];
+
+
 }

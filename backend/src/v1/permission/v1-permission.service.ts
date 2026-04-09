@@ -22,11 +22,12 @@ export class V1PermissionService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(V1PermissionService)
         private readonly logger: Logger,
-    ) { }
+    ) {}
 
-    public async getPermissions(
-        { take, skip }: BasicSearchQueryParamsDto
-    ): Promise<PermissionEntity[]> {
+    public async getPermissions({
+        take,
+        skip,
+    }: BasicSearchQueryParamsDto): Promise<PermissionEntity[]> {
         const permissions = await this.permissionRepository.find({ take, skip });
         if (permissions.length === 0) {
             throw new NotFoundException(`No permissions found in the database.`);
@@ -35,10 +36,10 @@ export class V1PermissionService {
         return permissions;
     }
 
-    public async getRoles(
-        { take, skip }: BasicSearchQueryParamsDto
-    ): Promise<RoleEntity[]> {
-
+    public async getRoles({
+        take,
+        skip,
+    }: BasicSearchQueryParamsDto): Promise<RoleEntity[]> {
         const roles = await this.roleRepository.find({ take, skip });
         if (roles.length === 0) {
             throw new NotFoundException(`No roles found in the database.`);

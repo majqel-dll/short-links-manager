@@ -8,6 +8,7 @@ include:
   - app-minio-compose.yml
   - app-database-compose.yml
   - app-redis-compose.yml
+  - app-redis-insight-compose.yml
 
 volumes:
   main-database-volume:

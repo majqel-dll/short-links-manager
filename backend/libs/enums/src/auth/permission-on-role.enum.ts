@@ -38,4 +38,4 @@ export const PermissionOnRole: Record<RoleEnum, PermissionEnum[]> = {
         PermissionEnum.MANAGE_OTHER_BASIC_REDIRECTIONS,
         PermissionEnum.MANAGE_OTHER_PREMIUM_REDIRECTIONS,
     ],
-}
+};

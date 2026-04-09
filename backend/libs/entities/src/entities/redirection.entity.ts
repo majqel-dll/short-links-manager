@@ -1,7 +1,8 @@
 import { BasicEntityProperties } from "../partials/basic-entity-properties";
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { DatabaseTableEnum } from "@libs/enums/database";
 import { UserEntity } from "./user.entity";
+import { HttpRequestEntity } from "./http-request.entity";
 
 @Entity(DatabaseTableEnum.REDIRECTION)
 export class RedirectionEntity extends BasicEntityProperties {
@@ -11,6 +12,9 @@ export class RedirectionEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, length: 128, unique: true })
     @Index()
     public route: string;
+
+    @Column({ type: `varchar`, length: 64, nullable: true, default: null })
+    public category?: string;
 
     @Column({ type: `int`, nullable: false })
     @Index()
@@ -23,6 +27,12 @@ export class RedirectionEntity extends BasicEntityProperties {
     @JoinColumn({ name: `userId` })
     public user: UserEntity;
 
-    @Column({ type: `varchar`, length: 64, nullable: true, default: null })
-    public category?: string;
+    @Column({ type: `int`, nullable: true, default: null })
+    public requestId?: number;
+
+    @OneToMany(() => HttpRequestEntity, (request) => request.redirection, {
+        nullable: true,
+    })
+    public httpRequests?: HttpRequestEntity[];
+
 }

@@ -33,7 +33,7 @@ export class V1AuthService {
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();
@@ -51,9 +51,9 @@ export class V1AuthService {
                 timeCost: 3,
                 memoryCost: 2 ** 16,
             });
-            
+
             const roles = await this.roleRepository.findBy({
-                assignedEnum: RoleEnum.GUEST
+                assignedEnum: RoleEnum.GUEST,
             });
 
             const newUser = this.userRepository.create({

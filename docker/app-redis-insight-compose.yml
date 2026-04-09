@@ -1,0 +1,12 @@
+services:
+    short-links-manager-redis-insight-dev:
+        image: redis/redisinsight:latest
+        container_name: short-links-manager-redis-insight
+        restart: always
+        profiles: [dev, redis-insight-dev]
+        depends_on:
+            - short-links-manager-redis-dev
+        ports:
+            - "127.0.0.1:5540:5540"
+        networks:
+            - short-links-manager-network
