@@ -1,26 +1,27 @@
-import {
-    MiddlewareConsumer,
-    Module,
-    NestModule,
-    OnModuleInit,
-    RequestMethod,
-} from "@nestjs/common";
-import {
-    Logger,
-    LoggerModule,
-    RequestLoggingMiddleware,
-    ResponseLoggingExceptionFilter,
-    ResponseLoggingExceptionFilterProvider,
-    ResponseLoggingInterceptor,
-    ResponseLoggingInterceptorProvider,
-} from "@libs/logger";
 import { onBootstrapMessageUtil } from "@libs/utils";
 import { ThrottlerModule } from "@nestjs/throttler";
+import { ScheduleModule } from "@nestjs/schedule";
 import { V1ApiModule } from "./v1/v1-api.module";
 import { DatabaseModule } from "@libs/database";
 import { InjectLogger } from "@libs/decorators";
 import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
+import {
+    ResponseLoggingExceptionFilterProvider,
+    ResponseLoggingInterceptorProvider,
+    ResponseLoggingExceptionFilter,
+    ResponseLoggingInterceptor,
+    RequestLoggingMiddleware,
+    LoggerModule,
+    Logger,
+} from "@libs/logger";
+import {
+    MiddlewareConsumer,
+    RequestMethod,
+    OnModuleInit,
+    NestModule,
+    Module,
+} from "@nestjs/common";
 
 @Module({
     imports: [
@@ -58,13 +59,14 @@ import { JwtModule } from "@nestjs/jwt";
             ResponseLoggingExceptionFilter,
             ResponseLoggingInterceptor,
         ]),
+        ScheduleModule.forRoot(),
         DatabaseModule,
         V1ApiModule,
     ],
     providers: [ResponseLoggingExceptionFilterProvider, ResponseLoggingInterceptorProvider],
 })
 export class AppModule implements OnModuleInit, NestModule {
-    constructor(@InjectLogger(AppModule) private readonly logger: Logger) {}
+    constructor(@InjectLogger(AppModule) private readonly logger: Logger) { }
 
     public configure(consumer: MiddlewareConsumer) {
         consumer
