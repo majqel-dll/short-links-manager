@@ -11,8 +11,17 @@ import { PermissionEnum, AuthTypeEnum } from "@libs/enums";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { BasicSearchQueryParamsDto } from "@libs/dtos";
 import { V1UserService } from "./v1-user.service";
+import { randomUUID } from "crypto";
 import { ApiTags } from "@nestjs/swagger";
+import { type Response } from "express";
 import {
+    ClassSerializerInterceptor,
+    MaxFileSizeValidator,
+    NotFoundException,
+    FileTypeValidator,
+    UseInterceptors,
+    ParseFilePipe,
+    UploadedFile,
     ParseIntPipe,
     HttpStatus,
     Controller,
@@ -25,12 +34,8 @@ import {
     Get,
     Query,
     Body,
-    UseInterceptors,
-    ClassSerializerInterceptor,
-    Header,
-    UploadedFile,
-    ParseFilePipe,
-    MaxFileSizeValidator,
+    Res,
+    StreamableFile,
 } from "@nestjs/common";
 
 @ApiTags(`User`)
@@ -112,13 +117,22 @@ export class V1UserController {
     }
 
     @Get(`:userId/avatar`)
-    @Header(`Content-Type`, `image/jpeg`)
     @HttpCode(HttpStatus.OK)
     public async getUserAvatar(
+        @Res({ passthrough: true }) res: Response,
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
-    ): Promise<Buffer> {
-        return await this.userService.getUserAvatar(userId, activeUser);
+    ): Promise<StreamableFile> {
+
+        const avatarBuffer = await this.userService.getUserAvatar(userId, activeUser);
+        if (avatarBuffer === null) {
+            throw new NotFoundException(`Avatar not found for user with id ${userId}.`);
+        }
+
+        res.setHeader(`Content-Disposition`, `attachment; filename="${randomUUID()}.jpg"`);
+        res.setHeader(`Content-Type`, `image/jpeg`);
+        return new StreamableFile(avatarBuffer);
+
     }
 
     @Post(`:userId/avatar`)
@@ -127,24 +141,18 @@ export class V1UserController {
         PermissionEnum.MANAGE_OWN_ACCOUNT,
         PermissionEnum.MANAGE_OTHER_ACCOUNT
     )
-    @UseInterceptors(FileInterceptor(`file`))
+    @UseInterceptors(FileInterceptor(`avatar`))
     public async postUserAvatar(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
         @UploadedFile(new ParseFilePipe({
-            validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })],
-        })) avatar: Array<Express.Multer.File>,
+            validators: [
+                new MaxFileSizeValidator({ maxSize: 5_000_000 }),
+                new FileTypeValidator({ fileType: /image\/(jpeg|png|tiff)/ }),
+            ],
+        })) avatar: Express.Multer.File,
     ): Promise<void> {
         return await this.userService.postUserAvatar(userId, activeUser, avatar);
-    }
-
-    @Patch(`:userId/avatar`)
-    @HttpCode(HttpStatus.ACCEPTED)
-    public async updateUserAvatar(
-        @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`, new ParseIntPipe()) userId: number,
-    ): Promise<void> {
-        return await this.userService.updateUserAvatar(userId, activeUser);
     }
 
     @Delete(`:userId/avatar`)

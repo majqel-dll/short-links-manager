@@ -82,7 +82,6 @@ export class S3Service {
     }
 
     public async getObject(bucketName: string, objectName: string): Promise<Buffer> {
-        const startTime = Date.now();
         try {
             const stream = await this.s3.getObject(bucketName, objectName);
             return await new Promise((resolve, reject) => {
@@ -92,10 +91,7 @@ export class S3Service {
                 stream.on(`error`, reject);
             });
         } catch (error) {
-            void this.logger.error(
-                `Failed to get buffer of: ${objectName} from bucket: ${bucketName}`,
-                { error: error as Error, startTime },
-            );
+            this.logger.error(`Failed to get object: ${objectName}, from bucket: ${bucketName}.`, { error: error as Error });
             return null;
         }
     }

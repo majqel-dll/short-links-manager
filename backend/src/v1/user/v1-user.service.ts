@@ -18,6 +18,7 @@ import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { BasicSearchQueryParamsDto } from "@libs/dtos";
 import { BucketEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { S3Service } from "@libs/s3";
+import sharp from "sharp";
 
 @Injectable()
 export class V1UserService implements OnApplicationBootstrap {
@@ -35,13 +36,6 @@ export class V1UserService implements OnApplicationBootstrap {
         if (!bucketExists) {
             await this.minio.createBucket(BucketEnum.USER_AVATARS);
         }
-
-        const element = await this.minio.getObject(BucketEnum.USER_AVATARS, `test-object`).catch(() => {
-            this.logger.warn(`error on null`)
-        });
-
-        this.logger.warn(`here i am :D`)
-        this.logger.debug(element);
 
     }
 
@@ -176,7 +170,7 @@ export class V1UserService implements OnApplicationBootstrap {
         const startTime = Date.now();
         this.validateUserPermissionToAccessResource(userId, id, permissions);
         const avatarBuffer = await this.minio
-            .getObject(BucketEnum.USER_AVATARS, `avatar-${userId}`)
+            .getObject(BucketEnum.USER_AVATARS, `avatar-${userId}.jpg`)
             .catch((error) => {
                 this.logger.error(
                     `Failed to get user avatar from storage for userId: ${userId}.`,
@@ -193,23 +187,38 @@ export class V1UserService implements OnApplicationBootstrap {
     public async postUserAvatar(
         userId: number,
         { id, permissions }: ActiveUserPayload,
-        avatar: Array<Express.Multer.File>,
+        avatar: Express.Multer.File,
     ): Promise<void> {
 
         const startTime = Date.now();
         this.validateUserPermissionToAccessResource(userId, id, permissions);
 
+        const processedAvatar = await sharp(avatar.buffer)
+            .resize(768, 768, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 70 })
+            .toBuffer()
+            .catch((error: Error) => {
+                this.logger.error(
+                    `Failed to process avatar image for userId: ${userId}.`,
+                    { error, tag: LogTypeEnum.CREATE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to process avatar image for userId: ${userId}.`,
+                );
+            });
+
         const existingAvatar = await this.minio
-            .getObject(BucketEnum.USER_AVATARS, `avatar-${userId}`).catch(error => {
+            .getObject(BucketEnum.USER_AVATARS, `avatar-${userId}.jpg`)
+            .catch((error) => {
                 this.logger.error(`No existing avatar found for userId: ${userId}. It will be created.`,
                     { error: error as Error, tag: LogTypeEnum.DATABASE_READ_FAIL, startTime });
                 throw new InternalServerErrorException(
                     `Failed to verify avatar existence from storage for userId: ${userId}.`,
                 );
             });
-        if (existingAvatar) {
 
-            await this.minio.deleteObject(BucketEnum.USER_AVATARS, `avatar-${userId}`).catch(error => {
+        if (existingAvatar) {
+            await this.minio.deleteObject(BucketEnum.USER_AVATARS, `avatar-${userId}.jpg`).catch(error => {
                 this.logger.error(`Failed to delete existing user avatar from storage for userId: ${userId}.`,
                     { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime });
                 throw new InternalServerErrorException(
@@ -220,7 +229,7 @@ export class V1UserService implements OnApplicationBootstrap {
         }
 
         await this.minio
-            .putObject(BucketEnum.USER_AVATARS, `avatar-${userId}`, avatar[0].buffer)
+            .putObject(BucketEnum.USER_AVATARS, `avatar-${userId}.jpg`, processedAvatar)
             .catch((error) => {
                 this.logger.error(
                     `Failed to upload user avatar to storage for userId: ${userId}.`,
@@ -232,17 +241,19 @@ export class V1UserService implements OnApplicationBootstrap {
             });
     }
 
-    public async updateUserAvatar(
-        userId: number,
-        { id, permissions }: ActiveUserPayload,
-    ): Promise<void> {
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
-    }
-
     public async deleteUserAvatar(
         userId: number,
         { id, permissions }: ActiveUserPayload,
     ): Promise<void> {
         this.validateUserPermissionToAccessResource(userId, id, permissions);
+        await this.minio
+            .deleteObject(BucketEnum.USER_AVATARS, `avatar-${userId}`)
+            .catch((error) => {
+                this.logger.error(`Failed to delete user avatar from storage for userId: ${userId}.`,
+                    { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime: Date.now() });
+                throw new InternalServerErrorException(
+                    `Failed to delete user avatar from storage for userId: ${userId}.`,
+                );
+            });
     }
 }
