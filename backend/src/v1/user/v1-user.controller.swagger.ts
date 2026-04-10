@@ -5,10 +5,6 @@ import {
     type ApiBodyOptions,
 } from "@nestjs/swagger";
 
-// ---------------------------------------------------------------------------
-// Shared schemas
-// ---------------------------------------------------------------------------
-
 const BasicEntitySchema = {
     id: { type: "number", example: 1 },
     createdAt: {
@@ -129,27 +125,19 @@ const MessageSchema = (example: string) =>
         },
     }) as const;
 
-// ---------------------------------------------------------------------------
-// Shared param
-// ---------------------------------------------------------------------------
-
 export const UserIdParam: ApiParamOptions = {
     name: "userId",
     description: "Numeric identifier of the target user.",
     example: 1,
 };
 
-// ---------------------------------------------------------------------------
-// GET /v1/user
-// ---------------------------------------------------------------------------
-
 export const GetUsersOperation: ApiOperationOptions = {
     summary: "List all users",
     description:
         "Returns a paginated list of all registered user accounts. " +
-        "Supports optional `take` and `skip` query parameters for pagination. " +
+        "Supports optional take and skip query parameters for pagination. " +
         "Requires the **MANAGE_OTHER_ACCOUNT** permission. " +
-        "Sensitive fields (`passwordHash`, `lastPasswordChange`, `lastLoginAt`) are excluded from every response.",
+        "Sensitive fields (passwordHash, lastPasswordChange, lastLoginAt) are excluded from every response.",
 };
 
 export const GetUsersOkResponse: ApiResponseOptions = {
@@ -171,14 +159,10 @@ export const GetUsersForbiddenResponse: ApiResponseOptions = {
         "The authenticated user does not have the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
-// ---------------------------------------------------------------------------
-// GET /v1/user/:userId
-// ---------------------------------------------------------------------------
-
 export const GetUserByIdOperation: ApiOperationOptions = {
     summary: "Get user by ID",
     description:
-        "Returns the full profile of the user identified by `userId`, including their assigned roles (with nested permissions), " +
+        "Returns the full profile of the user identified by userId, including their assigned roles (with nested permissions), " +
         "directly assigned permissions, owned redirections, and activity logs. " +
         "Users with the **MANAGE_OWN_ACCOUNT** permission may only access their own profile. " +
         "Users with the **MANAGE_OTHER_ACCOUNT** permission may access any profile.",
@@ -212,17 +196,13 @@ export const GetUserByIdForbiddenResponse: ApiResponseOptions = {
 };
 
 export const GetUserByIdNotFoundResponse: ApiResponseOptions = {
-    description: "No user with the given `userId` exists.",
+    description: "No user with the given userId exists.",
 };
-
-// ---------------------------------------------------------------------------
-// PATCH /v1/user/:userId
-// ---------------------------------------------------------------------------
 
 export const ChangeUserDataOperation: ApiOperationOptions = {
     summary: "Update user profile",
     description:
-        "Partially updates the profile data of the user identified by `userId`. " +
+        "Partially updates the profile data of the user identified by userId. " +
         "Users with the **MANAGE_OWN_ACCOUNT** permission may only modify their own profile. " +
         "Users with the **MANAGE_OTHER_ACCOUNT** permission may modify any profile.",
 };
@@ -237,17 +217,13 @@ export const ChangeUserDataForbiddenResponse: ApiResponseOptions = {
 };
 
 export const ChangeUserDataNotFoundResponse: ApiResponseOptions = {
-    description: "No user with the given `userId` exists.",
+    description: "No user with the given userId exists.",
 };
-
-// ---------------------------------------------------------------------------
-// DELETE /v1/user/:userId
-// ---------------------------------------------------------------------------
 
 export const DeleteAccountOperation: ApiOperationOptions = {
     summary: "Delete user account",
     description:
-        "Permanently deletes the account of the user identified by `userId`, " +
+        "Permanently deletes the account of the user identified by userId, " +
         "along with all associated data (sessions, redirections, codes, logs). " +
         "Users with the **DELETE_OWN_ACCOUNT** permission may only delete their own account. " +
         "Users with the **DELETE_OTHER_ACCOUNT** permission may delete any account. " +
@@ -264,17 +240,13 @@ export const DeleteAccountForbiddenResponse: ApiResponseOptions = {
 };
 
 export const DeleteAccountNotFoundResponse: ApiResponseOptions = {
-    description: "No user with the given `userId` exists.",
+    description: "No user with the given userId exists.",
 };
-
-// ---------------------------------------------------------------------------
-// GET /v1/user/:userId/permissions
-// ---------------------------------------------------------------------------
 
 export const GetUserPermissionsOperation: ApiOperationOptions = {
     summary: "Get user permissions",
     description:
-        "Returns all permissions directly assigned to the user identified by `userId`. " +
+        "Returns all permissions directly assigned to the user identified by userId. " +
         "Does not include permissions inherited through roles. " +
         "Users with the **MANAGE_OWN_ACCOUNT** permission may only query their own permissions. " +
         "Users with the **MANAGE_OTHER_ACCOUNT** permission may query any user's permissions.",
@@ -293,14 +265,10 @@ export const GetUserPermissionsForbiddenResponse: ApiResponseOptions = {
         "The authenticated user is querying another user's permissions without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
-// ---------------------------------------------------------------------------
-// GET /v1/user/:userId/roles
-// ---------------------------------------------------------------------------
-
 export const GetUserRolesOperation: ApiOperationOptions = {
     summary: "Get user roles",
     description:
-        "Returns all roles assigned to the user identified by `userId`, " +
+        "Returns all roles assigned to the user identified by userId, " +
         "each including its associated permissions. " +
         "Users with the **MANAGE_OWN_ACCOUNT** permission may only query their own roles. " +
         "Users with the **MANAGE_OTHER_ACCOUNT** permission may query any user's roles.",
@@ -319,14 +287,10 @@ export const GetUserRolesForbiddenResponse: ApiResponseOptions = {
         "The authenticated user is querying another user's roles without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
-// ---------------------------------------------------------------------------
-// GET /v1/user/:userId/redirections
-// ---------------------------------------------------------------------------
-
 export const GetUserRedirectionsOperation: ApiOperationOptions = {
     summary: "Get user redirections",
     description:
-        "Returns all short-link redirections owned by the user identified by `userId`. " +
+        "Returns all short-link redirections owned by the user identified by userId. " +
         "Users with the **MANAGE_OWN_ACCOUNT** permission may only query their own redirections. " +
         "Users with the **MANAGE_OTHER_ACCOUNT** permission may query any user's redirections.",
 };
@@ -344,16 +308,12 @@ export const GetUserRedirectionsForbiddenResponse: ApiResponseOptions = {
         "The authenticated user is querying another user's redirections without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
-// ---------------------------------------------------------------------------
-// GET /v1/user/:userId/avatar
-// ---------------------------------------------------------------------------
-
 export const GetUserAvatarOperation: ApiOperationOptions = {
     summary: "Get user avatar",
     description:
-        "Downloads the avatar image of the user identified by `userId`. " +
-        "The response is a binary JPEG stream with `Content-Type: image/webp` and " +
-        "`Content-Disposition: attachment; filename=\"<uuid>.webp\"`. " +
+        "Downloads the avatar image of the user identified by userId. " +
+        "The response is a binary JPEG stream with Content-Type: image/webp and " +
+        "Content-Disposition: attachment; filename=\"<uuid>.webp\". " +
         "Accessing another user's avatar requires the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
@@ -371,7 +331,7 @@ export const GetUserAvatarOkResponse: ApiResponseOptions = {
 };
 
 export const GetUserAvatarNotFoundResponse: ApiResponseOptions = {
-    description: "No avatar has been uploaded for the user with the given `userId`.",
+    description: "No avatar has been uploaded for the user with the given userId.",
 };
 
 export const GetUserAvatarForbiddenResponse: ApiResponseOptions = {
@@ -379,15 +339,11 @@ export const GetUserAvatarForbiddenResponse: ApiResponseOptions = {
         "The authenticated user is requesting another user's avatar without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
-// ---------------------------------------------------------------------------
-// POST /v1/user/:userId/avatar
-// ---------------------------------------------------------------------------
-
 export const PostUserAvatarOperation: ApiOperationOptions = {
     summary: "Upload user avatar",
     description:
-        "Uploads and replaces the avatar for the user identified by `userId`. " +
-        "The image must be sent as `multipart/form-data` under the `avatar` field. " +
+        "Uploads and replaces the avatar for the user identified by userId. " +
+        "The image must be sent as multipart/form-data under the avatar field. " +
         "Accepted formats: **JPEG**, **PNG**, **TIFF**. Maximum file size: **5 MB**. " +
         "The image is automatically resized to fit within **768 × 768 px** " +
         "and re-encoded as JPEG at 70 % quality before storage. " +
@@ -425,14 +381,10 @@ export const PostUserAvatarForbiddenResponse: ApiResponseOptions = {
         "The authenticated user is uploading an avatar for another user without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
-// ---------------------------------------------------------------------------
-// DELETE /v1/user/:userId/avatar
-// ---------------------------------------------------------------------------
-
 export const DeleteUserAvatarOperation: ApiOperationOptions = {
     summary: "Delete user avatar",
     description:
-        "Permanently removes the avatar of the user identified by `userId` from storage. " +
+        "Permanently removes the avatar of the user identified by userId from storage. " +
         "Requires the **MANAGE_OWN_ACCOUNT** or **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
@@ -441,17 +393,13 @@ export const DeleteUserAvatarNoContentResponse: ApiResponseOptions = {
 };
 
 export const DeleteUserAvatarNotFoundResponse: ApiResponseOptions = {
-    description: "No avatar exists for the user with the given `userId`.",
+    description: "No avatar exists for the user with the given userId.",
 };
 
 export const DeleteUserAvatarForbiddenResponse: ApiResponseOptions = {
     description:
         "The authenticated user is deleting another user's avatar without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
-
-// ---------------------------------------------------------------------------
-// Shared responses
-// ---------------------------------------------------------------------------
 
 export const CommonUnauthorizedResponse: ApiResponseOptions = {
     description: "Missing, expired, or invalid authentication token.",

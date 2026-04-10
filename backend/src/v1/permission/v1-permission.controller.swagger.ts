@@ -42,7 +42,7 @@ export const GetAllPermissionsOperation: ApiOperationOptions = {
     summary: "List all permissions",
     description:
         "Returns a paginated list of all permissions defined in the system. " +
-        "Requires the MANAGE_PERMISSIONS permission. " +
+        "Requires the **MANAGE_PERMISSIONS** permission. " +
         "The assignedEnum field is excluded from the response.",
 };
 
@@ -76,7 +76,7 @@ export const GetAllRolesOperation: ApiOperationOptions = {
     summary: "List all roles",
     description:
         "Returns a paginated list of all roles defined in the system. " +
-        "Requires the MANAGE_ROLES permission. " +
+        "Requires the **MANAGE_ROLES** permission. " +
         "The assignedEnum field is excluded from the response.",
 };
 
@@ -110,7 +110,7 @@ export const UpdateUserRoleOperation: ApiOperationOptions = {
     summary: "Change user role",
     description:
         "Assigns the specified role to the given user, replacing any previously held role. " +
-        "Requires the MANAGE_ROLES permission.",
+        "Requires the **MANAGE_ROLES** permission.",
 };
 
 export const UpdateUserRoleOkResponse: ApiResponseOptions = {

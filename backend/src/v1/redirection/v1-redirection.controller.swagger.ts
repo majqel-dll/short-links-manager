@@ -35,7 +35,7 @@ export const GetRedirectionsOperation: ApiOperationOptions = {
     description:
         "Returns a paginated list of redirections belonging to the authenticated user. " +
         "Accepts optional take and skip query parameters for pagination. " +
-        "Requires the READ_OWN_REDIRECTION or READ_OTHER_REDIRECTION permission.",
+        "Requires the **READ_OWN_REDIRECTION** or **READ_OTHER_REDIRECTION** permission.",
 };
 
 export const GetRedirectionsOkResponse: ApiResponseOptions = {
@@ -64,8 +64,8 @@ export const GetRedirectionByIdOperation: ApiOperationOptions = {
     summary: "Get redirection by ID",
     description:
         "Returns a single redirection identified by its numeric ID. " +
-        "Accessing your own redirection requires READ_OWN_REDIRECTION; " +
-        "accessing another user's redirection additionally requires READ_OTHER_REDIRECTION.",
+        "Accessing your own redirection requires **READ_OWN_REDIRECTION**; " +
+        "accessing another user's redirection additionally requires **READ_OTHER_REDIRECTION**.",
 };
 
 export const GetRedirectionByIdOkResponse: ApiResponseOptions = {
@@ -83,8 +83,8 @@ export const CreateRedirectionOperation: ApiOperationOptions = {
     summary: "Create redirection",
     description:
         "Creates a new short-link redirection for the authenticated user. " +
-        "Creating a basic redirection requires the CREATE_BASIC_REDIRECTION permission. " +
-        "Setting isPremium = true additionally requires the CREATE_PREMIUM_REDIRECTION permission. " +
+        "Creating a basic redirection requires the **CREATE_BASIC_REDIRECTION** permission. " +
+        "Setting isPremium = true additionally requires the **CREATE_PREMIUM_REDIRECTION** permission. " +
         "Premium routes are globally unique across all users; " +
         "non-premium routes are unique per user (two different users may share the same route).",
 };
@@ -99,9 +99,9 @@ export const UpdateRedirectionOperation: ApiOperationOptions = {
     description:
         "Updates an existing redirection identified by the redirectionId field in the request body. " +
         "All fields (route, targetUrl, isPremium) are optional — only provided fields are modified. " +
-        "Changing isPremium to true additionally requires the CREATE_PREMIUM_REDIRECTION permission. " +
-        "Requires the MANAGE_OWN_BASIC_REDIRECTION or MANAGE_OWN_PREMIUM_REDIRECTION permission for own redirections; " +
-        "updating another user's redirection additionally requires MANAGE_OTHER_REDIRECTIONS.",
+        "Changing isPremium to true additionally requires the **CREATE_PREMIUM_REDIRECTION** permission. " +
+        "Requires the **MANAGE_OWN_BASIC_REDIRECTION** or **MANAGE_OWN_PREMIUM_REDIRECTION** permission for own redirections; " +
+        "updating another user's redirection additionally requires **MANAGE_OTHER_REDIRECTIONS**.",
 };
 
 export const UpdateRedirectionOkResponse: ApiResponseOptions = {
@@ -119,8 +119,8 @@ export const DeleteRedirectionOperation: ApiOperationOptions = {
     summary: "Delete redirection",
     description:
         "Permanently deletes a redirection identified by its numeric ID. " +
-        "Requires the MANAGE_OWN_BASIC_REDIRECTION or MANAGE_OWN_PREMIUM_REDIRECTION permission for own redirections. " +
-        "Deleting another user's redirection additionally requires the MANAGE_OTHER_REDIRECTIONS permission.",
+        "Requires the **MANAGE_OWN_BASIC_REDIRECTION** or **MANAGE_OWN_PREMIUM_REDIRECTION** permission for own redirections. " +
+        "Deleting another user's redirection additionally requires the **MANAGE_OTHER_REDIRECTIONS** permission.",
 };
 
 export const DeleteRedirectionNoContentResponse: ApiResponseOptions = {
