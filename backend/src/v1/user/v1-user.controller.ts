@@ -40,27 +40,27 @@ export class V1UserController {
     @Patch(`:userId`)
     @HttpCode(HttpStatus.ACCEPTED)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public changeUserData() { }
+    public changeUserData() {}
 
     @Get(`:userId/permissions`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public getUserPermissions() { }
+    public getUserPermissions() {}
 
     @Get(`:userId/roles`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public getUserRoles() { }
+    public getUserRoles() {}
 
     @Get(`:userId/redirections`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public getUserRedirections() { }
+    public getUserRedirections() {}
 
     @Delete(`:userId`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public deleteAccount() { }
+    public deleteAccount() {}
 
     @Get(`:userId/avatar`)
     @HttpCode(HttpStatus.OK)
@@ -69,11 +69,11 @@ export class V1UserController {
     }
 
     @HttpCode(HttpStatus.CREATED)
-    public postUserAvatar() { }
+    public postUserAvatar() {}
 
     @HttpCode(HttpStatus.ACCEPTED)
-    public updateUserAvatar() { }
+    public updateUserAvatar() {}
 
     @HttpCode(HttpStatus.NO_CONTENT)
-    public deleteUserAvatar() { }
+    public deleteUserAvatar() {}
 }

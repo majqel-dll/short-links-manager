@@ -1,12 +1,19 @@
-import { Inject, Injectable, OnApplicationBootstrap } from "@nestjs/common";
+import {
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    OnApplicationBootstrap,
+} from "@nestjs/common";
 import { HttpRequestEntity, RedirectionEntity } from "@libs/entities";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { BasicSearchQueryParamsDto, CreateRedirectionDto } from "@libs/dtos";
 import { InjectRepository } from "@nestjs/typeorm";
+import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { InjectLogger } from "@libs/decorators";
+import { LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
-import { LogTypeEnum } from "@libs/enums";
 
 @Injectable()
 export class V1RedirectionService implements OnApplicationBootstrap {
@@ -19,7 +26,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-    ) {}
+    ) { }
 
     public async onApplicationBootstrap() {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
@@ -134,5 +141,117 @@ export class V1RedirectionService implements OnApplicationBootstrap {
                 },
             );
         }
+    }
+
+    public async getRedirectionsByUserId(
+        userId: number,
+        { id, permissions }: ActiveUserPayload,
+        { take, skip }: BasicSearchQueryParamsDto = {},
+    ): Promise<GetEntitiesResponse<RedirectionEntity>> {
+
+        const startTime: number = Date.now();
+
+        if (userId !== id && !permissions.includes(PermissionEnum.READ_OTHER_REDIRECTION)) {
+            this.logger.error(
+                `User with id: ${id} attempted to access redirections of user with id: ${userId} without proper permissions.`,
+                {
+                    error: new Error(`Insufficient permissions to access redirections of user with id: ${userId}.`),
+                    tag: LogTypeEnum.PERMISSIONS_FAIL,
+                    startTime,
+                },
+            );
+            throw new InternalServerErrorException(
+                `User with id: ${id} does not have permissions to access redirections of user with id: ${userId}.`,
+            );
+        }
+
+        const [redirections, total] = await this.redirectionRepository
+            .findAndCount({
+                where: { userId },
+                order: { createdAt: "DESC" },
+                take,
+                skip,
+            })
+            .catch((error) => {
+                this.logger.error(
+                    `Failed to fetch redirections of user with id: ${userId} from the database.`,
+                    { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to fetch redirections of user with id: ${userId} from the database.`,
+                );
+            });
+
+        const meta = {
+            totalRecords: total,
+            currentPage: skip ?? 0,
+            pageSize: take ?? total,
+            totalPages: take ? Math.ceil(total / take) : 1,
+        };
+
+        return { data: redirections, meta };
+    }
+
+    public async getRedirectionById(
+        redirectionId: number,
+        { id, permissions }: ActiveUserPayload,
+    ): Promise<RedirectionEntity> {
+
+        const startTime: number = Date.now();
+        const redirection = await this.redirectionRepository
+            .findOne({
+                where: { id: redirectionId },
+                relations: { user: true },
+            })
+            .catch((error) => {
+                this.logger.error(
+                    `Failed to fetch redirection with id: ${redirectionId} from the database.`,
+                    { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to fetch redirection with id: ${redirectionId} from the database.`,
+                );
+            });
+
+        if (!redirection) {
+            throw new InternalServerErrorException(
+                `Redirection with id: ${redirectionId} not found in the database.`,
+            );
+        }
+
+        if (redirection.user?.id !== id && !permissions.includes(PermissionEnum.READ_OTHER_REDIRECTION)) {
+            throw new InternalServerErrorException(
+                `Redirection with id: ${redirectionId} does not belong to user with id: ${id}.`,
+            );
+        }
+
+        delete redirection.user;
+        return redirection;
+    }
+
+    public async createRedirection(
+        { isPremium, targetUrl, route }: CreateRedirectionDto,
+        { id, permissions }: ActiveUserPayload
+    ): Promise<RedirectionEntity> {
+
+        if (isPremium === true && !permissions.includes(PermissionEnum.CREATE_PREMIUM_REDIRECTION)) {
+            throw new InternalServerErrorException(
+                `User with id: ${id} does not have permissions to create premium redirections.`,
+            );
+        }
+
+        const newRedirection = this.redirectionRepository.create({
+            isPremium, route, targetUrl, userId: id
+        });
+
+        return await this.redirectionRepository.save(newRedirection).catch((error) => {
+            this.logger.error(
+                `Failed to create new redirection for user with id: ${id} in the database.`,
+                { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime: Date.now() },
+            );
+            throw new InternalServerErrorException(
+                `Failed to create new redirection for user with id: ${id} in the database.`,
+            );
+        })
     }
 }

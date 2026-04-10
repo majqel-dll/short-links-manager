@@ -3,6 +3,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm
 import { DatabaseTableEnum } from "@libs/enums/database";
 import { UserEntity } from "./user.entity";
 import { HttpRequestEntity } from "./http-request.entity";
+import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.REDIRECTION)
 export class RedirectionEntity extends BasicEntityProperties {
@@ -28,13 +29,12 @@ export class RedirectionEntity extends BasicEntityProperties {
         onDelete: `CASCADE`,
     })
     @JoinColumn({ name: `userId` })
+    @Exclude()
     public user: UserEntity;
-
-    @Column({ type: `int`, nullable: true, default: null })
-    public requestId?: number;
 
     @OneToMany(() => HttpRequestEntity, (request) => request.redirection, {
         nullable: true,
     })
+    @Exclude()
     public httpRequests?: HttpRequestEntity[];
 }
