@@ -14,6 +14,13 @@ declare namespace NodeJS {
     MAIN_DATABASE_PASS: string;
     MAIN_DATABASE_NAME: string;
 
+    // MINIO
+
+    MINIO_ENDPOINT: string;
+    MINIO_PORT: number;
+    MINIO_ROOT_USER: string;
+    MINIO_ROOT_PASSWORD: string;
+
     // REDIS
 
     REDIS_HOST: string;

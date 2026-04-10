@@ -33,7 +33,7 @@ export class V1AuthService {
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();
@@ -126,7 +126,7 @@ export class V1AuthService {
                         permissions.map(({ value }) => value),
                     ),
                 ),
-            ],
+            ] as PermissionEnum[],
         };
 
         const refreshTokenExpirationDate: Date = new Date(
@@ -441,7 +441,7 @@ export class V1AuthService {
                         permissions.map(({ value }) => value),
                     ),
                 ),
-            ],
+            ] as PermissionEnum[],
         };
 
         const newToken = await this.jwtService

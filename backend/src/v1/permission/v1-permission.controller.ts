@@ -61,6 +61,7 @@ import { GetEntitiesResponse } from "@libs/types";
 @Controller(`v1/permission`)
 @UseGuards(AuthGuard, PermissionGuard)
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 @ApiCookieAuth()
 @ApiUnauthorizedResponse(CommonPermissionUnauthorizedResponse)

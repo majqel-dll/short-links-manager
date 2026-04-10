@@ -70,13 +70,13 @@ import {
 @ApiTags("Auth")
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class V1AuthController {
     constructor(private readonly authService: V1AuthService) {}
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
-    @UseInterceptors(ClassSerializerInterceptor)
     @ApiBearerAuth()
     @ApiCookieAuth()
     @ApiOperation(GetSessionsOperation)

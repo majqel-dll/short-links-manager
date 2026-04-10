@@ -1,6 +1,13 @@
-import { Controller, Get, Post } from "@nestjs/common";
+import {
+    ClassSerializerInterceptor,
+    Controller,
+    Get,
+    Post,
+    UseInterceptors,
+} from "@nestjs/common";
 
 @Controller(`v1/code`)
+@UseInterceptors(ClassSerializerInterceptor)
 export class V1CodeController {
     @Get(`user/:id`)
     public async findActiveCodeForUser() {}
