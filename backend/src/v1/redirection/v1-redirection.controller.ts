@@ -8,6 +8,7 @@ import {
     HttpStatus,
     Param,
     ParseIntPipe,
+    Patch,
     Post,
     Put,
     Query,
@@ -15,7 +16,11 @@ import {
     Req,
     UseInterceptors,
 } from "@nestjs/common";
-import { BasicSearchQueryParamsDto, CreateRedirectionDto } from "@libs/dtos";
+import {
+    BasicSearchQueryParamsDto,
+    CreateRedirectionDto,
+    UpdateRedirectionDto,
+} from "@libs/dtos";
 import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { V1RedirectionService } from "./v1-redirection.service";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
@@ -29,13 +34,11 @@ import { type Request } from "express";
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1RedirectionController {
-    constructor(private readonly redirectionService: V1RedirectionService) { }
+    constructor(private readonly redirectionService: V1RedirectionService) {}
 
     @Get(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
-    @Permission(
-        PermissionEnum.READ_OWN_REDIRECTION,
-        PermissionEnum.READ_OTHER_REDIRECTION)
+    @Permission(PermissionEnum.READ_OWN_REDIRECTION, PermissionEnum.READ_OTHER_REDIRECTION)
     public async getRedirections(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Query() queryParams?: BasicSearchQueryParamsDto,
@@ -43,19 +46,16 @@ export class V1RedirectionController {
         return this.redirectionService.getRedirectionsByUserId(
             activeUser.id,
             activeUser,
-            queryParams
+            queryParams,
         );
-
     }
 
     @Get(`v1/redirection/:redirectionId`)
     @HttpCode(HttpStatus.OK)
-    @Permission(
-        PermissionEnum.READ_OWN_REDIRECTION,
-        PermissionEnum.READ_OTHER_REDIRECTION)
+    @Permission(PermissionEnum.READ_OWN_REDIRECTION, PermissionEnum.READ_OTHER_REDIRECTION)
     public async getRedirectionById(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`redirectionId`, new ParseIntPipe) redirectionId: number,
+        @Param(`redirectionId`, new ParseIntPipe()) redirectionId: number,
     ): Promise<RedirectionEntity> {
         return this.redirectionService.getRedirectionById(redirectionId, activeUser);
     }
@@ -64,40 +64,48 @@ export class V1RedirectionController {
     @HttpCode(HttpStatus.CREATED)
     @Permission(
         PermissionEnum.CREATE_BASIC_REDIRECTION,
-        PermissionEnum.CREATE_PREMIUM_REDIRECTION)
+        PermissionEnum.CREATE_PREMIUM_REDIRECTION,
+    )
     public async createRedirection(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Body() body: CreateRedirectionDto
-    ) {
-
+        @Body() body: CreateRedirectionDto,
+    ): Promise<RedirectionEntity> {
+        return await this.redirectionService.createRedirection(body, activeUser);
     }
 
-    @Put(`v1/redirection`)
+    @Patch(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
     @Permission(
         PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
         PermissionEnum.MANAGE_OWN_PREMIUM_REDIRECTION,
     )
-    public async updateRedirection(@ActiveUser() activeUser: ActiveUserPayload, @Body() body) { }
+    public async updateRedirection(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Body() body: UpdateRedirectionDto,
+    ): Promise<RedirectionEntity> {
+        return await this.redirectionService.updateRedirection(body, activeUser);
+    }
 
     @Delete(`v1/redirection/:redirectionId`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permission(
         PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
         PermissionEnum.MANAGE_OWN_PREMIUM_REDIRECTION,
-        PermissionEnum.MANAGE_OTHER_REDIRECTIONS
+        PermissionEnum.MANAGE_OTHER_REDIRECTIONS,
     )
     public async deleteRedirection(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`redirectionId`, new ParseIntPipe) redirectionId: number,
-    ) { }
+        @Param(`redirectionId`, new ParseIntPipe()) redirectionId: number,
+    ): Promise<void> {
+        await this.redirectionService.deleteRedirection(redirectionId, activeUser);
+    }
 
     @Get(`:route`)
     @HttpCode(HttpStatus.PERMANENT_REDIRECT)
     @Redirect()
     public async redirectClientTo(
         @Param(`route`) route: string,
-        @Req() request: Request
+        @Req() request: Request,
     ): Promise<{ url: string; status: number }> {
         const urlWithId = await this.redirectionService.findRedirectionByRoute(route);
         if (

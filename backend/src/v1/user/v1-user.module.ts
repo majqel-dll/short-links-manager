@@ -8,13 +8,10 @@ import { GuardsModule } from "@libs/guards";
 @Module({
     imports: [
         DatabaseModule,
-        LoggerModule.forFeature([
-            V1UserService,
-            V1UserController
-        ]),
+        LoggerModule.forFeature([V1UserService, V1UserController]),
         GuardsModule,
     ],
     controllers: [V1UserController],
     providers: [V1UserService],
 })
-export class V1UserModule { }
+export class V1UserModule {}

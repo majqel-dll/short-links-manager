@@ -1,7 +1,6 @@
 import { IsBoolean, IsDefined, IsString } from "class-validator";
 
 export class CreateRedirectionDto {
-
     @IsDefined()
     @IsBoolean()
     public isPremium: boolean;
@@ -13,5 +12,4 @@ export class CreateRedirectionDto {
     @IsDefined()
     @IsString()
     public route: string;
-
 }
