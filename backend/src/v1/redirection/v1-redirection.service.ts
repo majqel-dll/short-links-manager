@@ -31,7 +31,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-    ) { }
+    ) {}
 
     public async onApplicationBootstrap() {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
@@ -286,6 +286,21 @@ export class V1RedirectionService implements OnApplicationBootstrap {
                 );
             });
 
+        if (!redirection) {
+            throw new InternalServerErrorException(
+                `Redirection with id: ${redirectionId} not found in the database.`,
+            );
+        }
+
+        if (
+            redirection.user?.id !== id &&
+            !permissions.includes(PermissionEnum.MANAGE_OTHER_REDIRECTIONS)
+        ) {
+            throw new InternalServerErrorException(
+                `Redirection with id: ${redirectionId} does not belong to user with id: ${id}.`,
+            );
+        }
+
         if (route) {
             redirection.route = route;
         }
@@ -306,22 +321,20 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             redirection.isPremium = isPremium;
         }
 
-        return await this.redirectionRepository
-            .save(redirection)
-            .catch((error) => {
-                if (typeof error === `object` && `code` in error && error?.code === `23505`) {
-                    throw new ConflictException(
-                        `Redirection with route "${redirection.route}" already exists.`,
-                    );
-                }
-                this.logger.error(
-                    `Failed to update redirection with id: ${redirectionId} in the database.`,
-                    { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+        return await this.redirectionRepository.save(redirection).catch((error) => {
+            if (typeof error === `object` && `code` in error && error?.code === `23505`) {
+                throw new ConflictException(
+                    `Redirection with route "${redirection.route}" already exists.`,
                 );
-                throw new InternalServerErrorException(
-                    `Failed to update redirection with id: ${redirectionId} in the database.`,
-                );
-            });
+            }
+            this.logger.error(
+                `Failed to update redirection with id: ${redirectionId} in the database.`,
+                { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+            );
+            throw new InternalServerErrorException(
+                `Failed to update redirection with id: ${redirectionId} in the database.`,
+            );
+        });
     }
 
     public async deleteRedirection(

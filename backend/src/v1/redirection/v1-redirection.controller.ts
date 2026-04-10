@@ -1,3 +1,44 @@
+import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
+import { V1RedirectionService } from "./v1-redirection.service";
+import { ActiveUser, Auth, Permission } from "@libs/decorators";
+import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
+import { RedirectionEntity } from "@libs/entities";
+import {
+    CommonRedirectionInternalServerErrorResponse,
+    CommonRedirectionUnauthorizedResponse,
+    CommonRedirectionForbiddenResponse,
+    DeleteRedirectionNoContentResponse,
+    CreateRedirectionCreatedResponse,
+    CreateRedirectionOperation,
+    DeleteRedirectionOperation,
+    DeleteRedirectionRedirectionIdParam,
+    GetRedirectionByIdOkResponse,
+    GetRedirectionByIdOperation,
+    GetRedirectionByIdRedirectionIdParam,
+    GetRedirectionsOkResponse,
+    GetRedirectionsOperation,
+    RedirectClientToFoundResponse,
+    RedirectClientToOperation,
+    RedirectClientToRouteParam,
+    UpdateRedirectionConflictResponse,
+    UpdateRedirectionOkResponse,
+    UpdateRedirectionOperation,
+} from "./v1-redirection.controller.swagger";
+import {
+    ApiInternalServerErrorResponse,
+    ApiUnauthorizedResponse,
+    ApiNoContentResponse,
+    ApiForbiddenResponse,
+    ApiConflictResponse,
+    ApiCreatedResponse,
+    ApiBearerAuth,
+    ApiCookieAuth,
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiResponse,
+    ApiTags,
+} from "@nestjs/swagger";
 import {
     Body,
     ClassSerializerInterceptor,
@@ -10,7 +51,6 @@ import {
     ParseIntPipe,
     Patch,
     Post,
-    Put,
     Query,
     Redirect,
     Req,
@@ -21,24 +61,25 @@ import {
     CreateRedirectionDto,
     UpdateRedirectionDto,
 } from "@libs/dtos";
-import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
-import { V1RedirectionService } from "./v1-redirection.service";
-import { ActiveUser, Auth, Permission } from "@libs/decorators";
-import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
-import { RedirectionEntity } from "@libs/entities";
-import { ApiTags } from "@nestjs/swagger";
 import { type Request } from "express";
 
 @ApiTags(`Redirection`)
 @Controller()
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiUnauthorizedResponse(CommonRedirectionUnauthorizedResponse)
+@ApiForbiddenResponse(CommonRedirectionForbiddenResponse)
+@ApiInternalServerErrorResponse(CommonRedirectionInternalServerErrorResponse)
 export class V1RedirectionController {
     constructor(private readonly redirectionService: V1RedirectionService) {}
 
     @Get(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.READ_OWN_REDIRECTION, PermissionEnum.READ_OTHER_REDIRECTION)
+    @ApiBearerAuth()
+    @ApiCookieAuth()
+    @ApiOperation(GetRedirectionsOperation)
+    @ApiOkResponse(GetRedirectionsOkResponse)
     public async getRedirections(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Query() queryParams?: BasicSearchQueryParamsDto,
@@ -53,6 +94,11 @@ export class V1RedirectionController {
     @Get(`v1/redirection/:redirectionId`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.READ_OWN_REDIRECTION, PermissionEnum.READ_OTHER_REDIRECTION)
+    @ApiBearerAuth()
+    @ApiCookieAuth()
+    @ApiOperation(GetRedirectionByIdOperation)
+    @ApiParam(GetRedirectionByIdRedirectionIdParam)
+    @ApiOkResponse(GetRedirectionByIdOkResponse)
     public async getRedirectionById(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`redirectionId`, new ParseIntPipe()) redirectionId: number,
@@ -66,6 +112,10 @@ export class V1RedirectionController {
         PermissionEnum.CREATE_BASIC_REDIRECTION,
         PermissionEnum.CREATE_PREMIUM_REDIRECTION,
     )
+    @ApiBearerAuth()
+    @ApiCookieAuth()
+    @ApiOperation(CreateRedirectionOperation)
+    @ApiCreatedResponse(CreateRedirectionCreatedResponse)
     public async createRedirection(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Body() body: CreateRedirectionDto,
@@ -78,7 +128,13 @@ export class V1RedirectionController {
     @Permission(
         PermissionEnum.MANAGE_OWN_BASIC_REDIRECTION,
         PermissionEnum.MANAGE_OWN_PREMIUM_REDIRECTION,
+        PermissionEnum.MANAGE_OTHER_REDIRECTIONS,
     )
+    @ApiBearerAuth()
+    @ApiCookieAuth()
+    @ApiOperation(UpdateRedirectionOperation)
+    @ApiOkResponse(UpdateRedirectionOkResponse)
+    @ApiConflictResponse(UpdateRedirectionConflictResponse)
     public async updateRedirection(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Body() body: UpdateRedirectionDto,
@@ -93,6 +149,11 @@ export class V1RedirectionController {
         PermissionEnum.MANAGE_OWN_PREMIUM_REDIRECTION,
         PermissionEnum.MANAGE_OTHER_REDIRECTIONS,
     )
+    @ApiBearerAuth()
+    @ApiCookieAuth()
+    @ApiOperation(DeleteRedirectionOperation)
+    @ApiParam(DeleteRedirectionRedirectionIdParam)
+    @ApiNoContentResponse(DeleteRedirectionNoContentResponse)
     public async deleteRedirection(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`redirectionId`, new ParseIntPipe()) redirectionId: number,
@@ -101,8 +162,12 @@ export class V1RedirectionController {
     }
 
     @Get(`:route`)
-    @HttpCode(HttpStatus.PERMANENT_REDIRECT)
+    @HttpCode(HttpStatus.FOUND)
     @Redirect()
+    @Auth(AuthTypeEnum.NONE)
+    @ApiOperation(RedirectClientToOperation)
+    @ApiParam(RedirectClientToRouteParam)
+    @ApiResponse({ status: 302, ...RedirectClientToFoundResponse })
     public async redirectClientTo(
         @Param(`route`) route: string,
         @Req() request: Request,
