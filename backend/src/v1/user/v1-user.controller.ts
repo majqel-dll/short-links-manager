@@ -13,6 +13,7 @@ import {
     Param,
     ParseIntPipe,
     Patch,
+    Post,
     UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
@@ -27,7 +28,7 @@ export class V1UserController {
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     public getUserData(
         @ActiveUser() user: ActiveUserPayload,
-        @Param(`userId`) userId: number,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
     ) {
         if (
             userId !== user.id &&
@@ -40,40 +41,70 @@ export class V1UserController {
     @Patch(`:userId`)
     @HttpCode(HttpStatus.ACCEPTED)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public changeUserData() {}
+    public changeUserData(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
     @Get(`:userId/permissions`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public getUserPermissions() {}
+    public getUserPermissions(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
     @Get(`:userId/roles`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public getUserRoles() {}
+    public getUserRoles(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
     @Get(`:userId/redirections`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public getUserRedirections() {}
+    public getUserRedirections(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
     @Delete(`:userId`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public deleteAccount() {}
+    public deleteAccount(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
     @Get(`:userId/avatar`)
     @HttpCode(HttpStatus.OK)
-    public async getUserAvatar(): Promise<Buffer> {
+    public async getUserAvatar(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ): Promise<Buffer> {
         return Buffer.alloc(0);
     }
 
+    @Post(`:userId/avatar`)
     @HttpCode(HttpStatus.CREATED)
-    public postUserAvatar() {}
+    public postUserAvatar(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
+    @Patch(`:userId/avatar`)
     @HttpCode(HttpStatus.ACCEPTED)
-    public updateUserAvatar() {}
+    public updateUserAvatar(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 
+    @Delete(`:userId/avatar`)
     @HttpCode(HttpStatus.NO_CONTENT)
-    public deleteUserAvatar() {}
+    public deleteUserAvatar(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe()) userId: number,
+    ) { }
 }
