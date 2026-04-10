@@ -23,6 +23,7 @@
     "types": [
       "node",
       "express",
+      "multer",
       "jest",
       "./.env.d.ts"
     ],

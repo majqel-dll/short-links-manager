@@ -6,6 +6,7 @@ import {
 } from "@libs/entities";
 import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { PermissionEnum, AuthTypeEnum } from "@libs/enums";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { BasicSearchQueryParamsDto } from "@libs/dtos";
@@ -26,6 +27,10 @@ import {
     Body,
     UseInterceptors,
     ClassSerializerInterceptor,
+    Header,
+    UploadedFile,
+    ParseFilePipe,
+    MaxFileSizeValidator,
 } from "@nestjs/common";
 
 @ApiTags(`User`)
@@ -34,7 +39,7 @@ import {
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1UserController {
-    constructor(private readonly userService: V1UserService) {}
+    constructor(private readonly userService: V1UserService) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)
@@ -107,6 +112,7 @@ export class V1UserController {
     }
 
     @Get(`:userId/avatar`)
+    @Header(`Content-Type`, `image/jpeg`)
     @HttpCode(HttpStatus.OK)
     public async getUserAvatar(
         @ActiveUser() activeUser: ActiveUserPayload,
@@ -117,11 +123,19 @@ export class V1UserController {
 
     @Post(`:userId/avatar`)
     @HttpCode(HttpStatus.CREATED)
+    @Permission(
+        PermissionEnum.MANAGE_OWN_ACCOUNT,
+        PermissionEnum.MANAGE_OTHER_ACCOUNT
+    )
+    @UseInterceptors(FileInterceptor(`file`))
     public async postUserAvatar(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
+        @UploadedFile(new ParseFilePipe({
+            validators: [new MaxFileSizeValidator({ maxSize: 5_000_000 })],
+        })) avatar: Array<Express.Multer.File>,
     ): Promise<void> {
-        // return await this.userService.postUserAvatar(userId, activeUser);
+        return await this.userService.postUserAvatar(userId, activeUser, avatar);
     }
 
     @Patch(`:userId/avatar`)
