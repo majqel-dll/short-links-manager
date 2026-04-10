@@ -1,4 +1,12 @@
-import { IsBoolean, IsDefined, IsInt, IsOptional, IsString } from "class-validator";
+import {
+    IsBoolean,
+    IsDefined,
+    IsInt,
+    IsOptional,
+    IsString,
+    IsUrl,
+    Matches,
+} from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class UpdateRedirectionDto {
@@ -20,22 +28,35 @@ export class UpdateRedirectionDto {
     @IsBoolean()
     public isPremium?: boolean;
 
-    @ApiPropertyOptional({
-        description: "New full destination URL.",
-        example: "https://www.example.com/new/path",
+    @ApiProperty({
+        description:
+            "Full destination URL the short link should redirect to. Must use the HTTPS protocol.",
+        example: "https://www.example.com/some/long/path",
         maxLength: 2048,
     })
-    @IsOptional()
+    @IsDefined()
+    @IsUrl({
+        require_protocol: true,
+        require_tld: process.env.NODE_ENV === `PRODUCTION`,
+        protocols: process.env.NODE_ENV === `PRODUCTION` ? [`https`] : [`http`, `https`],
+    })
     @IsString()
-    public targetUrl?: string;
+    public targetUrl: string;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description:
-            "New route slug. Must satisfy uniqueness constraints for the applicable scope.",
-        example: "new-slug",
+            "Short route slug used to identify this redirection (e.g. `my-link` in `https://short.ly/my-link`). " +
+            "Must be unique within the applicable uniqueness scope. " +
+            "Allowed characters: letters (A–Z, a–z), digits (0–9), hyphens (-) and underscores (_).",
+        example: "my-link",
+        pattern: "^[A-Za-z0-9_-]+$",
         maxLength: 128,
     })
-    @IsOptional()
+    @IsDefined()
     @IsString()
-    public route?: string;
+    @Matches(/^[A-Za-z0-9_-]+$/, {
+        message:
+            "route may only contain letters (A–Z, a–z), digits (0–9), hyphens (-) and underscores (_).",
+    })
+    public route: string;
 }
