@@ -1,21 +1,21 @@
+import { ChangeUserPermissionsActionEnum, LogTypeEnum } from "@libs/enums";
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
-import {
-    ConflictException,
-    Injectable,
-    InternalServerErrorException,
-    NotFoundException,
-} from "@nestjs/common";
-import {
-    ChangeUserPermissionsParams,
-    GetEntitiesResponse,
-    GetEntityResponseMeta,
-} from "@libs/types";
+import { BasicSearchQueryParamsDto, ChangeRoleDto } from "@libs/dtos";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { In, Repository } from "typeorm";
 import { Logger } from "@libs/logger";
-import { ChangeUserPermissionsActionEnum, LogTypeEnum } from "@libs/enums";
-import { BasicSearchQueryParamsDto, ChangeRoleDto } from "@libs/dtos";
+import {
+    InternalServerErrorException,
+    NotFoundException,
+    ConflictException,
+    Injectable,
+} from "@nestjs/common";
+import {
+    ChangeUserPermissionsParams,
+    GetEntityResponseMeta,
+    GetEntitiesResponse,
+} from "@libs/types";
 
 @Injectable()
 export class V1PermissionService {

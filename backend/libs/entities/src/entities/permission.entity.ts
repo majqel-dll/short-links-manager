@@ -2,9 +2,9 @@ import { BasicEntityProperties } from "../partials/basic-entity-properties";
 import { DatabaseTableEnum } from "@libs/enums/database";
 import { Column, Entity, ManyToMany } from "typeorm";
 import { PermissionEnum } from "@libs/enums";
+import { Exclude } from "class-transformer";
 import { UserEntity } from "./user.entity";
 import { RoleEntity } from "./role.entity";
-import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.PERMISSION)
 export class PermissionEntity extends BasicEntityProperties {

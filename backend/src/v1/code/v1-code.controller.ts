@@ -1,9 +1,9 @@
 import {
     ClassSerializerInterceptor,
+    UseInterceptors,
     Controller,
     Get,
     Post,
-    UseInterceptors,
 } from "@nestjs/common";
 
 @Controller(`v1/code`)

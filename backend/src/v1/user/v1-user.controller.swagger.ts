@@ -313,13 +313,12 @@ export const GetUserAvatarOperation: ApiOperationOptions = {
     description:
         "Downloads the avatar image of the user identified by userId. " +
         "The response is a binary JPEG stream with Content-Type: image/webp and " +
-        "Content-Disposition: attachment; filename=\"<uuid>.webp\". " +
+        'Content-Disposition: attachment; filename="<uuid>.webp". ' +
         "Accessing another user's avatar requires the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
 export const GetUserAvatarOkResponse: ApiResponseOptions = {
-    description:
-        "Avatar image returned successfully as an octet-stream.",
+    description: "Avatar image returned successfully as an octet-stream.",
     content: {
         "image/webp": {
             schema: {

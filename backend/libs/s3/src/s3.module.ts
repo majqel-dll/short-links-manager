@@ -4,11 +4,8 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        LoggerModule.forFeature(S3Service)
-    ],
+    imports: [ConfigModule.forRoot({ isGlobal: true }), LoggerModule.forFeature(S3Service)],
     providers: [S3Service],
     exports: [S3Service],
 })
-export class S3Module { }
+export class S3Module {}

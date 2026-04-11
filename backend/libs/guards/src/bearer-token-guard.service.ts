@@ -1,9 +1,3 @@
-import {
-    CanActivate,
-    ExecutionContext,
-    Injectable,
-    UnauthorizedException,
-} from "@nestjs/common";
 import { AuthTypeEnum, LogTypeEnum, MetadataKeyEnum } from "@libs/enums";
 import { SessionEntity, UserEntity } from "@libs/entities";
 import { onAuthRejectionMessage } from "@libs/utils";
@@ -14,6 +8,12 @@ import { JwtService } from "@nestjs/jwt";
 import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
 import { Request } from "express";
+import {
+    UnauthorizedException,
+    ExecutionContext,
+    CanActivate,
+    Injectable,
+} from "@nestjs/common";
 
 @Injectable()
 export class BearerTokenGuardService implements CanActivate {

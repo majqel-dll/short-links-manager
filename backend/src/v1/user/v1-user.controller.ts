@@ -107,7 +107,7 @@ import {
 @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1UserController {
-    constructor(private readonly userService: V1UserService) { }
+    constructor(private readonly userService: V1UserService) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
@@ -221,7 +221,6 @@ export class V1UserController {
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
     ): Promise<StreamableFile> {
-
         const avatarBuffer = await this.userService.getUserAvatar(userId, activeUser);
         if (avatarBuffer === null) {
             throw new NotFoundException(`Avatar not found for user with id ${userId}.`);
@@ -230,15 +229,11 @@ export class V1UserController {
         res.setHeader(`Content-Disposition`, `attachment; filename="${randomUUID()}.webp"`);
         res.setHeader(`Content-Type`, `image/webp`);
         return new StreamableFile(avatarBuffer);
-
     }
 
     @Post(`:userId/avatar`)
     @HttpCode(HttpStatus.CREATED)
-    @Permission(
-        PermissionEnum.MANAGE_OWN_ACCOUNT,
-        PermissionEnum.MANAGE_OTHER_ACCOUNT
-    )
+    @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @UseInterceptors(FileInterceptor(`avatar`))
     @ApiOperation(PostUserAvatarOperation)
     @ApiParam(UserIdParam)
@@ -250,22 +245,22 @@ export class V1UserController {
     public async postUserAvatar(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
-        @UploadedFile(new ParseFilePipe({
-            validators: [
-                new MaxFileSizeValidator({ maxSize: 5_000_000 }),
-                new FileTypeValidator({ fileType: /image\/(jpeg|png|tiff)/ }),
-            ],
-        })) avatar: Express.Multer.File,
+        @UploadedFile(
+            new ParseFilePipe({
+                validators: [
+                    new MaxFileSizeValidator({ maxSize: 5_000_000 }),
+                    new FileTypeValidator({ fileType: /image\/(jpeg|png|tiff)/ }),
+                ],
+            }),
+        )
+        avatar: Express.Multer.File,
     ): Promise<void> {
         return await this.userService.postUserAvatar(userId, activeUser, avatar);
     }
 
     @Delete(`:userId/avatar`)
     @HttpCode(HttpStatus.NO_CONTENT)
-    @Permission(
-        PermissionEnum.MANAGE_OWN_ACCOUNT,
-        PermissionEnum.MANAGE_OTHER_ACCOUNT
-    )
+    @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(DeleteUserAvatarOperation)
     @ApiParam(UserIdParam)
     @ApiNoContentResponse(DeleteUserAvatarNoContentResponse)

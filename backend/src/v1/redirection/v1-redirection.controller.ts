@@ -24,6 +24,7 @@ import {
     UpdateRedirectionOkResponse,
     UpdateRedirectionOperation,
 } from "./v1-redirection.controller.swagger";
+import { type Request } from "express";
 import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,
@@ -61,7 +62,6 @@ import {
     CreateRedirectionDto,
     UpdateRedirectionDto,
 } from "@libs/dtos";
-import { type Request } from "express";
 
 @ApiTags(`Redirection`)
 @Controller()

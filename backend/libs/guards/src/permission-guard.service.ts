@@ -1,10 +1,3 @@
-import {
-    LogTypeEnum,
-    MetadataKeyEnum,
-    PermissionEnum,
-    PermissionOnRole,
-    RoleEnum,
-} from "@libs/enums";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -13,6 +6,13 @@ import { InjectLogger } from "@libs/decorators";
 import { Reflector } from "@nestjs/core";
 import { Logger } from "@libs/logger";
 import { Repository } from "typeorm";
+import {
+    LogTypeEnum,
+    MetadataKeyEnum,
+    PermissionEnum,
+    PermissionOnRole,
+    RoleEnum,
+} from "@libs/enums";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {

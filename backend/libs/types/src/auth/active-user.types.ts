@@ -1,4 +1,4 @@
-import { PermissionEnum } from "@libs/enums";
+import { type PermissionEnum } from "@libs/enums";
 
 export type ActiveUserPayload = {
     id: number;

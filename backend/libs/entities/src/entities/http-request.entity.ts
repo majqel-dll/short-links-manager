@@ -4,9 +4,9 @@ import { HttpRequestHeaderEntity } from "./http-request-header.entity";
 import { HttpIpAddressEntity } from "./http-ip-address.entity";
 import { HttpResponseEntity } from "./http-response.entity";
 import { DatabaseTableEnum } from "@libs/enums/database";
+import { RedirectionEntity } from "./redirection.entity";
 import { UserEntity } from "./user.entity";
 import { LogEntity } from "./log.entity";
-import { RedirectionEntity } from "./redirection.entity";
 
 @Entity(DatabaseTableEnum.HTTP_REQUEST)
 export class HttpRequestEntity extends BasicEntityProperties {

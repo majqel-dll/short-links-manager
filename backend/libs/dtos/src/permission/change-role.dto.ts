@@ -1,6 +1,6 @@
-import { RoleEnum } from "@libs/enums";
 import { IsDefined, IsEnum, IsInt } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { RoleEnum } from "@libs/enums";
 
 export class ChangeRoleDto {
     @ApiProperty({

@@ -1,15 +1,15 @@
-import {
-    CanActivate,
-    ExecutionContext,
-    Injectable,
-    UnauthorizedException,
-} from "@nestjs/common";
 import { AuthTypeEnum, LogTypeEnum, MetadataKeyEnum } from "@libs/enums";
 import { BearerTokenGuardService } from "./bearer-token-guard.service";
 import { CookieGuardService } from "./cookie-guard.service";
 import { InjectLogger } from "@libs/decorators";
 import { Reflector } from "@nestjs/core";
 import { Logger } from "@libs/logger";
+import {
+    UnauthorizedException,
+    ExecutionContext,
+    CanActivate,
+    Injectable,
+} from "@nestjs/common";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

@@ -1,0 +1,5 @@
+export enum CodeActionEnum {
+    RESET_PASSWORD = "RESET_PASSWORD",
+    VERIFY_EMAIL = "VERIFY_EMAIL",
+    DELETE_ACCOUNT = "DELETE_ACCOUNT",
+}

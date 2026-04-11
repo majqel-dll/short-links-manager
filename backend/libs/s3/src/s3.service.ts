@@ -11,7 +11,7 @@ export class S3Service {
 
     constructor(
         @InjectLogger(S3Service)
-        private readonly logger: Logger
+        private readonly logger: Logger,
     ) {
         const startTime = Date.now();
 
@@ -35,7 +35,9 @@ export class S3Service {
         try {
             return await this.s3.bucketExists(bucketName);
         } catch (error) {
-            this.logger.error(`Failed to check if bucket exists.`, { error: error as Error });
+            this.logger.error(`Failed to check if bucket exists.`, {
+                error: error as Error,
+            });
             return false;
         }
     }
@@ -46,15 +48,22 @@ export class S3Service {
             if (!name) {
                 name = `${uuidv4()}-${Date.now()}`;
             }
-            name = name.trim().toLowerCase()
+            name = name
+                .trim()
+                .toLowerCase()
                 .replaceAll(` `, `-`)
                 .replaceAll(/[^a-z0-9\-]/g, ``)
                 .slice(0, bucketNameLengthRestriction);
 
             await this.s3.makeBucket(name);
-            return [name, `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}/${name}`];
+            return [
+                name,
+                `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}/${name}`,
+            ];
         } catch (error) {
-            this.logger.error(`Failed to create new bucket in minio.`, { error: error as Error });
+            this.logger.error(`Failed to create new bucket in minio.`, {
+                error: error as Error,
+            });
             return null;
         }
     }
@@ -91,7 +100,10 @@ export class S3Service {
                 stream.on(`error`, reject);
             });
         } catch (error) {
-            this.logger.error(`Failed to get object: ${objectName}, from bucket: ${bucketName}.`, { error: error as Error });
+            this.logger.error(
+                `Failed to get object: ${objectName}, from bucket: ${bucketName}.`,
+                { error: error as Error },
+            );
             return null;
         }
     }

@@ -1,37 +1,37 @@
 import { ChangeUserPermissionsActionEnum, AuthTypeEnum, PermissionEnum } from "@libs/enums";
-import {
-    Body,
-    ClassSerializerInterceptor,
-    Controller,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Put,
-    Query,
-    UseGuards,
-    UseInterceptors,
-} from "@nestjs/common";
 import { V1PermissionService } from "./v1-permission.service";
 import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import {
-    BasicSearchQueryParamsDto,
-    ChangeRoleDto,
-    ChangeUserPermissionsDto,
-} from "@libs/dtos";
 import { Auth, Permission } from "@libs/decorators";
 import {
-    ApiBadRequestResponse,
-    ApiBearerAuth,
-    ApiForbiddenResponse,
-    ApiCookieAuth,
+    ClassSerializerInterceptor,
+    UseInterceptors,
+    HttpStatus,
+    Controller,
+    UseGuards,
+    HttpCode,
+    Body,
+    Get,
+    Post,
+    Put,
+    Query,
+} from "@nestjs/common";
+import {
+    BasicSearchQueryParamsDto,
+    ChangeUserPermissionsDto,
+    ChangeRoleDto,
+} from "@libs/dtos";
+import {
     ApiInternalServerErrorResponse,
+    ApiUnauthorizedResponse,
+    ApiBadRequestResponse,
+    ApiForbiddenResponse,
     ApiNotFoundResponse,
+    ApiBearerAuth,
+    ApiCookieAuth,
     ApiOkResponse,
     ApiOperation,
     ApiTags,
-    ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import {
     AttachPermissionInternalServerErrorResponse,

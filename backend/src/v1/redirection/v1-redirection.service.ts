@@ -1,8 +1,3 @@
-import {
-    BasicSearchQueryParamsDto,
-    CreateRedirectionDto,
-    UpdateRedirectionDto,
-} from "@libs/dtos";
 import { HttpRequestEntity, RedirectionEntity } from "@libs/entities";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
@@ -19,6 +14,11 @@ import {
     Injectable,
     Inject,
 } from "@nestjs/common";
+import {
+    BasicSearchQueryParamsDto,
+    CreateRedirectionDto,
+    UpdateRedirectionDto,
+} from "@libs/dtos";
 
 @Injectable()
 export class V1RedirectionService implements OnApplicationBootstrap {

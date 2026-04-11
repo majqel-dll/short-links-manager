@@ -2,9 +2,9 @@ import { DatabaseRelationTableEnum, DatabaseTableEnum } from "@libs/enums/databa
 import { BasicEntityProperties } from "../partials/basic-entity-properties";
 import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
 import { PermissionEntity } from "./permission.entity";
+import { Exclude } from "class-transformer";
 import { UserEntity } from "./user.entity";
 import { RoleEnum } from "@libs/enums";
-import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.ROLE)
 export class RoleEntity extends BasicEntityProperties {

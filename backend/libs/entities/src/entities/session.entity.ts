@@ -2,8 +2,8 @@ import { BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne } from "type
 import { BasicEntityProperties } from "../partials/basic-entity-properties";
 import { HttpIpAddressEntity } from "./http-ip-address.entity";
 import { DatabaseTableEnum } from "@libs/enums";
-import { UserEntity } from "./user.entity";
 import { Exclude } from "class-transformer";
+import { UserEntity } from "./user.entity";
 
 @Entity(DatabaseTableEnum.SESSION)
 export class SessionEntity extends BasicEntityProperties {

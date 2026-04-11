@@ -1,8 +1,3 @@
-import {
-    HttpRequestEntity,
-    HttpRequestHeaderEntity,
-    HttpIpAddressEntity,
-} from "@libs/entities";
 import { Injectable, NestMiddleware, OnModuleInit } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -13,6 +8,11 @@ import { randomUUID as uuidv4 } from "crypto";
 import { LogTypeEnum } from "@libs/enums";
 import { JwtService } from "@nestjs/jwt";
 import { Logger } from "@libs/logger";
+import {
+    HttpRequestEntity,
+    HttpRequestHeaderEntity,
+    HttpIpAddressEntity,
+} from "@libs/entities";
 
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
