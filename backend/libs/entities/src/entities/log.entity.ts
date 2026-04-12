@@ -4,6 +4,7 @@ import { HttpRequestEntity } from "./http-request.entity";
 import { DatabaseTableEnum } from "@libs/enums/database";
 import { LogLabelEnum, LogTypeEnum } from "@libs/enums";
 import { UserEntity } from "./user.entity";
+import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.LOG)
 export class LogEntity extends BasicEntityProperties {
@@ -23,6 +24,7 @@ export class LogEntity extends BasicEntityProperties {
     public error?: string;
 
     @Column({ type: `int`, nullable: true, default: null })
+    @Exclude()
     public userId?: number;
 
     @ManyToOne(() => UserEntity, (user) => user.logs, {
@@ -33,6 +35,7 @@ export class LogEntity extends BasicEntityProperties {
     public user?: UserEntity;
 
     @Column({ type: `int`, nullable: true, default: null })
+    @Exclude()
     public requestId?: number;
 
     @ManyToOne(() => HttpRequestEntity, (request) => request.logs, {
