@@ -3,7 +3,7 @@ import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { PermissionEnum, AuthTypeEnum } from "@libs/enums";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import { BasicSearchQueryParamsDto } from "@libs/dtos";
+import { BasicSearchQueryParamsDto, UpdateUserDto } from "@libs/dtos";
 import { V1UserService } from "./v1-user.service";
 import { randomUUID } from "crypto";
 import {
@@ -96,6 +96,7 @@ import {
     RoleEntity,
     UserEntity,
 } from "@libs/entities";
+import { GetUserQueryParamsDto } from "@libs/dtos/user/get-user-query-params.dto";
 
 @ApiTags(`User`)
 @Controller(`v1/user`)
@@ -132,8 +133,9 @@ export class V1UserController {
     public async getUserData(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
+        @Query() queryParams: GetUserQueryParamsDto,
     ): Promise<UserEntity> {
-        return await this.userService.getUserById(userId, activeUser);
+        return await this.userService.getUserById(userId, activeUser, queryParams);
     }
 
     @Patch(`:userId`)
@@ -147,7 +149,7 @@ export class V1UserController {
     public async changeUserData(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
-        @Body() body: unknown,
+        @Body() body: UpdateUserDto,
     ): Promise<void> {
         return await this.userService.updateUserData(userId, activeUser, body);
     }

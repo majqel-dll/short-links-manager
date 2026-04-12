@@ -4,6 +4,7 @@ import { type SessionEntity } from "@libs/entities";
 import { ActiveUser, Auth } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
 import { AuthTypeEnum } from "@libs/enums";
+import { parseExpiresIn } from "@libs/utils";
 import { AuthGuard } from "@libs/guards";
 import { type Response } from "express";
 import {
@@ -72,7 +73,7 @@ import {
 @UseGuards(AuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) {}
+    constructor(private readonly authService: V1AuthService) { }
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -99,14 +100,20 @@ export class V1AuthController {
     public async signIn(
         @Body() body: SignInDto,
         @Res({ passthrough: true }) res: Response,
-    ): Promise<SignInResponse> {
+    ): Promise<void> {
         const credentials = await this.authService.generateRefreshAndAccessToken(body);
         res.cookie(`accessToken`, credentials.accessToken.value, {
             httpOnly: true,
             secure: true,
             sameSite: `strict`,
+            maxAge: parseExpiresIn(credentials.accessToken.expiresIn),
         });
-        return credentials;
+        res.cookie(`refreshToken`, credentials.refreshToken.value, {
+            httpOnly: true,
+            secure: true,
+            sameSite: `strict`,
+            maxAge: parseExpiresIn(credentials.refreshToken.expiresIn),
+        });
     }
 
     @Post(`sign-up`)
@@ -206,13 +213,20 @@ export class V1AuthController {
     public async refreshAccessToken(
         @Body() body: RefreshTokenDto,
         @Res({ passthrough: true }) res: Response,
-    ): Promise<SignInResponse> {
+    ): Promise<void> {
         const credentials = await this.authService.refreshToken(body);
         res.cookie(`accessToken`, credentials.accessToken.value, {
             httpOnly: true,
             secure: true,
             sameSite: `strict`,
+            maxAge: parseExpiresIn(credentials.accessToken.expiresIn),
         });
-        return credentials;
+        res.cookie(`refreshToken`, credentials.refreshToken.value, {
+            httpOnly: true,
+            secure: true,
+            sameSite: `strict`,
+            path: `/v1/auth/token/refresh`,
+            maxAge: parseExpiresIn(credentials.refreshToken.expiresIn),
+        });
     }
 }

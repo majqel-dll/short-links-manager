@@ -1,6 +1,6 @@
 import { BucketEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
-import { BasicSearchQueryParamsDto } from "@libs/dtos";
+import { BasicSearchQueryParamsDto, UpdateUserDto } from "@libs/dtos";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { Logger } from "@libs/logger";
@@ -20,6 +20,8 @@ import {
     UserEntity,
 } from "@libs/entities";
 import sharp from "sharp";
+import argon from "argon2";
+import { GetUserQueryParamsDto } from "@libs/dtos/user/get-user-query-params.dto";
 
 @Injectable()
 export class V1UserService implements OnApplicationBootstrap {
@@ -88,17 +90,20 @@ export class V1UserService implements OnApplicationBootstrap {
     public async getUserById(
         userId: number,
         { id, permissions }: ActiveUserPayload,
+        queryParams: GetUserQueryParamsDto,
     ): Promise<UserEntity> {
         this.validateUserPermissionToAccessResource(userId, id, permissions);
 
+        const { logs, requests, permissions: queryPermissions, redirections, roles } = queryParams;
         const user = await this.userRepository
             .findOne({
                 where: { id: userId },
                 relations: {
-                    roles: { permissions: true },
-                    permissions: true,
-                    redirections: true,
-                    logs: true,
+                    roles: roles ? { permissions: true } : false,
+                    permissions: queryPermissions,
+                    redirections,
+                    logs,
+                    requests
                 },
             })
             .catch((error) => {
@@ -121,15 +126,95 @@ export class V1UserService implements OnApplicationBootstrap {
     public async updateUserData(
         userId: number,
         { id, permissions }: ActiveUserPayload,
-        { }: unknown,
-    ): Promise<void> { }
+        { newLogin, newEmail, currentPassword }: UpdateUserDto,
+    ): Promise<void> {
+
+        const startTime: number = Date.now();
+        this.validateUserPermissionToAccessResource(userId, id, permissions);
+
+        const user = await this.userRepository
+            .findOne({
+                where: { id: userId },
+                relations: { permissions: true },
+            })
+            .catch((error) => {
+                this.logger.error(
+                    `Failed to fetch user permissions from the database for userId: ${userId}.`,
+                    {
+                        error: error as Error,
+                        tag: LogTypeEnum.DATABASE_FAIL,
+                        startTime: Date.now(),
+                    },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to fetch user permissions from the database for userId: ${userId}.`,
+                );
+            });
+
+        if (!user) {
+            throw new NotFoundException(`User with id ${userId} not found.`);
+        }
+
+        const isPasswordValid = await argon.verify(user.passwordHash, currentPassword);
+        if (!isPasswordValid) {
+            throw new ForbiddenException(`Current password is incorrect.`);
+        }
+
+        if (newLogin) {
+            user.login = newLogin;
+        }
+        if (newEmail) {
+            user.email = newEmail;
+        }
+
+        await this.userRepository.save(user).catch((error) => {
+            this.logger.error(
+                `Failed to update user data in the database for userId: ${userId}.`,
+                { error: error as Error, tag: LogTypeEnum.UPDATE_FAIL, startTime },
+            );
+            throw new InternalServerErrorException(
+                `Failed to update user data in the database for userId: ${userId}.`,
+            );
+        });
+    }
 
     public async getUserPermissions(
         userId: number,
         { id, permissions }: ActiveUserPayload,
     ): Promise<PermissionEntity[]> {
+
+        const startTime: number = Date.now();
         this.validateUserPermissionToAccessResource(userId, id, permissions);
-        return [];
+
+        const user = await this.userRepository
+            .findOne({
+                where: { id: userId },
+                relations: {
+                    permissions: true,
+                    roles: { permissions: true }
+                },
+            })
+            .catch((error) => {
+                this.logger.error(
+                    `Failed to fetch user permissions from the database for userId: ${userId}.`,
+                    { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to fetch user permissions from the database for userId: ${userId}.`,
+                );
+            });
+
+        if (!user) {
+            throw new NotFoundException(`User with id ${userId} not found.`);
+        }
+
+        const assignedPermissions = new Set<PermissionEntity>();
+        user.permissions?.forEach(permission => assignedPermissions.add(permission));
+        user.roles?.forEach((role) =>
+            role.permissions.forEach(permission => assignedPermissions.add(permission)),
+        );
+
+        return Array.from(assignedPermissions);
     }
 
     public async getUserRoles(
