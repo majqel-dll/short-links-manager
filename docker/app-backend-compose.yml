@@ -9,6 +9,11 @@ x-app-backend-base: &app-backend-base
     MAIN_DATABASE_USER: ${MAIN_DATABASE_USER}
     MAIN_DATABASE_PASS: ${MAIN_DATABASE_PASS}
     MAIN_DATABASE_NAME: ${MAIN_DATABASE_NAME}
+    SMTP_PASS: ${SMTP_PASS}
+    SMTP_HOST: ${SMTP_HOST}
+    SMTP_PORT: ${SMTP_PORT}
+    SMTP_USER: ${SMTP_USER}
+    SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
     MINIO_ENDPOINT: ${MINIO_ENDPOINT}
     MINIO_PORT: ${MINIO_PORT}
     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -33,6 +38,8 @@ services:
     profiles: [dev, backend-dev]
     depends_on:
       - short-links-manager-database-dev
+      - short-links-manager-redis-dev
+      - short-links-manager-minio-dev
     ports:
       - "127.0.0.1:5000:3000"
     expose:
@@ -49,4 +56,6 @@ services:
     profiles: [prod, backend-prod]
     depends_on:
       - short-links-manager-database-prod
+      - short-links-manager-redis-prod
+      - short-links-manager-minio-prod
     command: npm run start:prod

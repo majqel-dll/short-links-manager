@@ -14,6 +14,14 @@ declare namespace NodeJS {
     MAIN_DATABASE_PASS: string;
     MAIN_DATABASE_NAME: string;
 
+    // EMAILER
+
+    SMTP_HOST: string;
+    SMTP_PORT: number;
+    SMTP_USER: string;
+    SMTP_PASS: string;
+    SMTP_FROM_EMAIL: string;
+
     // MINIO
 
     MINIO_ENDPOINT: string;

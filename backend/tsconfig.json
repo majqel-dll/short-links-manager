@@ -12,6 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "sourceMap": true,
+    "jsx": "react",
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
