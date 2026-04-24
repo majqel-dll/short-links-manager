@@ -14,6 +14,8 @@
     "^@libs/database(|/.*)$": "<rootDir>/../libs/database/src/$1",
     "^@libs/decorators(|/.*)$": "<rootDir>/../libs/decorators/src/$1",
     "^@libs/dtos(|/.*)$": "<rootDir>/../libs/dtos/src/$1",
+    "^@libs/email-templates(|/.*)$": "<rootDir>/../libs/email-templates/src/$1",
+    "^@libs/emailer(|/.*)$": "<rootDir>/../libs/emailer/src/$1",
     "^@libs/entities(|/.*)$": "<rootDir>/../libs/entities/src/$1",
     "^@libs/enums(|/.*)$": "<rootDir>/../libs/enums/src/$1",
     "^@libs/guards(|/.*)$": "<rootDir>/../libs/guards/src/$1",

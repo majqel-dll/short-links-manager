@@ -35,6 +35,24 @@
         "tsConfigPath": "libs/dtos/tsconfig.lib.json"
       }
     },
+    "email-templates": {
+      "type": "library",
+      "root": "libs/email-templates",
+      "entryFile": "index",
+      "sourceRoot": "libs/email-templates/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/email-templates/tsconfig.lib.json"
+      }
+    },
+    "emailer": {
+      "type": "library",
+      "root": "libs/emailer",
+      "entryFile": "index",
+      "sourceRoot": "libs/emailer/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/emailer/tsconfig.lib.json"
+      }
+    },
     "entities": {
       "type": "library",
       "root": "libs/entities",

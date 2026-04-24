@@ -47,6 +47,18 @@
       "@libs/dtos/*": [
         "./libs/dtos/src/*"
       ],
+      "@libs/email-templates": [
+        "./libs/email-templates/src"
+      ],
+      "@libs/email-templates/*": [
+        "./libs/email-templates/src/*"
+      ],
+      "@libs/emailer": [
+        "./libs/emailer/src"
+      ],
+      "@libs/emailer/*": [
+        "./libs/emailer/src/*"
+      ],
       "@libs/entities": [
         "./libs/entities/src"
       ],

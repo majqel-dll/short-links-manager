@@ -1,20 +1,23 @@
+import { type ActiveUserPayload } from "@libs/types";
+import { ActiveUser } from "@libs/decorators";
 import {
     ClassSerializerInterceptor,
     UseInterceptors,
     Controller,
     Get,
-    Post,
 } from "@nestjs/common";
 
 @Controller(`v1/code`)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1CodeController {
     @Get(`user/:id`)
-    public async findActiveCodeForUser() {}
+    public async findActiveCodeForUser() { }
 
     @Get(`:code/confirm`)
-    public async confirmUserByActivationCode() {}
+    public async confirmUserByActivationCode() { }
 
-    @Post()
-    public async sendVerificationCodeToEmail() {}
+    @Get()
+    public async sendVerificationCodeToEmail(
+        @ActiveUser() activeUser: ActiveUserPayload,
+    ) { }
 }
