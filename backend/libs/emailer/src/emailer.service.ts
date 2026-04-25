@@ -19,6 +19,15 @@ export class EmailerService {
         return [html, text];
     }
 
+    public isEmailValid = (email: string): boolean => {
+        const pattern = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        return pattern.test(email);
+    }
+
+    public randomNumber = (min: number, max: number): Number => {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
     public async send<T, U extends EmailerEventsEnum>(
         { to, data, subject, cc, bcc, event }: MailerConfig<T, U>
     ): Promise<void> {
