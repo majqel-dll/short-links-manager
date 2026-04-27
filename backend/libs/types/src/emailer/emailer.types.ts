@@ -10,12 +10,12 @@ export type MailerDataMap = {
     [EmailerEventsEnum.PASSWORD_RESET]: PasswordResetEmailData,
 }
 
-export type MailerConfig<T extends any, U extends EmailerEventsEnum> = {
+export type MailerConfig<T extends EmailerEventsEnum, U extends MailerDataMap[T]> = {
     to: string | string[],
-    data?: T,
+    data?: U,
     html: string,
     subject: string,
     cc?: string | string[],
     bcc?: string | string[],
-    event: U,
+    event: T,
 }

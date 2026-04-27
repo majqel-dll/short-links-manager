@@ -1,8 +1,8 @@
 import { createTransport, SendMailOptions } from 'nodemailer'
 import { EmailerEventsEnum, LogTypeEnum } from '@libs/enums';
+import { MailerDataMap, type MailerConfig } from '@libs/types';
 import { InjectLogger } from '@libs/decorators';
 import { Injectable } from '@nestjs/common';
-import { type MailerConfig } from '@libs/types';
 import { Logger } from '@libs/logger';
 @Injectable()
 export class EmailerService {
@@ -11,7 +11,9 @@ export class EmailerService {
         @InjectLogger(EmailerService) private readonly logger: Logger,
     ) { }
 
-    private pickTemplate(): [string, string] {
+    private pickTemplate<T extends EmailerEventsEnum, U>(
+        event: T, data?: MailerDataMap[T]
+    ): [string, string] {
 
         let html: string = ``;
         let text: string = ``;
@@ -28,7 +30,7 @@ export class EmailerService {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
-    public async send<T, U extends EmailerEventsEnum>(
+    public async send<T extends EmailerEventsEnum, U extends MailerDataMap[T]>(
         { to, data, subject, cc, bcc, event }: MailerConfig<T, U>
     ): Promise<void> {
 
@@ -63,7 +65,7 @@ export class EmailerService {
                 tls: { rejectUnauthorized: false }
             })
 
-            const [html, text] = this.pickTemplate();
+            const [html, text] = this.pickTemplate(event, data);
             const options: SendMailOptions = {
                 to: Array.isArray(to) ? to : [to].filter(Boolean).join(`,`),
                 text,
