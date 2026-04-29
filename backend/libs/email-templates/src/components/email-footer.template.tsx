@@ -11,7 +11,7 @@ export function EmailFooter(
     const descriptionStyle = `text-[#111111] text-center`;
 
     return (<>
-        {withSeparator && <Hr />}
+        {withSeparator && <Hr className="mb-3" />}
         <Section className={sectionStyle}>
             {text && <Text className={textStyle}>{text}</Text>}
             {description && <Text className={descriptionStyle}>{description}</Text>}

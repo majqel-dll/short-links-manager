@@ -8,7 +8,7 @@ export function EmailHeader(
     { text, description, status, withSeparator }: EmailHeaderProps
 ): JSX.Element {
 
-    const wraperStyle = `bg-white shadow-soft-light rounded-md p3 border-solid border-t-[10px] ${getStyleForStatus(status, EmailPartEnum.BORDER)}`;
+    const wraperStyle = `bg-white shadow-soft-light rounded-md p-1 border-solid border-t-[10px] ${getStyleForStatus(status, EmailPartEnum.BORDER)}`;
     const textStyle = `text-black font-bold text-center ${description && "mb-1"}`;
     const descriptionStyle = `text-[#121212] text-center`;
 

@@ -11,6 +11,12 @@ export function EmailLayout(
         <Tailwind config={{
             theme: {
                 extend: {
+                    colors: {
+                        mainbg: "#eee",
+                        mainfg: "#fff",
+                        accent: "#5c5",
+                        text: "#000"
+                    },
                     fontFamily: {
                         sans: [`montserrat`, `sans-serif`]
                     },

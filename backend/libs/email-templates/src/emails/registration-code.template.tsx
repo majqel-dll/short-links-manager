@@ -7,14 +7,16 @@ export function RegistrationCodeTemplate(
     { code, email, expiryTime }: any
 ): JSX.Element {
 
-    const content = <EmailContentComponent>
-        <div>Poniżej znajdziesz kod aktywacyjny do Twojego konta.</div>
+    const content = <>
+        <EmailContentComponent>
+            <div className="text-center pt-3">Poniżej znajdziesz kod aktywacyjny do Twojego konta.</div>
+            <div className="text-center p-3">Wygaśnięcie kodu: <span className="font-bold">{expiryTime ?? `$expiryTime`}</span></div>
+        </EmailContentComponent>
+        <EmailContentComponent>
+            <EmailCode code={code ?? `$your-code`} />
+        </EmailContentComponent>
 
-        <EmailCode code={code} />
-        <ul>
-            <li className="list-none text-left" >Wygaśnięcie kodu: {expiryTime ?? `'$expiryTime'`}</li>
-        </ul>
-    </EmailContentComponent>
+    </>
 
     const props: EmailLayoutProps = {
         title: `Kod weryfikacyjny dla ${email}`,
