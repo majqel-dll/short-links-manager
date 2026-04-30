@@ -200,7 +200,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         return body;
     }
 
-    public use(req: Request, res: Response, next: NextFunction): void {
+    public use(req: Request, _: Response, next: NextFunction): void {
         const requestId = uuidv4();
         req.processingStartTime = new Date();
         req.executionId = requestId;

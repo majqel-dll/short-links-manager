@@ -1,12 +1,11 @@
+import { MailerDataMap, RegistrationCodeEmailData, type MailerConfig } from '@libs/types';
+import { RegistrationCodeTemplate } from '@libs/email-templates';
+import { render, toPlainText } from '@react-email/components';
 import { createTransport, SendMailOptions } from 'nodemailer'
 import { EmailerEventsEnum, LogTypeEnum } from '@libs/enums';
-import { MailerDataMap, RegistrationCodeEmailData, type MailerConfig } from '@libs/types';
 import { InjectLogger } from '@libs/decorators';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@libs/logger';
-import { RegistrationCodeTemplate } from '@libs/email-templates';
-import { render, toPlainText } from '@react-email/components';
-import { JSX } from 'react';
 @Injectable()
 export class EmailerService {
 

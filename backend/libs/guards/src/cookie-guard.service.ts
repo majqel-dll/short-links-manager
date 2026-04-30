@@ -24,7 +24,7 @@ export class CookieGuardService implements CanActivate {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(CookieGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -66,7 +66,7 @@ export class CookieGuardService implements CanActivate {
             throw new UnauthorizedException(`User not found.`);
         }
 
-        if (user.activatedAt === null) {
+        if (user.activatedAt === null && request.url !== `/v1/code`) {
             void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`User account is not activated.`);
         }
