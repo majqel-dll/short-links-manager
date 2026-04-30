@@ -1,6 +1,6 @@
-import { UserEntity, SessionEntity, RoleEntity, PermissionEntity } from "@libs/entities";
 import { SignUpDto, SignInDto, PasswordChangeDto, RefreshTokenDto } from "@libs/dtos";
 import { ActiveUserPayload, RefreshTokenPayload, SignInResponse } from "@libs/types";
+import { UserEntity, SessionEntity, RoleEntity } from "@libs/entities";
 import { LogTypeEnum, PermissionEnum, RoleEnum } from "@libs/enums";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
@@ -28,8 +28,6 @@ export class V1AuthService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectRepository(RoleEntity)
         private readonly roleRepository: Repository<RoleEntity>,
-        @InjectRepository(PermissionEntity)
-        private readonly permissionRepository: Repository<PermissionEntity>,
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
@@ -59,8 +57,12 @@ export class V1AuthService {
             const newUser = this.userRepository.create({
                 email,
                 login,
-                passwordHash,
                 roles,
+                passwordHash,
+                activatedAt:
+                    process.env.SMTP_HOST
+                        ? null
+                        : new Date(),
             });
 
             await this.userRepository.save(newUser);

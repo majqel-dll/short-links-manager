@@ -1,9 +1,12 @@
 import { createTransport, SendMailOptions } from 'nodemailer'
 import { EmailerEventsEnum, LogTypeEnum } from '@libs/enums';
-import { MailerDataMap, type MailerConfig } from '@libs/types';
+import { MailerDataMap, RegistrationCodeEmailData, type MailerConfig } from '@libs/types';
 import { InjectLogger } from '@libs/decorators';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@libs/logger';
+import { RegistrationCodeTemplate } from '@libs/email-templates';
+import { render, toPlainText } from '@react-email/components';
+import { JSX } from 'react';
 @Injectable()
 export class EmailerService {
 
@@ -11,12 +14,33 @@ export class EmailerService {
         @InjectLogger(EmailerService) private readonly logger: Logger,
     ) { }
 
-    private pickTemplate<T extends EmailerEventsEnum, U>(
-        event: T, data?: MailerDataMap[T]
-    ): [string, string] {
+    private async pickTemplate<T extends EmailerEventsEnum, U extends MailerDataMap[T]>(
+        event: T, data?: U
+    ): Promise<[string, string]> {
 
-        let html: string = ``;
-        let text: string = ``;
+        let html: string = null;
+        let text: string = null;
+
+        switch (event) {
+            case EmailerEventsEnum.REGISTRATION_CODE:
+                html = await render(RegistrationCodeTemplate(data as RegistrationCodeEmailData), { pretty: true });
+                text = toPlainText(html);
+                break;
+            case EmailerEventsEnum.ACCOUNT_DELETION:
+                html = await render(RegistrationCodeTemplate(data as RegistrationCodeEmailData), { pretty: true });
+                text = toPlainText(html);
+                break;
+            case EmailerEventsEnum.PASSWORD_RESET_REQUEST:
+                html = await render(RegistrationCodeTemplate(data as RegistrationCodeEmailData), { pretty: true });
+                text = toPlainText(html);
+                break;
+            case EmailerEventsEnum.PASSWORD_RESET_CONFIRM:
+                html = await render(RegistrationCodeTemplate(data as RegistrationCodeEmailData), { pretty: true });
+                text = toPlainText(html);
+                break;
+            default:
+                throw new Error(`No template found for event: "${event}". Please provide html or text content directly.`);
+        }
 
         return [html, text];
     }
@@ -26,12 +50,8 @@ export class EmailerService {
         return pattern.test(email);
     }
 
-    public randomNumber = (min: number, max: number): Number => {
-        return Math.floor(Math.random() * (max - min)) + min;
-    }
-
     public async send<T extends EmailerEventsEnum, U extends MailerDataMap[T]>(
-        { to, data, subject, cc, bcc, event }: MailerConfig<T, U>
+        { to, data, subject, cc, bcc, event, text, html }: MailerConfig<T, U>
     ): Promise<void> {
 
         const startTime: number = Date.now();
@@ -65,7 +85,10 @@ export class EmailerService {
                 tls: { rejectUnauthorized: false }
             })
 
-            const [html, text] = this.pickTemplate(event, data);
+            if (!text && !html) {
+                [html, text] = await this.pickTemplate(event, data);
+            }
+
             const options: SendMailOptions = {
                 to: Array.isArray(to) ? to : [to].filter(Boolean).join(`,`),
                 text,
@@ -78,6 +101,7 @@ export class EmailerService {
             cc = Array.isArray(cc) ? cc : [cc].filter(Boolean);
 
             if (html) options.html = html;
+            if (text) options.text = text;
             if (bcc.length > 0) options.bcc = bcc.join(`,`);
             if (cc.length > 0) options.cc = cc.join(`,`);
 

@@ -7,7 +7,8 @@ import { UserEntity } from "@libs/entities";
 import { Repository } from "typeorm";
 import { ActiveUserPayload } from "@libs/types";
 import { EmailerEventsEnum } from "@libs/enums";
-
+import { render, pretty } from "@react-email/components";
+import { randomInt } from "crypto";
 @Injectable()
 export class V1CodeService {
 
@@ -21,19 +22,41 @@ export class V1CodeService {
         private readonly emailerService: EmailerService
     ) { }
 
+    private randomNumber(length: number = 9): string {
+        const maxValue = 10 ** length;
+        return randomInt(0, maxValue).toString().padStart(length, "0");
+    };
+
     public async sendVerificationCodeToEmail(
-        event: EmailerEventsEnum, { id }: ActiveUserPayload, email?: string,
+        { id }: ActiveUserPayload, email?: string,
     ): Promise<void> {
 
-        const user = await this.userRepository.findOne({ where: { id } });
+        if (!email) {
 
-        if (!user) {
-            this.logger.error(`User with id ${id} not found.`);
-            return;
+            const user = await this.userRepository.findOne({
+                where: { id },
+                select: { email: true }
+            });
+
+            if (!user) {
+                this.logger.error(`User with id ${id} not found.`);
+                return;
+            }
+
+            email = user.email;
         }
 
+        const code = this.randomNumber();
+        const expiryTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+        const link = `${process.env.ORIGIN}/v1/code/${code}/confirm`;
+
         const subject = `Your Verification Code`;
-        await this.emailerService.send();
+        await this.emailerService.send({
+            subject,
+            to: email,
+            data: { code, email, expiryTime, link },
+            event: EmailerEventsEnum.REGISTRATION_CODE,
+        });
 
     }
 

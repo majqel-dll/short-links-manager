@@ -3,7 +3,7 @@ import { EmailLayoutProps, RegistrationCodeEmailData } from "@libs/types";
 import { EmailStatusEnum } from "@libs/enums";
 import React, { JSX } from "react";
 
-export function RegistrationCodeTemplate(
+export function PasswordResetRequestTemplate(
     { code, email, expiryTime }: RegistrationCodeEmailData
 ): JSX.Element {
 
@@ -40,4 +40,4 @@ export function RegistrationCodeTemplate(
     return (<EmailLayout {...props} />);
 }
 
-export default RegistrationCodeTemplate;
+export default PasswordResetRequestTemplate;

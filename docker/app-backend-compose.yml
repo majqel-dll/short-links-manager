@@ -4,6 +4,7 @@ x-app-backend-base: &app-backend-base
   environment:
     SECRET: ${SECRET}
     NODE_ENV: ${NODE_ENV}
+    ORIGIN: ${ORIGIN}
     MAIN_DATABASE_HOST: ${MAIN_DATABASE_HOST}
     MAIN_DATABASE_PORT: ${MAIN_DATABASE_PORT}
     MAIN_DATABASE_USER: ${MAIN_DATABASE_USER}
