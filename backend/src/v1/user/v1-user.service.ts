@@ -266,6 +266,7 @@ export class V1UserService implements OnApplicationBootstrap {
 
         return user?.redirections || [];
     }
+    
 
     public async deleteAccount(
         userId: number,
