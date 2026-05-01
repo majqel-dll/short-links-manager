@@ -1,5 +1,5 @@
 import { PasswordChangeDto, RefreshTokenDto, SignInDto, SignUpDto } from "@libs/dtos";
-import { type ActiveUserPayload, SignInResponse } from "@libs/types";
+import { type ActiveUserPayload, BasicResponse, SignInResponse } from "@libs/types";
 import { type SessionEntity } from "@libs/entities";
 import { ActiveUser, Auth } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
@@ -123,7 +123,9 @@ export class V1AuthController {
     @ApiCreatedResponse(SignUpCreatedResponse)
     @ApiConflictResponse(SignUpConflictResponse)
     @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
-    public async signUp(@Body() body: SignUpDto): Promise<{ message: string }> {
+    public async signUp(
+        @Body() body: SignUpDto
+    ): Promise<BasicResponse> {
         await this.authService.createNewAccount(body);
         return {
             message: "Account created successfully, and now is waiting for activation.",
@@ -142,7 +144,7 @@ export class V1AuthController {
     @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
     public async terminateSession(
         @ActiveUser() activeUser: ActiveUserPayload,
-    ): Promise<{ message: string }> {
+    ): Promise<BasicResponse> {
         await this.authService.signOut(activeUser);
         return { message: "Current session terminated successfully." };
     }
@@ -158,7 +160,7 @@ export class V1AuthController {
     @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
     public async terminateAllSessions(
         @ActiveUser() activeUser: ActiveUserPayload,
-    ): Promise<{ message: string }> {
+    ): Promise<BasicResponse> {
         await this.authService.terminateAllSessionsForUser(activeUser);
         return { message: "All sessions terminated successfully." };
     }
@@ -177,7 +179,7 @@ export class V1AuthController {
     public async terminateSpecifiedSession(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`sessionUuid`) sessionUuid: string,
-    ): Promise<{ message: string }> {
+    ): Promise<BasicResponse> {
         await this.authService.signOut({ ...activeUser, sessionUuid });
         return { message: `Specified session ${sessionUuid} terminated successfully.` };
     }

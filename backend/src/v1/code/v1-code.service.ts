@@ -1,4 +1,5 @@
 import { BadRequestException, ClassSerializerInterceptor, Injectable, InternalServerErrorException, Logger, UseInterceptors } from "@nestjs/common";
+import { DataSource, IsNull, MoreThanOrEqual, Or, Repository } from "typeorm";
 import { CodeActionEnum } from "@libs/enums/code/code-action.enum";
 import { UserEntity, CodeEntity } from "@libs/entities";
 import { ThrottlerException } from "@nestjs/throttler";
@@ -7,7 +8,6 @@ import { InjectLogger } from "@libs/decorators";
 import { ActiveUserPayload } from "@libs/types";
 import { EmailerEventsEnum } from "@libs/enums";
 import { EmailerService } from "@libs/emailer";
-import { DataSource, Repository } from "typeorm";
 import { randomInt } from "crypto";
 @Injectable()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -35,7 +35,12 @@ export class V1CodeService {
     ): Promise<CodeEntity[]> {
 
         return await this.codeRepository.find({
-            where: { userId, action, usedAt: null, expiresAt: null },
+            where: {
+                userId,
+                action,
+                usedAt: null,
+                expiresAt: Or(IsNull(), MoreThanOrEqual(new Date())),
+            },
         }).catch(error => {
             this.logger.error(`Failed to find active code for user with id ${userId} and action ${action}. Error: ${error.message}`);
             throw new InternalServerErrorException(`Failed to find active code. Please try again later.`);
@@ -77,7 +82,7 @@ export class V1CodeService {
         user.activatedAt = new Date();
         codeEntity.usedAt = new Date();
 
-        this.dataSource.transaction(async (manager) => {
+        await this.dataSource.transaction(async (manager) => {
 
             await manager.save(UserEntity, user).catch(error => {
                 this.logger.error(`Failed to activate user with id ${user.id} using code ${code}. Error: ${error.message}`);
@@ -127,21 +132,17 @@ export class V1CodeService {
         }
 
         const code = this.randomNumber();
-        const expiryTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+        const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+        const expiryTime = expiresAt.toISOString();
 
         const codeEntity = await this.codeRepository.save(
-            this.codeRepository.create({ code, user, expiresAt: expiryTime })
+            this.codeRepository.create({ code, user, expiresAt, action: CodeActionEnum.VERIFY_EMAIL })
         ).catch(error => {
             this.logger.error(`Failed to save verification code for user with id ${id}. Error: ${error.message}`);
             throw new InternalServerErrorException(`Failed to save verification code. Please try again later.`);
         });
 
-        if (!codeEntity) {
-            this.logger.error(`Failed to create verification code for user with id ${id}.`);
-            throw new InternalServerErrorException(`Failed to create verification code. Please try again later.`);
-        }
-
-        const link = `${process.env.ORIGIN}/api/v1/code/${code}/confirm`;
+        const link = `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
 
         const subject = `Your Verification Code`;
         await this.emailerService.send({

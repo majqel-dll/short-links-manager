@@ -1,4 +1,4 @@
-import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
+import { BasicResponse, GetEntitiesResponse, RedirectResponse, type ActiveUserPayload } from "@libs/types";
 import { V1RedirectionService } from "./v1-redirection.service";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
@@ -71,7 +71,7 @@ import {
 @ApiForbiddenResponse(CommonRedirectionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonRedirectionInternalServerErrorResponse)
 export class V1RedirectionController {
-    constructor(private readonly redirectionService: V1RedirectionService) {}
+    constructor(private readonly redirectionService: V1RedirectionService) { }
 
     @Get(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
@@ -157,8 +157,9 @@ export class V1RedirectionController {
     public async deleteRedirection(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`redirectionId`, new ParseIntPipe()) redirectionId: number,
-    ): Promise<void> {
+    ): Promise<BasicResponse> {
         await this.redirectionService.deleteRedirection(redirectionId, activeUser);
+        return { message: "Redirection deleted successfully." };
     }
 
     @Get(`:route`)
@@ -171,7 +172,7 @@ export class V1RedirectionController {
     public async redirectClientTo(
         @Param(`route`) route: string,
         @Req() request: Request,
-    ): Promise<{ url: string; status: number }> {
+    ): Promise<RedirectResponse> {
         const urlWithId = await this.redirectionService.findRedirectionByRoute(route);
         if (
             !urlWithId ||

@@ -1,9 +1,9 @@
+import { GetUserQueryParamsDto, BasicSearchQueryParamsDto, UpdateUserDto } from "@libs/dtos";
 import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { PermissionEnum, AuthTypeEnum } from "@libs/enums";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
-import { BasicSearchQueryParamsDto, UpdateUserDto } from "@libs/dtos";
 import { V1UserService } from "./v1-user.service";
 import { randomUUID } from "crypto";
 import {
@@ -96,7 +96,6 @@ import {
     RoleEntity,
     UserEntity,
 } from "@libs/entities";
-import { GetUserQueryParamsDto } from "@libs/dtos/user/get-user-query-params.dto";
 
 @ApiTags(`User`)
 @Controller(`v1/user`)
@@ -108,7 +107,7 @@ import { GetUserQueryParamsDto } from "@libs/dtos/user/get-user-query-params.dto
 @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1UserController {
-    constructor(private readonly userService: V1UserService) {}
+    constructor(private readonly userService: V1UserService) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)
