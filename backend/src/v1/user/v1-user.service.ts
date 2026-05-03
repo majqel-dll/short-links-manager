@@ -1,6 +1,6 @@
+import { BasicSearchQueryParamsDto, GetUserQueryParamsDto, UpdateUserDto } from "@libs/dtos";
 import { BucketEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
-import { BasicSearchQueryParamsDto, UpdateUserDto } from "@libs/dtos";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { Logger } from "@libs/logger";
@@ -21,7 +21,6 @@ import {
 } from "@libs/entities";
 import sharp from "sharp";
 import argon from "argon2";
-import { GetUserQueryParamsDto } from "@libs/dtos/user/get-user-query-params.dto";
 
 @Injectable()
 export class V1UserService implements OnApplicationBootstrap {
@@ -266,7 +265,7 @@ export class V1UserService implements OnApplicationBootstrap {
 
         return user?.redirections || [];
     }
-    
+
 
     public async deleteAccount(
         userId: number,
