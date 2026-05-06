@@ -1,4 +1,8 @@
-import { DatabaseRelationTableEnum, DatabaseTableEnum } from "@libs/enums/database";
+import {
+    DatabaseRelationTableEnum,
+    DatabaseTableEnum,
+    ActivationSourceEnum,
+} from "@libs/enums";
 import { BasicEntityProperties } from "../partials/basic-entity-properties";
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from "typeorm";
 import { EncryptionTransformer as transformer } from "@libs/utils";
@@ -23,6 +27,16 @@ export class UserEntity extends BasicEntityProperties {
 
     @Column({ type: `varchar`, length: 64, nullable: true, default: null })
     public email: string;
+
+    @Column({
+        type: "enum",
+        enum: ActivationSourceEnum,
+        default: ActivationSourceEnum.SIGN_UP,
+    })
+    public activationSource: ActivationSourceEnum;
+
+    @Column({ type: "boolean", default: false })
+    public requiresPasswordChange: boolean;
 
     @Column({ type: `varchar`, length: 64, nullable: false, unique: true })
     public login: string;

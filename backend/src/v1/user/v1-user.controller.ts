@@ -1,19 +1,21 @@
-import {
-    GetUserQueryParamsDto,
-    BasicSearchQueryParamsDto,
-    UpdateUserDto,
-} from "@libs/dtos";
+import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum } from "@libs/enums";
 import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { PermissionEnum, AuthTypeEnum } from "@libs/enums";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { V1UserService } from "./v1-user.service";
+import {
+    BasicSearchQueryParamsDto,
+    GetUserQueryParamsDto,
+    CreateUserByPanelDto,
+    UpdateUserDto,
+} from "@libs/dtos";
 import { randomUUID } from "crypto";
 import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,
     ApiBadRequestResponse,
+    ApiConflictResponse,
     ApiForbiddenResponse,
     ApiNoContentResponse,
     ApiAcceptedResponse,
@@ -29,54 +31,60 @@ import {
     ApiTags,
 } from "@nestjs/swagger";
 import {
-    ChangeUserDataAcceptedResponse,
-    ChangeUserDataForbiddenResponse,
-    ChangeUserDataNotFoundResponse,
-    ChangeUserDataOperation,
+    GetUserRedirectionsForbiddenResponse,
+    GetUserPermissionsForbiddenResponse,
+    CreateUserByPanelForbiddenResponse,
     CommonInternalServerErrorResponse,
-    CommonUnauthorizedResponse,
+    DeleteUserAvatarNoContentResponse,
+    CreateUserByPanelConflictResponse,
+    DeleteUserAvatarForbiddenResponse,
+    CreateUserByPanelCreatedResponse,
+    DeleteUserAvatarNotFoundResponse,
+    PostUserAvatarBadRequestResponse,
+    ChangeUserDataForbiddenResponse,
+    PostUserAvatarForbiddenResponse,
+    GetUserAvatarForbiddenResponse,
+    ChangeUserDataAcceptedResponse,
+    ChangeUserDataNotFoundResponse,
     DeleteAccountForbiddenResponse,
     DeleteAccountNoContentResponse,
     DeleteAccountNotFoundResponse,
-    DeleteAccountOperation,
-    DeleteUserAvatarForbiddenResponse,
-    DeleteUserAvatarNoContentResponse,
-    DeleteUserAvatarNotFoundResponse,
-    DeleteUserAvatarOperation,
-    GetUserAvatarForbiddenResponse,
-    GetUserAvatarNotFoundResponse,
-    GetUserAvatarOkResponse,
-    GetUserAvatarOperation,
-    GetUserByIdForbiddenResponse,
-    GetUserByIdNotFoundResponse,
-    GetUserByIdOkResponse,
-    GetUserByIdOperation,
-    GetUserPermissionsForbiddenResponse,
-    GetUserPermissionsOkResponse,
-    GetUserPermissionsOperation,
-    GetUserRedirectionsForbiddenResponse,
-    GetUserRedirectionsOkResponse,
-    GetUserRedirectionsOperation,
-    GetUserRolesForbiddenResponse,
-    GetUserRolesOkResponse,
-    GetUserRolesOperation,
-    GetUsersForbiddenResponse,
-    GetUsersOkResponse,
-    GetUsersOperation,
-    PostUserAvatarBadRequestResponse,
-    PostUserAvatarBody,
     PostUserAvatarCreatedResponse,
-    PostUserAvatarForbiddenResponse,
+    GetUserAvatarNotFoundResponse,
+    GetUserRedirectionsOkResponse,
+    GetUserRolesForbiddenResponse,
+    GetUserByIdForbiddenResponse,
+    GetUserRedirectionsOperation,
+    GetUserPermissionsOkResponse,
+    GetUserByIdNotFoundResponse,
+    GetUserPermissionsOperation,
+    CommonUnauthorizedResponse,
+    CreateUserByPanelOperation,
+    DeleteUserAvatarOperation,
+    GetUsersForbiddenResponse,
+    ChangeUserDataOperation,
+    GetUserAvatarOkResponse,
     PostUserAvatarOperation,
+    DeleteAccountOperation,
+    GetUserRolesOkResponse,
+    GetUserAvatarOperation,
+    GetUserByIdOkResponse,
+    GetUserRolesOperation,
+    GetUserByIdOperation,
+    GetUsersOkResponse,
+    PostUserAvatarBody,
+    GetUsersOperation,
     UserIdParam,
 } from "./v1-user.controller.swagger";
 import { type Response } from "express";
 import {
     ClassSerializerInterceptor,
     MaxFileSizeValidator,
+    ForbiddenException,
     NotFoundException,
     FileTypeValidator,
     UseInterceptors,
+    StreamableFile,
     ParseFilePipe,
     UploadedFile,
     ParseIntPipe,
@@ -86,20 +94,20 @@ import {
     HttpCode,
     Delete,
     Param,
+    Query,
     Patch,
+    Body,
     Post,
     Get,
-    Query,
-    Body,
     Res,
-    StreamableFile,
 } from "@nestjs/common";
 import {
-    PermissionEntity,
     RedirectionEntity,
+    PermissionEntity,
     RoleEntity,
     UserEntity,
 } from "@libs/entities";
+import { V1AuthService } from "../auth";
 
 @ApiTags(`User`)
 @Controller(`v1/user`)
@@ -111,9 +119,12 @@ import {
 @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1UserController {
-    constructor(private readonly userService: V1UserService) {}
+    constructor(
+        private readonly userService: V1UserService,
+        private readonly authService: V1AuthService,
+    ) {}
 
-    @Get()
+    @Get(`list`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUsersOperation)
@@ -125,7 +136,7 @@ export class V1UserController {
         return await this.userService.getUsers(queryParams);
     }
 
-    @Get(`:userId`)
+    @Get(["", `:userId`])
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUserByIdOperation)
@@ -135,17 +146,39 @@ export class V1UserController {
     @ApiNotFoundResponse(GetUserByIdNotFoundResponse)
     public async getUserData(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`, new ParseIntPipe()) userId: number,
         @Query() queryParams: GetUserQueryParamsDto,
+        @Param(`userId`) userId?: number,
     ): Promise<UserEntity> {
-        return await this.userService.getUserById(userId, activeUser, queryParams);
+        console.log(userId);
+        if (
+            userId &&
+            userId !== activeUser.id &&
+            !activeUser.permissions.includes(PermissionEnum.MANAGE_OTHER_ACCOUNT)
+        ) {
+            throw new ForbiddenException(
+                `You do not have permission to access data of other users.`,
+            );
+        }
+
+        return await this.userService.getUserById(
+            userId ?? activeUser.id,
+            activeUser,
+            queryParams,
+        );
     }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @Permission(PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public async createUserByPanel(@Body() payload: {}): Promise<UserEntity> {
-        return await this.userService.createUserByPanel();
+    @ApiOperation(CreateUserByPanelOperation)
+    @ApiCreatedResponse(CreateUserByPanelCreatedResponse)
+    @ApiConflictResponse(CreateUserByPanelConflictResponse)
+    @ApiForbiddenResponse(CreateUserByPanelForbiddenResponse)
+    @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
+    public async createUserByPanel(
+        @Body() payload: CreateUserByPanelDto,
+    ): Promise<UserEntity> {
+        return await this.authService.createNewAccount(payload, ActivationSourceEnum.PANEL);
     }
 
     @Patch(`:userId`)
@@ -218,6 +251,13 @@ export class V1UserController {
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
     ): Promise<void> {
+        const { id, permissions } = activeUser;
+        if (userId !== id && !permissions.includes(PermissionEnum.DELETE_OTHER_ACCOUNT)) {
+            throw new ForbiddenException(
+                `You do not have permission to access this resource.`,
+            );
+        }
+
         return await this.userService.deleteAccount(userId, activeUser);
     }
 
@@ -230,10 +270,9 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserAvatarForbiddenResponse)
     public async getUserAvatar(
         @Res({ passthrough: true }) res: Response,
-        @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
     ): Promise<StreamableFile> {
-        const avatarBuffer = await this.userService.getUserAvatar(userId, activeUser);
+        const avatarBuffer = await this.userService.getUserAvatar(userId);
         if (avatarBuffer === null) {
             throw new NotFoundException(`Avatar not found for user with id ${userId}.`);
         }

@@ -4,5 +4,5 @@ import { IsEnum, IsOptional } from "class-validator";
 export class GetCodeQueryParamsDto {
     @IsOptional()
     @IsEnum(CodeActionEnum)
-    public event?: CodeActionEnum;
+    public action?: CodeActionEnum;
 }

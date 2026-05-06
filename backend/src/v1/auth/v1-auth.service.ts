@@ -1,7 +1,13 @@
-import { SignUpDto, SignInDto, PasswordChangeDto, RefreshTokenDto } from "@libs/dtos";
+import {
+    SignUpDto,
+    SignInDto,
+    PasswordChangeDto,
+    RefreshTokenDto,
+    CreateUserByPanelDto,
+} from "@libs/dtos";
 import { ActiveUserPayload, RefreshTokenPayload, SignInResponse } from "@libs/types";
 import { UserEntity, SessionEntity, RoleEntity } from "@libs/entities";
-import { LogTypeEnum, PermissionEnum, RoleEnum } from "@libs/enums";
+import { ActivationSourceEnum, LogTypeEnum, PermissionEnum, RoleEnum } from "@libs/enums";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { randomUUID as uuidv4 } from "crypto";
@@ -35,7 +41,10 @@ export class V1AuthService {
         private readonly jwtService: JwtService,
     ) {}
 
-    public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
+    public async createNewAccount(
+        { login, email, password }: SignUpDto | CreateUserByPanelDto,
+        source: ActivationSourceEnum = ActivationSourceEnum.SIGN_UP,
+    ): Promise<UserEntity> {
         const startTime = Date.now();
         const existingUser = await this.userRepository.findOne({
             where: [{ login }, { email }],
@@ -46,6 +55,9 @@ export class V1AuthService {
         }
 
         try {
+            if (!password) {
+                password = uuidv4();
+            }
             const passwordHash = await argon2.hash(password, {
                 type: argon2.argon2id,
                 timeCost: 3,
@@ -64,13 +76,20 @@ export class V1AuthService {
                 activatedAt: process.env.SMTP_HOST ? null : new Date(),
             });
 
-            await this.userRepository.save(newUser);
+            if (source === ActivationSourceEnum.PANEL) {
+                newUser.activationSource = ActivationSourceEnum.PANEL;
+                newUser.requiresPasswordChange = true;
+            }
 
-            await this.codeService.sendVerificationCodeToEmail({ id: newUser.id }, email);
-            void this.logger.log(`New account with id ${newUser.id} has been created.`, {
+            const user = await this.userRepository.save(newUser);
+
+            await this.codeService.sendVerificationCodeToEmail({ id: user.id }, email);
+            void this.logger.log(`New account with id ${user.id} has been created.`, {
                 startTime,
                 tag: LogTypeEnum.CREATED,
             });
+
+            return user;
         } catch (error) {
             if (typeof error === `object` && `code` in error && error?.code === "23505") {
                 throw new ConflictException(
@@ -106,12 +125,6 @@ export class V1AuthService {
         const isPasswordCorrect = await argon2.verify(user.passwordHash, password);
         if (!isPasswordCorrect) {
             throw new UnauthorizedException(`Invalid login or password.`);
-        }
-
-        if (user.activatedAt === null) {
-            throw new UnauthorizedException(
-                `Account is not activated. Please wait for administrator activation.`,
-            );
         }
 
         if (user.blockedAt !== null) {

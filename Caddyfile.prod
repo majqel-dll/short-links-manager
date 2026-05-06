@@ -6,7 +6,8 @@ http://:80 {
 
     encode zstd gzip
     header Strict-Transport-Security "max-age=0"
-
+    header -Server
+    
     log {
         output file /var/log/caddy/access.log {
             roll_size 64mb

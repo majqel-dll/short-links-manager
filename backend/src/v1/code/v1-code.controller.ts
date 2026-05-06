@@ -57,7 +57,7 @@ import {
 export class V1CodeController {
     constructor(private readonly codeService: V1CodeService) {}
 
-    @Get(`user/:id`)
+    @Get(`:action`)
     @HttpCode(HttpStatus.OK)
     @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
     @ApiBearerAuth()
@@ -70,16 +70,10 @@ export class V1CodeController {
     @ApiForbiddenResponse(CommonCodeForbiddenResponse)
     @ApiInternalServerErrorResponse(CommonCodeInternalServerErrorResponse)
     public async findActiveCodeForUser(
-        @Query() { event }: GetCodeQueryParamsDto,
-        @Param(`id`) userId: number,
-        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param() { action }: GetCodeQueryParamsDto,
+        @ActiveUser() { id }: ActiveUserPayload,
     ): Promise<CodeEntity[]> {
-        if (activeUser.id !== userId) {
-            throw new ForbiddenException(
-                `You don't have permission to view codes of other users.`,
-            );
-        }
-        return await this.codeService.findActiveCodeForUser(userId, event);
+        return await this.codeService.findActiveCodeForUser(id, action);
     }
 
     @Get(`:code/confirm`)

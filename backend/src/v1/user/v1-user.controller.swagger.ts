@@ -400,6 +400,30 @@ export const DeleteUserAvatarForbiddenResponse: ApiResponseOptions = {
         "The authenticated user is deleting another user's avatar without the **MANAGE_OTHER_ACCOUNT** permission.",
 };
 
+export const CreateUserByPanelOperation: ApiOperationOptions = {
+    summary: "Create user account (panel)",
+    description:
+        "Creates a new user account directly from the administration panel. " +
+        "Unlike the public sign-up flow, the account is immediately activated. " +
+        "If no password is provided, the account is created without one. " +
+        "Requires the **MANAGE_OTHER_ACCOUNT** permission.",
+};
+
+export const CreateUserByPanelCreatedResponse: ApiResponseOptions = {
+    description:
+        "User account created successfully. Returns the newly created user entity.",
+    schema: UserSchema,
+};
+
+export const CreateUserByPanelConflictResponse: ApiResponseOptions = {
+    description: "An account with the given login or email address already exists.",
+};
+
+export const CreateUserByPanelForbiddenResponse: ApiResponseOptions = {
+    description:
+        "The authenticated user does not have the **MANAGE_OTHER_ACCOUNT** permission.",
+};
+
 export const CommonUnauthorizedResponse: ApiResponseOptions = {
     description: "Missing, expired, or invalid authentication token.",
 };

@@ -6,6 +6,7 @@ import { LoggerModule } from "@libs/logger";
 import { Module } from "@nestjs/common";
 import { S3Module } from "@libs/s3";
 import { V1CodeModule } from "../code";
+import { V1AuthModule } from "../auth";
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { V1CodeModule } from "../code";
         LoggerModule.forFeature([V1UserService, V1UserController]),
         GuardsModule,
         V1CodeModule,
+        V1AuthModule,
         S3Module,
     ],
     controllers: [V1UserController],

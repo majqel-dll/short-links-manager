@@ -15,5 +15,6 @@ import { V1CodeModule } from "../code";
     ],
     controllers: [V1AuthController],
     providers: [V1AuthService],
+    exports: [V1AuthService],
 })
-export class V1AuthModule {}
+export class V1AuthModule { }

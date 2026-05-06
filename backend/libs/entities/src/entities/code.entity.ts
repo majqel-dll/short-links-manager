@@ -30,6 +30,5 @@ export class CodeEntity extends BasicEntityProperties {
         onDelete: `SET NULL`,
     })
     @JoinColumn({ name: `userId` })
-    @Exclude()
     public user?: UserEntity;
 }

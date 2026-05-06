@@ -25,6 +25,7 @@ import {
 } from "@libs/entities";
 import sharp from "sharp";
 import argon from "argon2";
+import { CreateUserByPanelDto } from "@libs/dtos/user/create-user-by-panel.dto";
 
 @Injectable()
 export class V1UserService implements OnApplicationBootstrap {
@@ -132,7 +133,7 @@ export class V1UserService implements OnApplicationBootstrap {
         return user;
     }
 
-    public async createUserByPanel(): Promise<UserEntity> {
+    public async createUserByPanel(payload: CreateUserByPanelDto): Promise<UserEntity> {
         return null;
     }
 
@@ -287,13 +288,6 @@ export class V1UserService implements OnApplicationBootstrap {
         activeUser: ActiveUserPayload,
     ): Promise<void> {
         const startTime: number = Date.now();
-        const { id, permissions } = activeUser;
-        if (userId !== id && !permissions.includes(PermissionEnum.DELETE_OTHER_ACCOUNT)) {
-            throw new ForbiddenException(
-                `You do not have permission to access this resource.`,
-            );
-        }
-
         await this.userRepository.delete({ id: userId }).catch((error) => {
             this.logger.error(
                 `Failed to delete user with id ${userId} from the database.`,
@@ -312,12 +306,8 @@ export class V1UserService implements OnApplicationBootstrap {
         });
     }
 
-    public async getUserAvatar(
-        userId: number,
-        { id, permissions }: ActiveUserPayload,
-    ): Promise<Buffer> {
+    public async getUserAvatar(userId: number): Promise<Buffer> {
         const startTime = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
         const avatarBuffer = await this.minio
             .getObject(
                 BucketEnum.USER_AVATARS,

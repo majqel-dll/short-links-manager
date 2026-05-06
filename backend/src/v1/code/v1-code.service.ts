@@ -36,11 +36,30 @@ export class V1CodeService {
         return randomInt(0, maxValue).toString().padStart(length, "0");
     }
 
+    private hideEmailDetails(email: string): string {
+        const parts: string[] = email.split("@");
+        let stars = "";
+
+        let firstPart = parts[0].substring(0, Math.floor(parts[0].length / 3));
+        for (let i = 0; i <= Math.floor(parts[0].length / 3); i++) {
+            firstPart += "*";
+        }
+        const lastPart = parts[1].substring(
+            Math.floor(parts[1].length / 3),
+            parts[1].length,
+        );
+        for (let i = 0; i <= Math.floor(parts[1].length / 3); i++) {
+            stars += "*";
+        }
+
+        return `${firstPart}@${stars}${lastPart}`;
+    }
+
     public async findActiveCodeForUser(
         userId: number,
         action: CodeActionEnum,
     ): Promise<CodeEntity[]> {
-        return await this.codeRepository
+        const codes = await this.codeRepository
             .find({
                 where: {
                     userId,
@@ -48,6 +67,7 @@ export class V1CodeService {
                     usedAt: null,
                     expiresAt: Or(IsNull(), MoreThanOrEqual(new Date())),
                 },
+                relations: { user: true },
             })
             .catch((error) => {
                 this.logger.error(
@@ -57,6 +77,14 @@ export class V1CodeService {
                     `Failed to find active code. Please try again later.`,
                 );
             });
+
+        return codes.map((code) => {
+            const email = code.user?.email;
+            code.user = {
+                email: email ? this.hideEmailDetails(email) : null,
+            } as UserEntity;
+            return code;
+        });
     }
 
     public async activateUserWithCode(code: string): Promise<void> {
