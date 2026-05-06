@@ -29,7 +29,7 @@ export class V1CodeService {
         private readonly logger: Logger,
         private readonly emailerService: EmailerService,
         private readonly dataSource: DataSource,
-    ) {}
+    ) { }
 
     private randomNumber(length = 9): string {
         const maxValue = 10 ** length;
@@ -167,9 +167,10 @@ export class V1CodeService {
 
     public async sendVerificationCodeToEmail(
         { id }: Pick<ActiveUserPayload, "id">,
+        event: CodeActionEnum,
         email?: string,
-        event: CodeActionEnum = CodeActionEnum.VERIFY_EMAIL,
     ): Promise<boolean> {
+
         const startTime = Date.now();
         const user = await this.userRepository
             .findOne({
@@ -209,7 +210,8 @@ export class V1CodeService {
 
         const existingCode = user.codes?.find(
             (code) =>
-                code.action === event && (!code.expiresAt || code.expiresAt > new Date()),
+                code.action === event &&
+                (!code.expiresAt || (code.expiresAt > new Date() && !code.usedAt)),
         );
         if (existingCode && existingCode.updatedAt > new Date(Date.now() - 3 * 60 * 1000)) {
             this.logger.warn(
@@ -222,7 +224,6 @@ export class V1CodeService {
         }
 
         const code = existingCode ? existingCode.code : this.randomNumber();
-
         const expiresAt = existingCode
             ? existingCode.expiresAt
             : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
@@ -263,8 +264,32 @@ export class V1CodeService {
                     );
                 }));
 
-        const link = `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
-        const subject = `Your ${event} Code`;
+        const link = ((event: CodeActionEnum) => {
+            switch (event) {
+                case CodeActionEnum.VERIFY_EMAIL:
+                    return `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
+                case CodeActionEnum.RESET_PASSWORD_REQUEST:
+                    return `${process.env.ORIGIN}/panel/reset-password?code=${codeEntity.code}`;
+                case CodeActionEnum.DELETE_ACCOUNT_CONFIRM:
+                    return `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
+                default:
+                    return null;
+            }
+        })(event);
+
+        const subject = ((event: CodeActionEnum) => {
+            switch (event) {
+                case CodeActionEnum.VERIFY_EMAIL:
+                    return "Your account verification code";
+                case CodeActionEnum.RESET_PASSWORD_REQUEST:
+                    return "Password reset instructions";
+                case CodeActionEnum.DELETE_ACCOUNT_CONFIRM:
+                    return "Account deletion confirmation code";
+                default:
+                    return "Your verification code.";
+            }
+        })(event);
+
         await this.emailerService.send({
             subject,
             to: email,

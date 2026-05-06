@@ -1,11 +1,4 @@
-import {
-    GetPasswordResetKeyDto,
-    PasswordChangeDto,
-    RefreshTokenDto,
-    SignInDto,
-    SignUpDto,
-} from "@libs/dtos";
-import { type ActiveUserPayload, BasicResponse, SignInResponse } from "@libs/types";
+import { type ActiveUserPayload, BasicResponse } from "@libs/types";
 import { type SessionEntity } from "@libs/entities";
 import { ActiveUser, Auth } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
@@ -42,6 +35,11 @@ import {
     SignOutOperation,
     SignInOperation,
     SignUpOperation,
+    RequestPasswordResetOperation,
+    RequestPasswordResetAcceptedResponse,
+    ConfirmPasswordResetOperation,
+    ConfirmPasswordResetAcceptedResponse,
+    ConfirmPasswordResetBadRequestResponse,
 } from "./v1-auth.controller.swagger";
 import {
     ClassSerializerInterceptor,
@@ -73,13 +71,21 @@ import {
     ApiParam,
     ApiTags,
 } from "@nestjs/swagger";
+import {
+    GetPasswordResetKeyDto,
+    PasswordChangeDto,
+    RefreshTokenDto,
+    ResetPasswordDto,
+    SignInDto,
+    SignUpDto,
+} from "@libs/dtos";
 
 @ApiTags("Auth")
 @Controller(`v1/auth`)
 @UseGuards(AuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) {}
+    constructor(private readonly authService: V1AuthService) { }
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -209,12 +215,31 @@ export class V1AuthController {
     @Post(`password/reset`)
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(AuthTypeEnum.NONE)
+    @ApiOperation(RequestPasswordResetOperation)
+    @ApiAcceptedResponse(RequestPasswordResetAcceptedResponse)
+    @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
     public async requestPasswordReset(
         @Body() { login }: GetPasswordResetKeyDto,
     ): Promise<BasicResponse> {
         await this.authService.requestPasswordReset(login);
         return {
             message: "Check your email for the password reset instructions.",
+        };
+    }
+
+    @Post(`password/reset/confirm`)
+    @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(AuthTypeEnum.NONE)
+    @ApiOperation(ConfirmPasswordResetOperation)
+    @ApiAcceptedResponse(ConfirmPasswordResetAcceptedResponse)
+    @ApiBadRequestResponse(ConfirmPasswordResetBadRequestResponse)
+    @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
+    public async confirmPasswordReset(
+        @Body() payload: ResetPasswordDto,
+    ): Promise<BasicResponse> {
+        await this.authService.changePasswordFromCode(payload);
+        return {
+            message: "Your password has been reset successfully.",
         };
     }
 

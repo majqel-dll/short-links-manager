@@ -35,5 +35,5 @@ export class ResetPasswordDto {
     })
     @IsDefined()
     @IsString()
-    public key: string;
+    public code: string;
 }

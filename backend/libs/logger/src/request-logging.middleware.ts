@@ -26,7 +26,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         @InjectLogger(RequestLoggingMiddleware)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public onModuleInit(): void {
         void this.logger.log(`Monitoring middleware has been initialized.`, {
@@ -122,7 +122,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 query: req?.query ?? null,
                 body:
                     req?.body && typeof req.body === `object`
-                        ? this.cleanBody(structuredClone(req.body))
+                        ? this.cleanBody(req.body)
                         : null,
                 ipId: existingIp?.id ?? null,
                 userId: userId ?? null,
@@ -185,17 +185,18 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
     }
 
     private cleanBody<T extends object>(body: T): T {
+        body = structuredClone(body);
         const keys = [
             `password`,
             `newPassword`,
             `confirmNewPassword`,
             `currentPassword`,
+            `email`,
+            `login`,
             `token`,
         ];
         keys.forEach((key) => {
-            if (key in body) {
-                delete body[key];
-            }
+            if (key in body) delete body[key];
         });
         return body;
     }

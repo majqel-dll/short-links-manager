@@ -1,25 +1,12 @@
-import {
-    SignUpDto,
-    SignInDto,
-    PasswordChangeDto,
-    RefreshTokenDto,
-    CreateUserByPanelDto,
-} from "@libs/dtos";
 import { ActiveUserPayload, RefreshTokenPayload, SignInResponse } from "@libs/types";
-import { UserEntity, SessionEntity, RoleEntity } from "@libs/entities";
-import {
-    ActivationSourceEnum,
-    LogTypeEnum,
-    PasswordResetEnum,
-    PermissionEnum,
-    RoleEnum,
-} from "@libs/enums";
+import { UserEntity, SessionEntity, RoleEntity, CodeEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { randomUUID as uuidv4 } from "crypto";
 import { JwtService } from "@nestjs/jwt";
+import { V1CodeService } from "../code";
 import { Logger } from "@libs/logger";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import argon2 from "argon2";
 import {
     InternalServerErrorException,
@@ -30,7 +17,21 @@ import {
     ConflictException,
     Injectable,
 } from "@nestjs/common";
-import { V1CodeService } from "../code";
+import {
+    CreateUserByPanelDto,
+    PasswordChangeDto,
+    RefreshTokenDto,
+    SignUpDto,
+    SignInDto,
+    ResetPasswordDto,
+} from "@libs/dtos";
+import {
+    ActivationSourceEnum,
+    CodeActionEnum,
+    PermissionEnum,
+    LogTypeEnum,
+    RoleEnum,
+} from "@libs/enums";
 
 @Injectable()
 export class V1AuthService {
@@ -41,11 +42,14 @@ export class V1AuthService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectRepository(RoleEntity)
         private readonly roleRepository: Repository<RoleEntity>,
+        @InjectRepository(CodeEntity)
+        private readonly codeRepository: Repository<CodeEntity>,
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
         private readonly codeService: V1CodeService,
+        private readonly dataSource: DataSource,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async createNewAccount(
         { login, email, password }: SignUpDto | CreateUserByPanelDto,
@@ -89,7 +93,10 @@ export class V1AuthService {
 
             const user = await this.userRepository.save(newUser);
 
-            await this.codeService.sendVerificationCodeToEmail({ id: user.id }, email);
+            await this.codeService.sendVerificationCodeToEmail(
+                { id: user.id },
+                CodeActionEnum.VERIFY_EMAIL,
+                email);
             void this.logger.log(`New account with id ${user.id} has been created.`, {
                 startTime,
                 tag: LogTypeEnum.CREATED,
@@ -350,25 +357,134 @@ export class V1AuthService {
     }
 
     public async requestPasswordReset(login: string): Promise<void> {
+
         const startTime = Date.now();
         const user = await this.userRepository.findOne({
             where: [{ login }, { email: login }],
+            select: { id: true }
         });
 
-        if (!user) {
+        if (!user || user.blockedAt !== null) {
             throw new NotFoundException(`User with such login or email not found.`);
         }
 
-        if (user.blockedAt !== null) {
-            throw new ForbiddenException(`This account is banned.`);
-        }
+        await this.codeService.sendVerificationCodeToEmail(
+            user, CodeActionEnum.RESET_PASSWORD_REQUEST
+        );
 
         void this.logger.log(
             `Password reset code for user ${user.id} has been requested.`,
-            {
+            { startTime, tag: LogTypeEnum.INTERNAL_ACTION },
+        );
+    }
+
+    public async changePasswordFromCode(
+        { code, newPassword, newPasswordConfirm }: ResetPasswordDto,
+    ): Promise<void> {
+
+        const startTime = Date.now();
+        if (newPassword !== newPasswordConfirm) {
+            throw new BadRequestException(`Both passwords must match.`);
+        }
+
+        const codeEntity = await this.codeRepository.findOne({
+            where: { code, action: CodeActionEnum.RESET_PASSWORD_REQUEST },
+            relations: { user: true },
+        }).catch((error) => {
+            this.logger.error(
+                `Failed to find code ${code} for activation. Error: ${(error as Error)?.message}`,
+                { startTime, tag: LogTypeEnum.DATABASE_READ_FAIL, error: error as Error },
+            );
+            throw new InternalServerErrorException(
+                `Failed to activate account. Please try again later.`,
+            );
+        });
+
+        if (!codeEntity) {
+            this.logger.warn(`Attempt to change password with invalid code: ${code}`, {
                 startTime,
-                tag: LogTypeEnum.INTERNAL_ACTION,
-            },
+                tag: LogTypeEnum.WARN,
+            });
+            throw new BadRequestException(`Invalid reset password code.`);
+        }
+
+        if (codeEntity.usedAt) {
+            this.logger.warn(`Attempt to reuse already used code: ${code}`, {
+                startTime,
+                tag: LogTypeEnum.WARN,
+            });
+            throw new BadRequestException(`This reset password code has already been used.`);
+        }
+
+        if (codeEntity.expiresAt && codeEntity.expiresAt < new Date()) {
+            this.logger.warn(`Attempt to use expired code: ${code}`, {
+                startTime,
+                tag: LogTypeEnum.WARN,
+            });
+            throw new BadRequestException(`This reset password code has expired.`);
+        }
+
+        const user = codeEntity.user;
+        if (!user) {
+            this.logger.error(
+                `Code with id ${codeEntity.id} is not associated with any user.`,
+                { startTime, tag: LogTypeEnum.NOT_FOUND },
+            );
+            throw new InternalServerErrorException(
+                `Invalid reset password code. Please request a new one.`,
+            );
+        }
+
+        const passwordHash = await argon2
+            .hash(newPassword, { type: argon2.argon2id, timeCost: 3, memoryCost: 2 ** 16 })
+            .catch((error) => {
+                this.logger.error(`Failed to encrypt new password.`, {
+                    startTime,
+                    error,
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                });
+                throw new InternalServerErrorException(`Failed to update password.`);
+            });
+
+
+        await this.dataSource.transaction(async (manager) => {
+
+            user.passwordHash = passwordHash;
+            user.requiresPasswordChange = false;
+            user.lastPasswordChange = new Date();
+            codeEntity.usedAt = new Date();
+
+            await manager.save(CodeEntity, codeEntity)
+                .catch((error) => {
+                    this.logger.error(`Failed to mark code ${code} as used.`, {
+                        startTime, error, tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                    });
+                    throw new InternalServerErrorException(`Failed to update reset password code status.`);
+                });
+
+            await manager.save(UserEntity, user)
+                .catch((error) => {
+                    this.logger.error(`Failed to save password change in the database.`, {
+                        startTime, error, tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                    });
+                    throw new InternalServerErrorException(`Failed to update password.`);
+                });
+
+            await manager.update(SessionEntity,
+                { userId: user.id, isActive: true },
+                { isActive: false }
+            ).catch((error) => {
+                this.logger.error(`Failed to terminate active sessions after password change.`, {
+                    startTime, error, tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                });
+                throw new InternalServerErrorException(`Failed to terminate active sessions after password change.`);
+            });
+
+        });
+
+        void this.logger.log(
+            `Password for user ${user.id} has been changed from reset code.`,
+            { startTime, tag: LogTypeEnum.INTERNAL_ACTION },
         );
     }
 

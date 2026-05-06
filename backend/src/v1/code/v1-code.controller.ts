@@ -4,24 +4,23 @@ import { ActiveUser, Auth } from "@libs/decorators";
 import { GetCodeQueryParamsDto } from "@libs/dtos";
 import { V1CodeService } from "./v1-code.service";
 import {
+    ConfirmUserByActivationCodeAcceptedResponse,
+    SendVerificationCodeToEmailOkResponse,
+    CommonCodeInternalServerErrorResponse,
+    ConfirmUserByActivationCodeOperation,
+    SendVerificationCodeToEmailOperation,
+    CommonCodeTooManyRequestsResponse,
+    ConfirmUserByActivationCodeParam,
+    GetActiveCodesForUserOkResponse,
+    GetActiveCodesForUserEventQuery,
+    CommonCodeUnauthorizedResponse,
+    GetActiveCodesForUserOperation,
+    GetActiveCodesForUserIdParam,
     CommonCodeBadRequestResponse,
     CommonCodeForbiddenResponse,
-    CommonCodeInternalServerErrorResponse,
-    CommonCodeTooManyRequestsResponse,
-    CommonCodeUnauthorizedResponse,
-    ConfirmUserByActivationCodeAcceptedResponse,
-    ConfirmUserByActivationCodeOperation,
-    ConfirmUserByActivationCodeParam,
-    GetActiveCodesForUserEventQuery,
-    GetActiveCodesForUserIdParam,
-    GetActiveCodesForUserOkResponse,
-    GetActiveCodesForUserOperation,
-    SendVerificationCodeToEmailOkResponse,
-    SendVerificationCodeToEmailOperation,
 } from "./v1-code.controller.swagger";
 import {
     ClassSerializerInterceptor,
-    ForbiddenException,
     UseInterceptors,
     Controller,
     HttpStatus,
@@ -29,24 +28,23 @@ import {
     Redirect,
     HttpCode,
     Param,
-    Query,
     Get,
 } from "@nestjs/common";
-import { AuthTypeEnum } from "@libs/enums";
+import { AuthTypeEnum, CodeActionEnum } from "@libs/enums";
 import { CodeEntity } from "@libs/entities";
 import {
     ApiInternalServerErrorResponse,
     ApiTooManyRequestsResponse,
     ApiUnauthorizedResponse,
-    ApiAcceptedResponse,
+    ApiBadRequestResponse,
     ApiForbiddenResponse,
+    ApiAcceptedResponse,
+    ApiOkResponse,
     ApiBearerAuth,
     ApiCookieAuth,
-    ApiBadRequestResponse,
     ApiOperation,
     ApiParam,
     ApiQuery,
-    ApiOkResponse,
     ApiTags,
 } from "@nestjs/swagger";
 
@@ -107,7 +105,7 @@ export class V1CodeController {
         @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<BasicResponse> {
         const wasCodeSend: boolean =
-            await this.codeService.sendVerificationCodeToEmail(activeUser);
+            await this.codeService.sendVerificationCodeToEmail(activeUser, CodeActionEnum.VERIFY_EMAIL);
         return wasCodeSend
             ? { message: "Verification code sent successfully." }
             : { message: "Failed to send verification code." };

@@ -239,3 +239,36 @@ export const CommonUnauthorizedResponse: ApiResponseOptions = {
 export const CommonInternalServerErrorResponse: ApiResponseOptions = {
     description: "An unexpected error occurred. Please try again later.",
 };
+
+export const RequestPasswordResetOperation: ApiOperationOptions = {
+    summary: "Request password reset",
+    description:
+        "Initiates the password reset flow for the account identified by the provided login or email address. " +
+        "If the account exists and is not blocked, a one-time reset code is sent to the associated email address. " +
+        "To prevent user enumeration, the endpoint always returns 202 Accepted regardless of whether the account exists.",
+};
+
+export const RequestPasswordResetAcceptedResponse: ApiResponseOptions = {
+    description:
+        "Request accepted. If the account exists, a reset code has been dispatched to the registered email address.",
+    schema: MessageSchema("Check your email for the password reset instructions."),
+};
+
+export const ConfirmPasswordResetOperation: ApiOperationOptions = {
+    summary: "Confirm password reset",
+    description:
+        "Completes the password reset flow by verifying the one-time reset code and updating the account password. " +
+        "The code must be valid, unused, and not expired. " +
+        "On success, all active sessions belonging to the account are immediately invalidated — the user must sign in again on all devices.",
+};
+
+export const ConfirmPasswordResetAcceptedResponse: ApiResponseOptions = {
+    description:
+        "Password reset successfully. All active sessions have been invalidated.",
+    schema: MessageSchema("Your password has been reset successfully."),
+};
+
+export const ConfirmPasswordResetBadRequestResponse: ApiResponseOptions = {
+    description:
+        "newPassword and newPasswordConfirm do not match, the reset code is invalid, has already been used, or has expired.",
+};

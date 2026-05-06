@@ -9,7 +9,7 @@ import { RoleEntity } from "./role.entity";
 @Entity(DatabaseTableEnum.PERMISSION)
 export class PermissionEntity extends BasicEntityProperties {
     @Column({ type: `varchar`, unique: true, length: 64, nullable: false })
-    public value: string;
+    public value: PermissionEnum;
 
     @Column({ type: `enum`, enum: PermissionEnum, nullable: true, default: null })
     @Exclude()

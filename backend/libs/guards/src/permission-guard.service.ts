@@ -93,13 +93,11 @@ export class PermissionGuard implements CanActivate {
 
             const userPermissions = new Set<PermissionEnum>();
             for (const role of userWithRoles.roles) {
-                role.permissions.forEach(({ value }) =>
-                    userPermissions.add(value as PermissionEnum),
-                );
+                role.permissions.forEach(({ value }) => userPermissions.add(value));
             }
 
             for (const permission of userWithRoles.permissions) {
-                userPermissions.add(permission.value as PermissionEnum);
+                userPermissions.add(permission.value);
             }
 
             return requiredPermissions.every((requiredPermission) =>

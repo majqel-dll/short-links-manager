@@ -281,8 +281,6 @@ export class V1UserService implements OnApplicationBootstrap {
 
     public async requestToDeleteAccount() {}
 
-    public async getAccountDeletionAttempts() {}
-
     public async deleteAccount(
         userId: number,
         activeUser: ActiveUserPayload,
