@@ -239,15 +239,25 @@ export class V1UserController {
         return await this.userService.getUserRedirections(userId, activeUser);
     }
 
-    @Delete(`:userId`)
+    @Delete(`:code`)
     @HttpCode(HttpStatus.NO_CONTENT)
-    @Permission(PermissionEnum.DELETE_OWN_ACCOUNT, PermissionEnum.DELETE_OTHER_ACCOUNT)
+    @Permission(PermissionEnum.DELETE_OWN_ACCOUNT)
     @ApiOperation(DeleteAccountOperation)
     @ApiParam(UserIdParam)
     @ApiNoContentResponse(DeleteAccountNoContentResponse)
     @ApiForbiddenResponse(DeleteAccountForbiddenResponse)
     @ApiNotFoundResponse(DeleteAccountNotFoundResponse)
-    public async deleteAccount(
+    public async deleteActiveUserAccount(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`code`) code: string,
+    ): Promise<void> {
+        return await this.userService.deleteAccount(activeUser.id, activeUser, code);
+    }
+
+    @Delete(`:userId`)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Permission(PermissionEnum.DELETE_OTHER_ACCOUNT)
+    public async deleteSpecifiedUserAccount(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
     ): Promise<void> {
@@ -257,8 +267,6 @@ export class V1UserController {
                 `You do not have permission to access this resource.`,
             );
         }
-
-        return await this.userService.deleteAccount(userId, activeUser);
     }
 
     @Get(`:userId/avatar`)

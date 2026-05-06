@@ -1,4 +1,10 @@
-import { PasswordChangeDto, RefreshTokenDto, SignInDto, SignUpDto } from "@libs/dtos";
+import {
+    GetPasswordResetKeyDto,
+    PasswordChangeDto,
+    RefreshTokenDto,
+    SignInDto,
+    SignUpDto,
+} from "@libs/dtos";
 import { type ActiveUserPayload, BasicResponse, SignInResponse } from "@libs/types";
 import { type SessionEntity } from "@libs/entities";
 import { ActiveUser, Auth } from "@libs/decorators";
@@ -198,6 +204,18 @@ export class V1AuthController {
         @Body() payload: PasswordChangeDto,
     ): Promise<void> {
         await this.authService.changePassword(activeUser, payload);
+    }
+
+    @Post(`password/reset`)
+    @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(AuthTypeEnum.NONE)
+    public async requestPasswordReset(
+        @Body() { login }: GetPasswordResetKeyDto,
+    ): Promise<BasicResponse> {
+        await this.authService.requestPasswordReset(login);
+        return {
+            message: "Check your email for the password reset instructions.",
+        };
     }
 
     @Post(`token/refresh`)

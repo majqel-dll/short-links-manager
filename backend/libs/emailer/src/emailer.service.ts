@@ -1,16 +1,17 @@
 import { MailerDataMap, RegistrationCodeEmailData, type MailerConfig } from "@libs/types";
+import { CodeActionEnum, LogTypeEnum } from "@libs/enums";
 import { RegistrationCodeTemplate } from "@libs/email-templates";
 import { render, toPlainText } from "@react-email/components";
 import { createTransport, SendMailOptions } from "nodemailer";
-import { EmailerEventsEnum, LogTypeEnum } from "@libs/enums";
 import { InjectLogger } from "@libs/decorators";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@libs/logger";
+
 @Injectable()
 export class EmailerService {
     constructor(@InjectLogger(EmailerService) private readonly logger: Logger) {}
 
-    private async pickTemplate<T extends EmailerEventsEnum, U extends MailerDataMap[T]>(
+    private async pickTemplate<T extends CodeActionEnum, U extends MailerDataMap[T]>(
         event: T,
         data?: U,
     ): Promise<[string, string]> {
@@ -18,28 +19,21 @@ export class EmailerService {
         let text: string = null;
 
         switch (event) {
-            case EmailerEventsEnum.REGISTRATION_CODE:
+            case CodeActionEnum.VERIFY_EMAIL:
                 html = await render(
                     RegistrationCodeTemplate(data as RegistrationCodeEmailData),
                     { pretty: true },
                 );
                 text = toPlainText(html);
                 break;
-            case EmailerEventsEnum.ACCOUNT_DELETION:
+            case CodeActionEnum.DELETE_ACCOUNT_CONFIRM:
                 html = await render(
                     RegistrationCodeTemplate(data as RegistrationCodeEmailData),
                     { pretty: true },
                 );
                 text = toPlainText(html);
                 break;
-            case EmailerEventsEnum.PASSWORD_RESET_REQUEST:
-                html = await render(
-                    RegistrationCodeTemplate(data as RegistrationCodeEmailData),
-                    { pretty: true },
-                );
-                text = toPlainText(html);
-                break;
-            case EmailerEventsEnum.PASSWORD_RESET_CONFIRM:
+            case CodeActionEnum.RESET_PASSWORD_REQUEST:
                 html = await render(
                     RegistrationCodeTemplate(data as RegistrationCodeEmailData),
                     { pretty: true },
@@ -60,7 +54,7 @@ export class EmailerService {
         return pattern.test(email);
     };
 
-    public async send<T extends EmailerEventsEnum, U extends MailerDataMap[T]>({
+    public async send<T extends CodeActionEnum, U extends MailerDataMap[T]>({
         to,
         data,
         subject,

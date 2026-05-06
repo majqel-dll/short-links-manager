@@ -1,5 +1,4 @@
-import { IsDefined, IsEnum, IsString } from "class-validator";
-import { PasswordResetEnum } from "@libs/enums";
+import { IsDefined, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class GetPasswordResetKeyDto {
@@ -11,17 +10,4 @@ export class GetPasswordResetKeyDto {
     @IsDefined()
     @IsString()
     public login: string;
-
-    @ApiProperty({
-        description:
-            "Delivery method for the password reset key. " +
-            "`email` sends the key to the registered email address; " +
-            "`login` uses the username-based delivery channel.",
-        enum: PasswordResetEnum,
-        enumName: "PasswordResetEnum",
-        example: PasswordResetEnum.EMAIL,
-    })
-    @IsDefined()
-    @IsEnum(PasswordResetEnum)
-    public method: PasswordResetEnum;
 }

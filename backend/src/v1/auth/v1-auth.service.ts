@@ -7,7 +7,13 @@ import {
 } from "@libs/dtos";
 import { ActiveUserPayload, RefreshTokenPayload, SignInResponse } from "@libs/types";
 import { UserEntity, SessionEntity, RoleEntity } from "@libs/entities";
-import { ActivationSourceEnum, LogTypeEnum, PermissionEnum, RoleEnum } from "@libs/enums";
+import {
+    ActivationSourceEnum,
+    LogTypeEnum,
+    PasswordResetEnum,
+    PermissionEnum,
+    RoleEnum,
+} from "@libs/enums";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { randomUUID as uuidv4 } from "crypto";
@@ -341,6 +347,29 @@ export class V1AuthService {
             startTime,
             tag: LogTypeEnum.INTERNAL_ACTION,
         });
+    }
+
+    public async requestPasswordReset(login: string): Promise<void> {
+        const startTime = Date.now();
+        const user = await this.userRepository.findOne({
+            where: [{ login }, { email: login }],
+        });
+
+        if (!user) {
+            throw new NotFoundException(`User with such login or email not found.`);
+        }
+
+        if (user.blockedAt !== null) {
+            throw new ForbiddenException(`This account is banned.`);
+        }
+
+        void this.logger.log(
+            `Password reset code for user ${user.id} has been requested.`,
+            {
+                startTime,
+                tag: LogTypeEnum.INTERNAL_ACTION,
+            },
+        );
     }
 
     public async refreshToken({ refreshToken }: RefreshTokenDto): Promise<SignInResponse> {

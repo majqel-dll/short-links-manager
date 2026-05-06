@@ -1,4 +1,4 @@
-import { type EmailerEventsEnum } from "@libs/enums";
+import { type CodeActionEnum } from "@libs/enums";
 
 export type AccountDeletionRequestEmailData = {
     code: string;
@@ -12,12 +12,6 @@ export type PasswordResetRequestEmailData = {
     expiryTime: string;
     link: string;
 };
-export type PasswordResetConfirmEmailData = {
-    code: string;
-    email: string;
-    expiryTime: string;
-    link: string;
-};
 export type RegistrationCodeEmailData = {
     code: string;
     email: string;
@@ -26,13 +20,12 @@ export type RegistrationCodeEmailData = {
 };
 
 export type MailerDataMap = {
-    [EmailerEventsEnum.REGISTRATION_CODE]: RegistrationCodeEmailData;
-    [EmailerEventsEnum.ACCOUNT_DELETION]: AccountDeletionRequestEmailData;
-    [EmailerEventsEnum.PASSWORD_RESET_REQUEST]: PasswordResetRequestEmailData;
-    [EmailerEventsEnum.PASSWORD_RESET_CONFIRM]: PasswordResetConfirmEmailData;
+    [CodeActionEnum.VERIFY_EMAIL]: RegistrationCodeEmailData;
+    [CodeActionEnum.DELETE_ACCOUNT_CONFIRM]: AccountDeletionRequestEmailData;
+    [CodeActionEnum.RESET_PASSWORD_REQUEST]: PasswordResetRequestEmailData;
 };
 
-export type MailerConfig<T extends EmailerEventsEnum, U extends MailerDataMap[T]> = {
+export type MailerConfig<T extends CodeActionEnum, U extends MailerDataMap[T]> = {
     to: string | string[];
     data?: U;
     html?: string;

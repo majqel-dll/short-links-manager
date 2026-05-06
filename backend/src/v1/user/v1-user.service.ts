@@ -286,6 +286,7 @@ export class V1UserService implements OnApplicationBootstrap {
     public async deleteAccount(
         userId: number,
         activeUser: ActiveUserPayload,
+        confirmationCode: string,
     ): Promise<void> {
         const startTime: number = Date.now();
         await this.userRepository.delete({ id: userId }).catch((error) => {

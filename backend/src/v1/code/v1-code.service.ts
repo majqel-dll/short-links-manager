@@ -14,7 +14,7 @@ import { ThrottlerException } from "@nestjs/throttler";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { ActiveUserPayload } from "@libs/types";
-import { EmailerEventsEnum, LogTypeEnum } from "@libs/enums";
+import { LogTypeEnum } from "@libs/enums";
 import { EmailerService } from "@libs/emailer";
 import { randomInt } from "crypto";
 @Injectable()
@@ -168,6 +168,7 @@ export class V1CodeService {
     public async sendVerificationCodeToEmail(
         { id }: Pick<ActiveUserPayload, "id">,
         email?: string,
+        event: CodeActionEnum = CodeActionEnum.VERIFY_EMAIL,
     ): Promise<boolean> {
         const startTime = Date.now();
         const user = await this.userRepository
@@ -178,7 +179,7 @@ export class V1CodeService {
             })
             .catch((error) => {
                 this.logger.error(
-                    `Failed to find user with id ${id} while trying to send verification code. Error: ${(error as Error)?.message}`,
+                    `Failed to find user with id ${id} while trying to send ${event}. Error: ${(error as Error)?.message}`,
                     { startTime, tag: LogTypeEnum.RESPONSE_FAIL, error: error as Error },
                 );
                 throw new InternalServerErrorException(
@@ -194,9 +195,9 @@ export class V1CodeService {
             throw new NotFoundException(`User with id ${id} not found.`);
         }
 
-        if (user.activatedAt) {
+        if (user.activatedAt && event === CodeActionEnum.VERIFY_EMAIL) {
             this.logger.warn(
-                `User with id ${id} is already activated. No verification code will be sent.`,
+                `User with id ${id} is already activated. No ${event} will be sent.`,
                 { startTime, tag: LogTypeEnum.WARN },
             );
             return false;
@@ -208,16 +209,15 @@ export class V1CodeService {
 
         const existingCode = user.codes?.find(
             (code) =>
-                code.action === CodeActionEnum.VERIFY_EMAIL &&
-                (!code.expiresAt || code.expiresAt > new Date()),
+                code.action === event && (!code.expiresAt || code.expiresAt > new Date()),
         );
         if (existingCode && existingCode.updatedAt > new Date(Date.now() - 3 * 60 * 1000)) {
             this.logger.warn(
-                `User with id: ${id} already has an active verification code. No new code will be sent.`,
+                `User with id: ${id} already has an active ${event} code. No new code will be sent.`,
                 { startTime, tag: LogTypeEnum.WARN },
             );
             throw new ThrottlerException(
-                `A verification code has already been sent to this email. Please check your inbox or try again later.`,
+                `A ${event} code has already been sent to this email. Please check your inbox or try again later.`,
             );
         }
 
@@ -231,11 +231,11 @@ export class V1CodeService {
             existingCode.updatedAt = new Date();
             await this.codeRepository.save(existingCode).catch((error) => {
                 this.logger.error(
-                    `Failed to update existing verification code for user with id ${id}. Error: ${(error as Error)?.message}`,
+                    `Failed to update existing ${event} code for user with id ${id}. Error: ${(error as Error)?.message}`,
                     { startTime, tag: LogTypeEnum.UPDATE_FAIL, error: error as Error },
                 );
                 throw new InternalServerErrorException(
-                    `Failed to update and re-send verification code. Please try again later.`,
+                    `Failed to update and re-send ${event} code. Please try again later.`,
                 );
             });
         }
@@ -250,26 +250,26 @@ export class V1CodeService {
                         user,
                         expiresAt,
                         updatedAt: new Date(),
-                        action: CodeActionEnum.VERIFY_EMAIL,
+                        action: event,
                     }),
                 )
                 .catch((error) => {
                     this.logger.error(
-                        `Failed to save verification code for user with id ${id}. Error: ${(error as Error)?.message}`,
+                        `Failed to save ${event} code for user with id ${id}. Error: ${(error as Error)?.message}`,
                         { startTime, tag: LogTypeEnum.CREATE_FAIL, error: error as Error },
                     );
                     throw new InternalServerErrorException(
-                        `Failed to save verification code. Please try again later.`,
+                        `Failed to save ${event} code. Please try again later.`,
                     );
                 }));
 
         const link = `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
-        const subject = `Your Verification Code`;
+        const subject = `Your ${event} Code`;
         await this.emailerService.send({
             subject,
             to: email,
             data: { code, email, expiryTime, link },
-            event: EmailerEventsEnum.REGISTRATION_CODE,
+            event,
         });
 
         return true;
