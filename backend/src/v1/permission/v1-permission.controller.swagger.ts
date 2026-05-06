@@ -109,12 +109,17 @@ export const GetAllRolesNotFoundResponse: ApiResponseOptions = {
 export const UpdateUserRoleOperation: ApiOperationOptions = {
     summary: "Change user role",
     description:
-        "Assigns the specified role to the given user, replacing any previously held role. " +
+        "Assigns the specified role to the given user, replacing all previously held roles. " +
+        "If the user already has this role assigned, a 409 Conflict is returned. " +
         "Requires the **MANAGE_ROLES** permission.",
 };
 
 export const UpdateUserRoleOkResponse: ApiResponseOptions = {
     description: "User role updated successfully.",
+};
+
+export const UpdateUserRoleConflictResponse: ApiResponseOptions = {
+    description: "The user already has the specified role assigned.",
 };
 
 export const UpdateUserRoleNotFoundResponse: ApiResponseOptions = {

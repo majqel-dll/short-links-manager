@@ -85,7 +85,7 @@ import {
 @UseGuards(AuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) { }
+    constructor(private readonly authService: V1AuthService) {}
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)

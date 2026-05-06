@@ -98,7 +98,7 @@ export const UpdateRedirectionOperation: ApiOperationOptions = {
     summary: "Update redirection",
     description:
         "Updates an existing redirection identified by the redirectionId field in the request body. " +
-        "All fields (route, targetUrl, isPremium) are optional — only provided fields are modified. " +
+        "Both route and targetUrl are required; isPremium is optional and defaults to the current value if omitted. " +
         "Changing isPremium to true additionally requires the **CREATE_PREMIUM_REDIRECTION** permission. " +
         "Requires the **MANAGE_OWN_BASIC_REDIRECTION** or **MANAGE_OWN_PREMIUM_REDIRECTION** permission for own redirections; " +
         "updating another user's redirection additionally requires **MANAGE_OTHER_REDIRECTIONS**.",

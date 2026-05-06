@@ -14,7 +14,8 @@ export class GetUserQueryParamsDto {
     public logs: boolean;
 
     @ApiPropertyOptional({
-        description: "Include the user's assigned roles (with nested permissions) in the response.",
+        description:
+            "Include the user's assigned roles (with nested permissions) in the response.",
         example: false,
     })
     @IsOptional()

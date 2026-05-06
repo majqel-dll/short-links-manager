@@ -49,7 +49,7 @@ export class V1AuthService {
         private readonly codeService: V1CodeService,
         private readonly dataSource: DataSource,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async createNewAccount(
         { login, email, password }: SignUpDto | CreateUserByPanelDto,
@@ -96,7 +96,8 @@ export class V1AuthService {
             await this.codeService.sendVerificationCodeToEmail(
                 { id: user.id },
                 CodeActionEnum.VERIFY_EMAIL,
-                email);
+                email,
+            );
             void this.logger.log(`New account with id ${user.id} has been created.`, {
                 startTime,
                 tag: LogTypeEnum.CREATED,
@@ -357,19 +358,19 @@ export class V1AuthService {
     }
 
     public async requestPasswordReset(login: string): Promise<void> {
-
         const startTime = Date.now();
         const user = await this.userRepository.findOne({
             where: [{ login }, { email: login }],
-            select: { id: true }
+            select: { id: true },
         });
 
-        if (!user || user.blockedAt !== null) {
+        if (user?.blockedAt !== null) {
             throw new NotFoundException(`User with such login or email not found.`);
         }
 
         await this.codeService.sendVerificationCodeToEmail(
-            user, CodeActionEnum.RESET_PASSWORD_REQUEST
+            user,
+            CodeActionEnum.RESET_PASSWORD_REQUEST,
         );
 
         void this.logger.log(
@@ -378,27 +379,34 @@ export class V1AuthService {
         );
     }
 
-    public async changePasswordFromCode(
-        { code, newPassword, newPasswordConfirm }: ResetPasswordDto,
-    ): Promise<void> {
-
+    public async changePasswordFromCode({
+        code,
+        newPassword,
+        newPasswordConfirm,
+    }: ResetPasswordDto): Promise<void> {
         const startTime = Date.now();
         if (newPassword !== newPasswordConfirm) {
             throw new BadRequestException(`Both passwords must match.`);
         }
 
-        const codeEntity = await this.codeRepository.findOne({
-            where: { code, action: CodeActionEnum.RESET_PASSWORD_REQUEST },
-            relations: { user: true },
-        }).catch((error) => {
-            this.logger.error(
-                `Failed to find code ${code} for activation. Error: ${(error as Error)?.message}`,
-                { startTime, tag: LogTypeEnum.DATABASE_READ_FAIL, error: error as Error },
-            );
-            throw new InternalServerErrorException(
-                `Failed to activate account. Please try again later.`,
-            );
-        });
+        const codeEntity = await this.codeRepository
+            .findOne({
+                where: { code, action: CodeActionEnum.RESET_PASSWORD_REQUEST },
+                relations: { user: true },
+            })
+            .catch((error) => {
+                this.logger.error(
+                    `Failed to find code ${code} for activation. Error: ${(error as Error)?.message}`,
+                    {
+                        startTime,
+                        tag: LogTypeEnum.DATABASE_READ_FAIL,
+                        error: error as Error,
+                    },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to activate account. Please try again later.`,
+                );
+            });
 
         if (!codeEntity) {
             this.logger.warn(`Attempt to change password with invalid code: ${code}`, {
@@ -413,7 +421,9 @@ export class V1AuthService {
                 startTime,
                 tag: LogTypeEnum.WARN,
             });
-            throw new BadRequestException(`This reset password code has already been used.`);
+            throw new BadRequestException(
+                `This reset password code has already been used.`,
+            );
         }
 
         if (codeEntity.expiresAt && codeEntity.expiresAt < new Date()) {
@@ -446,40 +456,51 @@ export class V1AuthService {
                 throw new InternalServerErrorException(`Failed to update password.`);
             });
 
-
         await this.dataSource.transaction(async (manager) => {
-
             user.passwordHash = passwordHash;
             user.requiresPasswordChange = false;
             user.lastPasswordChange = new Date();
             codeEntity.usedAt = new Date();
 
-            await manager.save(CodeEntity, codeEntity)
-                .catch((error) => {
-                    this.logger.error(`Failed to mark code ${code} as used.`, {
-                        startTime, error, tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                    });
-                    throw new InternalServerErrorException(`Failed to update reset password code status.`);
+            await manager.save(CodeEntity, codeEntity).catch((error) => {
+                this.logger.error(`Failed to mark code ${code} as used.`, {
+                    startTime,
+                    error,
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
                 });
-
-            await manager.save(UserEntity, user)
-                .catch((error) => {
-                    this.logger.error(`Failed to save password change in the database.`, {
-                        startTime, error, tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                    });
-                    throw new InternalServerErrorException(`Failed to update password.`);
-                });
-
-            await manager.update(SessionEntity,
-                { userId: user.id, isActive: true },
-                { isActive: false }
-            ).catch((error) => {
-                this.logger.error(`Failed to terminate active sessions after password change.`, {
-                    startTime, error, tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                });
-                throw new InternalServerErrorException(`Failed to terminate active sessions after password change.`);
+                throw new InternalServerErrorException(
+                    `Failed to update reset password code status.`,
+                );
             });
 
+            await manager.save(UserEntity, user).catch((error) => {
+                this.logger.error(`Failed to save password change in the database.`, {
+                    startTime,
+                    error,
+                    tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                });
+                throw new InternalServerErrorException(`Failed to update password.`);
+            });
+
+            await manager
+                .update(
+                    SessionEntity,
+                    { userId: user.id, isActive: true },
+                    { isActive: false },
+                )
+                .catch((error) => {
+                    this.logger.error(
+                        `Failed to terminate active sessions after password change.`,
+                        {
+                            startTime,
+                            error,
+                            tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
+                        },
+                    );
+                    throw new InternalServerErrorException(
+                        `Failed to terminate active sessions after password change.`,
+                    );
+                });
         });
 
         void this.logger.log(

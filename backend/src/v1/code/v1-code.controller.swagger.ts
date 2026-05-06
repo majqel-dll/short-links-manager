@@ -2,7 +2,6 @@ import {
     type ApiOperationOptions,
     type ApiResponseOptions,
     type ApiParamOptions,
-    type ApiQueryOptions,
 } from "@nestjs/swagger";
 
 const CodeActionEnumValues: string[] = [
@@ -64,24 +63,16 @@ const CodeEntitySchema = {
 } as const;
 
 export const GetActiveCodesForUserOperation: ApiOperationOptions = {
-    summary: "List active codes for user",
+    summary: "List active codes for authenticated user",
     description:
-        "Returns active codes for the selected user and event type. " +
-        "Only the owner of the account can access this endpoint.",
+        "Returns active (unused, non-expired) codes for the authenticated user, " +
+        "filtered by the action type provided as a route parameter.",
 };
 
 export const GetActiveCodesForUserIdParam: ApiParamOptions = {
-    name: "id",
-    description: "ID of the user whose active codes should be returned.",
-    example: 25,
-};
-
-export const GetActiveCodesForUserEventQuery: ApiQueryOptions = {
-    name: "event",
-    required: false,
+    name: "action",
+    description: "Code action type to filter by.",
     enum: CodeActionEnumValues,
-    description:
-        "Optional code action filter. If omitted, the backend default behaviour is applied.",
     example: "VERIFY_EMAIL",
 };
 
@@ -114,7 +105,7 @@ export const SendVerificationCodeToEmailOperation: ApiOperationOptions = {
     summary: "Send verification code",
     description:
         "Generates and sends a new email verification code to the authenticated user. " +
-        "If a code was sent less than one minute ago, request is throttled.",
+        "If a valid code was already sent within the last 3 minutes, the request is throttled.",
 };
 
 export const SendVerificationCodeToEmailOkResponse: ApiResponseOptions = {

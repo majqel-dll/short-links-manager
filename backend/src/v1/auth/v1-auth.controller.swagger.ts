@@ -102,8 +102,7 @@ export const SignInAcceptedResponse: ApiResponseOptions = {
 };
 
 export const SignInUnauthorizedResponse: ApiResponseOptions = {
-    description:
-        "Invalid login or password, account not yet activated by an administrator, or account has been blocked.",
+    description: "Invalid login or password, or account has been blocked.",
 };
 
 export const SignUpOperation: ApiOperationOptions = {
@@ -263,8 +262,7 @@ export const ConfirmPasswordResetOperation: ApiOperationOptions = {
 };
 
 export const ConfirmPasswordResetAcceptedResponse: ApiResponseOptions = {
-    description:
-        "Password reset successfully. All active sessions have been invalidated.",
+    description: "Password reset successfully. All active sessions have been invalidated.",
     schema: MessageSchema("Your password has been reset successfully."),
 };
 

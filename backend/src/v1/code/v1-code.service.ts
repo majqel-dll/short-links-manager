@@ -29,7 +29,7 @@ export class V1CodeService {
         private readonly logger: Logger,
         private readonly emailerService: EmailerService,
         private readonly dataSource: DataSource,
-    ) { }
+    ) {}
 
     private randomNumber(length = 9): string {
         const maxValue = 10 ** length;
@@ -170,7 +170,6 @@ export class V1CodeService {
         event: CodeActionEnum,
         email?: string,
     ): Promise<boolean> {
-
         const startTime = Date.now();
         const user = await this.userRepository
             .findOne({

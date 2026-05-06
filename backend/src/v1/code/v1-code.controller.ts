@@ -12,7 +12,6 @@ import {
     CommonCodeTooManyRequestsResponse,
     ConfirmUserByActivationCodeParam,
     GetActiveCodesForUserOkResponse,
-    GetActiveCodesForUserEventQuery,
     CommonCodeUnauthorizedResponse,
     GetActiveCodesForUserOperation,
     GetActiveCodesForUserIdParam,
@@ -44,7 +43,6 @@ import {
     ApiCookieAuth,
     ApiOperation,
     ApiParam,
-    ApiQuery,
     ApiTags,
 } from "@nestjs/swagger";
 
@@ -62,7 +60,6 @@ export class V1CodeController {
     @ApiCookieAuth()
     @ApiOperation(GetActiveCodesForUserOperation)
     @ApiParam(GetActiveCodesForUserIdParam)
-    @ApiQuery(GetActiveCodesForUserEventQuery)
     @ApiOkResponse(GetActiveCodesForUserOkResponse)
     @ApiUnauthorizedResponse(CommonCodeUnauthorizedResponse)
     @ApiForbiddenResponse(CommonCodeForbiddenResponse)
@@ -104,8 +101,10 @@ export class V1CodeController {
     public async sendVerificationCodeToEmail(
         @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<BasicResponse> {
-        const wasCodeSend: boolean =
-            await this.codeService.sendVerificationCodeToEmail(activeUser, CodeActionEnum.VERIFY_EMAIL);
+        const wasCodeSend: boolean = await this.codeService.sendVerificationCodeToEmail(
+            activeUser,
+            CodeActionEnum.VERIFY_EMAIL,
+        );
         return wasCodeSend
             ? { message: "Verification code sent successfully." }
             : { message: "Failed to send verification code." };

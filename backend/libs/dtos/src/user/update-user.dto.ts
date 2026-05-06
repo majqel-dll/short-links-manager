@@ -11,7 +11,8 @@ export class UpdateUserDto {
     public newLogin: string;
 
     @ApiPropertyOptional({
-        description: "New email address. Must be a valid email format and unique across all accounts.",
+        description:
+            "New email address. Must be a valid email format and unique across all accounts.",
         example: "new.email@example.com",
         format: "email",
     })

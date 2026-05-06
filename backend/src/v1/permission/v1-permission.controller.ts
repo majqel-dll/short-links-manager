@@ -27,6 +27,7 @@ import {
     ApiBadRequestResponse,
     ApiForbiddenResponse,
     ApiNotFoundResponse,
+    ApiConflictResponse,
     ApiBearerAuth,
     ApiCookieAuth,
     ApiOkResponse,
@@ -52,6 +53,7 @@ import {
     DetachPermissionOperation,
     UpdateUserRoleOkResponse,
     UpdateUserRoleOperation,
+    UpdateUserRoleConflictResponse,
     GetAllRolesOkResponse,
     GetAllRolesOperation,
 } from "./v1-permission.controller.swagger";
@@ -100,6 +102,7 @@ export class V1PermissionController {
     @Permission(PermissionEnum.MANAGE_ROLES)
     @ApiOperation(UpdateUserRoleOperation)
     @ApiOkResponse(UpdateUserRoleOkResponse)
+    @ApiConflictResponse(UpdateUserRoleConflictResponse)
     @ApiNotFoundResponse(UpdateUserRoleNotFoundResponse)
     public async updateUserRole(@Body() body: ChangeRoleDto): Promise<void> {
         await this.permissionService.changeUserRole(body);
