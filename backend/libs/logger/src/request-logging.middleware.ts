@@ -26,7 +26,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         @InjectLogger(RequestLoggingMiddleware)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public onModuleInit(): void {
         void this.logger.log(`Monitoring middleware has been initialized.`, {

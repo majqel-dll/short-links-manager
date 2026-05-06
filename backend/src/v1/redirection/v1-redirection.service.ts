@@ -33,7 +33,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly cacheManager: Cache,
     ) {}
 
-    public async onApplicationBootstrap() {
+    public async onApplicationBootstrap(): Promise<void> {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
         await this.cacheMostCommonRedirections(timeToTheNextMidnightInMs);
     }

@@ -55,10 +55,7 @@ import {
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, PermissionGuard)
 export class V1CodeController {
-
-    constructor(
-        private readonly codeService: V1CodeService,
-    ) { }
+    constructor(private readonly codeService: V1CodeService) {}
 
     @Get(`user/:id`)
     @HttpCode(HttpStatus.OK)
@@ -78,7 +75,9 @@ export class V1CodeController {
         @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<CodeEntity[]> {
         if (activeUser.id !== userId) {
-            throw new ForbiddenException(`You don't have permission to view codes of other users.`);
+            throw new ForbiddenException(
+                `You don't have permission to view codes of other users.`,
+            );
         }
         return await this.codeService.findActiveCodeForUser(userId, event);
     }
@@ -96,7 +95,7 @@ export class V1CodeController {
         @Param(`code`) code: string,
     ): Promise<RedirectResponse> {
         await this.codeService.activateUserWithCode(code);
-        return { url: `${process.env.ORIGIN}/panel/account`, status: 202 }
+        return { url: `${process.env.ORIGIN}/panel/account`, status: 202 };
     }
 
     @Get()
@@ -113,7 +112,8 @@ export class V1CodeController {
     public async sendVerificationCodeToEmail(
         @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<BasicResponse> {
-        const wasCodeSend: boolean = await this.codeService.sendVerificationCodeToEmail(activeUser);
+        const wasCodeSend: boolean =
+            await this.codeService.sendVerificationCodeToEmail(activeUser);
         return wasCodeSend
             ? { message: "Verification code sent successfully." }
             : { message: "Failed to send verification code." };

@@ -239,7 +239,7 @@ export class V1PermissionService {
                 error: error as Error,
                 tag: LogTypeEnum.DATABASE_FAIL,
             });
-            errors.push(error);
+            errors.push(error as Error);
         });
 
         if (errors.length > 0) {

@@ -7,7 +7,6 @@ import { Exclude } from "class-transformer";
 
 @Entity(DatabaseTableEnum.CODE)
 export class CodeEntity extends BasicEntityProperties {
-
     @Column({ type: `varchar`, length: 10, nullable: false })
     @Exclude()
     public code: string;

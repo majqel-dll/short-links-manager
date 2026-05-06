@@ -1,4 +1,8 @@
-import { BasicSearchQueryParamsDto, GetUserQueryParamsDto, UpdateUserDto } from "@libs/dtos";
+import {
+    BasicSearchQueryParamsDto,
+    GetUserQueryParamsDto,
+    UpdateUserDto,
+} from "@libs/dtos";
 import { BucketEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -30,7 +34,7 @@ export class V1UserService implements OnApplicationBootstrap {
         @InjectLogger(V1UserService)
         private readonly logger: Logger,
         private readonly minio: S3Service,
-    ) { }
+    ) {}
 
     public async onApplicationBootstrap() {
         const bucketExists = await this.minio.bucketExists(BucketEnum.USER_AVATARS);
@@ -93,7 +97,13 @@ export class V1UserService implements OnApplicationBootstrap {
     ): Promise<UserEntity> {
         this.validateUserPermissionToAccessResource(userId, id, permissions);
 
-        const { logs, requests, permissions: queryPermissions, redirections, roles } = queryParams;
+        const {
+            logs,
+            requests,
+            permissions: queryPermissions,
+            redirections,
+            roles,
+        } = queryParams;
         const user = await this.userRepository
             .findOne({
                 where: { id: userId },
@@ -102,7 +112,7 @@ export class V1UserService implements OnApplicationBootstrap {
                     permissions: queryPermissions,
                     redirections,
                     logs,
-                    requests
+                    requests,
                 },
             })
             .catch((error) => {
@@ -131,7 +141,6 @@ export class V1UserService implements OnApplicationBootstrap {
         { id, permissions }: ActiveUserPayload,
         { newLogin, newEmail, currentPassword }: UpdateUserDto,
     ): Promise<void> {
-
         const startTime: number = Date.now();
         this.validateUserPermissionToAccessResource(userId, id, permissions);
 
@@ -185,7 +194,6 @@ export class V1UserService implements OnApplicationBootstrap {
         userId: number,
         { id, permissions }: ActiveUserPayload,
     ): Promise<PermissionEntity[]> {
-
         const startTime: number = Date.now();
         this.validateUserPermissionToAccessResource(userId, id, permissions);
 
@@ -194,7 +202,7 @@ export class V1UserService implements OnApplicationBootstrap {
                 where: { id: userId },
                 relations: {
                     permissions: true,
-                    roles: { permissions: true }
+                    roles: { permissions: true },
                 },
             })
             .catch((error) => {
@@ -212,9 +220,9 @@ export class V1UserService implements OnApplicationBootstrap {
         }
 
         const assignedPermissions = new Set<PermissionEntity>();
-        user.permissions?.forEach(permission => assignedPermissions.add(permission));
+        user.permissions?.forEach((permission) => assignedPermissions.add(permission));
         user.roles?.forEach((role) =>
-            role.permissions.forEach(permission => assignedPermissions.add(permission)),
+            role.permissions.forEach((permission) => assignedPermissions.add(permission)),
         );
 
         return Array.from(assignedPermissions);
@@ -270,9 +278,9 @@ export class V1UserService implements OnApplicationBootstrap {
         return user?.redirections || [];
     }
 
-    public async requestToDeleteAccount() { }
+    public async requestToDeleteAccount() {}
 
-    public async getAccountDeletionAttempts() { }
+    public async getAccountDeletionAttempts() {}
 
     public async deleteAccount(
         userId: number,

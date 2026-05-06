@@ -3,7 +3,6 @@ import { Transform } from "class-transformer";
 import { toBoolean } from "@libs/utils";
 
 export class GetUserQueryParamsDto {
-
     @IsOptional()
     @Transform(toBoolean)
     @IsBoolean()
@@ -28,5 +27,4 @@ export class GetUserQueryParamsDto {
     @Transform(toBoolean)
     @IsBoolean()
     public requests: boolean;
-
 }

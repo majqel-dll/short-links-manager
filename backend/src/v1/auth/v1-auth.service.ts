@@ -33,7 +33,7 @@ export class V1AuthService {
         private readonly logger: Logger,
         private readonly codeService: V1CodeService,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async createNewAccount({ login, email, password }: SignUpDto): Promise<void> {
         const startTime = Date.now();
@@ -61,19 +61,16 @@ export class V1AuthService {
                 login,
                 roles,
                 passwordHash,
-                activatedAt:
-                    process.env.SMTP_HOST
-                        ? null
-                        : new Date(),
+                activatedAt: process.env.SMTP_HOST ? null : new Date(),
             });
 
             await this.userRepository.save(newUser);
 
             await this.codeService.sendVerificationCodeToEmail({ id: newUser.id }, email);
             void this.logger.log(`New account with id ${newUser.id} has been created.`, {
-                startTime, tag: LogTypeEnum.CREATED,
+                startTime,
+                tag: LogTypeEnum.CREATED,
             });
-            
         } catch (error) {
             if (typeof error === `object` && `code` in error && error?.code === "23505") {
                 throw new ConflictException(
@@ -177,11 +174,7 @@ export class V1AuthService {
             .catch((error) => {
                 void this.logger.error(
                     `Failed to update last login date for user ${user.id}.`,
-                    {
-                        startTime: Date.now(),
-                        tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                        error,
-                    },
+                    { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION_FAIL, error },
                 );
             });
 
@@ -207,11 +200,7 @@ export class V1AuthService {
             .catch((error) => {
                 void this.logger.error(
                     `Failed to terminate session ${sessionUuid} for user ${id}.`,
-                    {
-                        startTime,
-                        tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                        error,
-                    },
+                    { startTime, tag: LogTypeEnum.INTERNAL_ACTION_FAIL, error },
                 );
                 throw new InternalServerErrorException(
                     `Failed to terminate session due to an unexpected error.`,
@@ -257,11 +246,7 @@ export class V1AuthService {
             .catch((error) => {
                 void this.logger.error(
                     `Failed to find active sessions for user ${userId}.`,
-                    {
-                        startTime: Date.now(),
-                        tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
-                        error,
-                    },
+                    { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION_FAIL, error },
                 );
                 throw new InternalServerErrorException(
                     `Failed to find active sessions due to an unexpected error.`,

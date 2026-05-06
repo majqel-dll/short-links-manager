@@ -1,6 +1,8 @@
 export function parseExpiresIn(expiresIn: string): number {
     const match = expiresIn.match(/^(\d+)([smhd])$/);
-    if (!match) return 0;
+    if (!match) {
+        return 0;
+    }
     const value = parseInt(match[1], 10);
     const multipliers: Record<string, number> = {
         s: 1_000,

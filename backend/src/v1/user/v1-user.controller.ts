@@ -1,4 +1,8 @@
-import { GetUserQueryParamsDto, BasicSearchQueryParamsDto, UpdateUserDto } from "@libs/dtos";
+import {
+    GetUserQueryParamsDto,
+    BasicSearchQueryParamsDto,
+    UpdateUserDto,
+} from "@libs/dtos";
 import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -107,7 +111,7 @@ import {
 @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1UserController {
-    constructor(private readonly userService: V1UserService) { }
+    constructor(private readonly userService: V1UserService) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
@@ -140,7 +144,7 @@ export class V1UserController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @Permission(PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    public async createUserByPanel(): Promise<UserEntity> {
+    public async createUserByPanel(@Body() payload: {}): Promise<UserEntity> {
         return await this.userService.createUserByPanel();
     }
 

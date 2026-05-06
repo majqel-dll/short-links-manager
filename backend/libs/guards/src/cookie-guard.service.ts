@@ -24,7 +24,7 @@ export class CookieGuardService implements CanActivate {
         private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(CookieGuardService) private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
@@ -45,7 +45,7 @@ export class CookieGuardService implements CanActivate {
 
         const payload = await this.jwtService.verifyAsync(token).catch((error) => {
             void this.logger.error(`Received incorrect or malformed payload ${message}`, {
-                error,
+                error: error as Error,
                 startTime,
                 tag: LogTypeEnum.PERMISSIONS_DENIED,
             });

@@ -73,7 +73,7 @@ import {
 @UseGuards(AuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1AuthController {
-    constructor(private readonly authService: V1AuthService) { }
+    constructor(private readonly authService: V1AuthService) {}
 
     @Get(`sessions`)
     @HttpCode(HttpStatus.OK)
@@ -123,9 +123,7 @@ export class V1AuthController {
     @ApiCreatedResponse(SignUpCreatedResponse)
     @ApiConflictResponse(SignUpConflictResponse)
     @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
-    public async signUp(
-        @Body() body: SignUpDto
-    ): Promise<BasicResponse> {
+    public async signUp(@Body() body: SignUpDto): Promise<BasicResponse> {
         await this.authService.createNewAccount(body);
         return {
             message: "Account created successfully, and now is waiting for activation.",

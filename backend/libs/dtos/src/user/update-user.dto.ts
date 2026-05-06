@@ -1,7 +1,6 @@
 import { IsDefined, IsEmail, IsOptional, IsString } from "class-validator";
 
 export class UpdateUserDto {
-
     @IsOptional()
     @IsString()
     public newLogin: string;
@@ -13,5 +12,4 @@ export class UpdateUserDto {
     @IsDefined()
     @IsString()
     public currentPassword: string;
-
 }

@@ -110,7 +110,7 @@ export class PermissionGuard implements CanActivate {
                 void this.logger.error(
                     `An error occured during permission validatin attempt.`,
                     {
-                        error,
+                        error: error as Error,
                         startTime,
                         tag: LogTypeEnum.VALIDATION_FAIL,
                     },

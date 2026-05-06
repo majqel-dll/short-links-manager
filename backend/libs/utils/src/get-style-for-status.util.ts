@@ -1,10 +1,6 @@
 import { EmailPartEnum, EmailStatusEnum } from "@libs/enums";
 
-export function getStyleForStatus(
-    status: EmailStatusEnum,
-    part: EmailPartEnum
-): string {
-
+export function getStyleForStatus(status: EmailStatusEnum, part: EmailPartEnum): string {
     if (part === EmailPartEnum.BACKGROUND) {
         switch (status) {
             case EmailStatusEnum.SUCCESS:

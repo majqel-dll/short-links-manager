@@ -9,10 +9,7 @@ import { Module } from "@nestjs/common";
 @Module({
     imports: [
         EmailerModule,
-        LoggerModule.forFeature([
-            V1CodeController,
-            V1CodeService
-        ]),
+        LoggerModule.forFeature([V1CodeController, V1CodeService]),
         GuardsModule,
         DatabaseModule,
     ],
@@ -20,4 +17,4 @@ import { Module } from "@nestjs/common";
     providers: [V1CodeService],
     exports: [V1CodeService],
 })
-export class V1CodeModule { }
+export class V1CodeModule {}

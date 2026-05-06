@@ -1,5 +1,5 @@
 export type RegistrationCodeTemplateProps = {
-    code: string,
-    email: string,
-    expiryTime: string,
-}
+    code: string;
+    email: string;
+    expiryTime: string;
+};
