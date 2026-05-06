@@ -26,7 +26,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         @InjectLogger(RequestLoggingMiddleware)
         private readonly logger: Logger,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public onModuleInit(): void {
         void this.logger.log(`Monitoring middleware has been initialized.`, {
@@ -122,7 +122,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 query: req?.query ?? null,
                 body:
                     req?.body && typeof req.body === `object`
-                        ? this.cleanBody(req.body)
+                        ? this.cleanBody(structuredClone(req.body))
                         : null,
                 ipId: existingIp?.id ?? null,
                 userId: userId ?? null,

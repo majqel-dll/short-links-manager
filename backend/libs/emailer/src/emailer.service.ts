@@ -64,9 +64,9 @@ export class EmailerService {
 
         try {
 
-            if (process.env.NODE_ENV === `DEVELOPMENT`) {
+            if (process.env.SMTP_HOST === undefined || process.env.SMTP_USER === undefined) {
                 const triggerEvent = event ? ` from event: "${event}" about` : ``;
-                this.logger.warn(`The email${triggerEvent} "${subject}" to "${to}" was not sent. Function unavailable in development mode.`,
+                this.logger.warn(`The email${triggerEvent} "${subject}" to "${to}" was not sent. Mailing server is unspecified in development.`,
                     { startTime, tag: LogTypeEnum.EMAIL }
                 )
                 return

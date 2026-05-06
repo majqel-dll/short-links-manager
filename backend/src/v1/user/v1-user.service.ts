@@ -122,6 +122,10 @@ export class V1UserService implements OnApplicationBootstrap {
         return user;
     }
 
+    public async createUserByPanel(): Promise<UserEntity> {
+        return null;
+    }
+
     public async updateUserData(
         userId: number,
         { id, permissions }: ActiveUserPayload,
@@ -266,6 +270,9 @@ export class V1UserService implements OnApplicationBootstrap {
         return user?.redirections || [];
     }
 
+    public async requestToDeleteAccount() { }
+
+    public async getAccountDeletionAttempts() { }
 
     public async deleteAccount(
         userId: number,

@@ -137,6 +137,13 @@ export class V1UserController {
         return await this.userService.getUserById(userId, activeUser, queryParams);
     }
 
+    @Post()
+    @HttpCode(HttpStatus.CREATED)
+    @Permission(PermissionEnum.MANAGE_OTHER_ACCOUNT)
+    public async createUserByPanel(): Promise<UserEntity> {
+        return await this.userService.createUserByPanel();
+    }
+
     @Patch(`:userId`)
     @HttpCode(HttpStatus.ACCEPTED)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)

@@ -18,6 +18,7 @@ import {
     ConflictException,
     Injectable,
 } from "@nestjs/common";
+import { V1CodeService } from "../code";
 
 @Injectable()
 export class V1AuthService {
@@ -30,6 +31,7 @@ export class V1AuthService {
         private readonly roleRepository: Repository<RoleEntity>,
         @InjectLogger(V1AuthService)
         private readonly logger: Logger,
+        private readonly codeService: V1CodeService,
         private readonly jwtService: JwtService,
     ) { }
 
@@ -66,6 +68,12 @@ export class V1AuthService {
             });
 
             await this.userRepository.save(newUser);
+
+            await this.codeService.sendVerificationCodeToEmail({ id: newUser.id }, email);
+            void this.logger.log(`New account with id ${newUser.id} has been created.`, {
+                startTime, tag: LogTypeEnum.CREATED,
+            });
+            
         } catch (error) {
             if (typeof error === `object` && `code` in error && error?.code === "23505") {
                 throw new ConflictException(
@@ -433,7 +441,7 @@ export class V1AuthService {
 
         const tokenPayload: ActiveUserPayload = {
             id: user.id,
-            sessionUuid,
+            sessionUuid: newSessionUuid,
             createdAt: new Date().toISOString(),
             roles: user.roles.map(({ name }) => name),
             permissions: [

@@ -113,7 +113,9 @@ export class V1CodeController {
     public async sendVerificationCodeToEmail(
         @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<BasicResponse> {
-        await this.codeService.sendVerificationCodeToEmail(activeUser);
-        return { message: "Verification code sent successfully." };
+        const wasCodeSend: boolean = await this.codeService.sendVerificationCodeToEmail(activeUser);
+        return wasCodeSend
+            ? { message: "Verification code sent successfully." }
+            : { message: "Failed to send verification code." };
     }
 }

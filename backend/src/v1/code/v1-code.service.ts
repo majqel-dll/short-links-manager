@@ -1,4 +1,4 @@
-import { BadRequestException, ClassSerializerInterceptor, Injectable, InternalServerErrorException, Logger, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, ClassSerializerInterceptor, Injectable, InternalServerErrorException, Logger, NotFoundException, UseInterceptors } from "@nestjs/common";
 import { DataSource, IsNull, MoreThanOrEqual, Or, Repository } from "typeorm";
 import { CodeActionEnum } from "@libs/enums/code/code-action.enum";
 import { UserEntity, CodeEntity } from "@libs/entities";
@@ -6,7 +6,7 @@ import { ThrottlerException } from "@nestjs/throttler";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { ActiveUserPayload } from "@libs/types";
-import { EmailerEventsEnum } from "@libs/enums";
+import { EmailerEventsEnum, LogTypeEnum } from "@libs/enums";
 import { EmailerService } from "@libs/emailer";
 import { randomInt } from "crypto";
 @Injectable()
@@ -99,26 +99,27 @@ export class V1CodeService {
     }
 
     public async sendVerificationCodeToEmail(
-        { id }: ActiveUserPayload, email?: string,
-    ): Promise<void> {
+        { id }: Pick<ActiveUserPayload, 'id'>, email?: string,
+    ): Promise<boolean> {
 
+        const startTime = Date.now();
         const user = await this.userRepository.findOne({
             where: { id },
             relations: { codes: true },
-            select: { email: true, activatedAt: true, codes: true },
+            select: { email: true, activatedAt: true, codes: true, id: true },
         }).catch(error => {
-            this.logger.error(`Failed to find user with id ${id} while trying to send verification code. Error: ${error.message}`);
+            this.logger.error(`Failed to find user with id ${id} while trying to send verification code. Error: ${error.message}`, { startTime, tag: LogTypeEnum });
             throw new InternalServerErrorException(`Failed to find user with id ${id}. Please try again later.`);
         });
 
         if (!user) {
             this.logger.error(`User with id ${id} not found.`);
-            return;
+            throw new NotFoundException(`User with id ${id} not found.`);
         }
 
         if (user.activatedAt) {
             this.logger.warn(`User with id ${id} is already activated. No verification code will be sent.`);
-            return;
+            return false;
         }
 
         if (!email) {
@@ -126,24 +127,40 @@ export class V1CodeService {
         }
 
         const existingCode = user.codes?.find(code => code.action === CodeActionEnum.VERIFY_EMAIL && (!code.expiresAt || code.expiresAt > new Date()));
-        if (existingCode && existingCode.createdAt > new Date(Date.now() - 60 * 1000)) {
+        if (existingCode && existingCode.updatedAt > new Date(Date.now() - 3 * 60 * 1000)) {
             this.logger.warn(`User with id: ${id} already has an active verification code. No new code will be sent.`);
             throw new ThrottlerException(`A verification code has already been sent to this email. Please check your inbox or try again later.`);
         }
 
-        const code = this.randomNumber();
-        const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-        const expiryTime = expiresAt.toISOString();
+        const code = existingCode
+            ? existingCode.code
+            : this.randomNumber();
 
-        const codeEntity = await this.codeRepository.save(
-            this.codeRepository.create({ code, user, expiresAt, action: CodeActionEnum.VERIFY_EMAIL })
+        const expiresAt = existingCode
+            ? existingCode.expiresAt
+            : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+
+        if (existingCode) {
+            existingCode.updatedAt = new Date();
+            await this.codeRepository.save(existingCode).catch(error => {
+                this.logger.error(`Failed to update existing verification code for user with id ${id}. Error: ${error.message}`);
+                throw new InternalServerErrorException(`Failed to update and re-send verification code. Please try again later.`);
+            });
+        }
+
+        const expiryTime = expiresAt.toISOString();
+        const codeEntity = existingCode ?? await this.codeRepository.save(
+            this.codeRepository.create({
+                code, user, expiresAt,
+                updatedAt: new Date(),
+                action: CodeActionEnum.VERIFY_EMAIL
+            })
         ).catch(error => {
             this.logger.error(`Failed to save verification code for user with id ${id}. Error: ${error.message}`);
             throw new InternalServerErrorException(`Failed to save verification code. Please try again later.`);
         });
 
         const link = `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
-
         const subject = `Your Verification Code`;
         await this.emailerService.send({
             subject,
@@ -152,6 +169,7 @@ export class V1CodeService {
             event: EmailerEventsEnum.REGISTRATION_CODE,
         });
 
+        return true;
     }
 
 }
