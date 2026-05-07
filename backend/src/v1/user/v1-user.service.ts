@@ -287,14 +287,13 @@ export class V1UserService implements OnApplicationBootstrap {
         return user?.redirections || [];
     }
 
-    public async requestToDeleteAccount(): Promise<boolean> {
-
-
+    public async requestToDeleteAccount(
+        { id }: Pick<ActiveUserPayload, "id">,
+    ): Promise<void> {
         await this.codeService.sendVerificationCodeToEmail(
-            { id: 0 }, CodeActionEnum.DELETE_ACCOUNT_CONFIRM
+            { id },
+            CodeActionEnum.DELETE_ACCOUNT_CONFIRM
         );
-
-        return true;
     }
 
     public async deleteAccount(
@@ -318,52 +317,75 @@ export class V1UserService implements OnApplicationBootstrap {
                 );
             })
 
-            if (!codeEntity) {
-                this.logger.warn(`Attempt to change password with invalid code: ${code}`, {
+            if (!codeEntity || !codeEntity.user) {
+                this.logger.warn(`Attempt to delete account with invalid code: ${code}`, {
                     startTime,
                     tag: LogTypeEnum.WARN,
                 });
-                throw new BadRequestException(`Invalid reset password code.`);
+                throw new BadRequestException(`Invalid account deletion code.`);
+            }
+
+            if (codeEntity.usedAt) {
+                this.logger.warn(`Attempt to reuse account deletion code: ${code}`, {
+                    startTime,
+                    tag: LogTypeEnum.WARN,
+                });
+                throw new BadRequestException(
+                    `This account deletion code has already been used.`,
+                );
             }
 
             if (codeEntity.expiresAt && codeEntity.expiresAt < new Date()) {
-                this.logger.warn(`Attempt to use expired code: ${code}`, {
+                this.logger.warn(`Attempt to use expired account deletion code: ${code}`, {
                     startTime,
                     tag: LogTypeEnum.WARN,
                 });
-                throw new BadRequestException(`This reset password code has expired.`);
+                throw new BadRequestException(`This account deletion code has expired.`);
             }
 
             if (codeEntity.user.id !== userId) {
-                this.logger.warn(`Attempt to use code: ${code} for userId: ${userId} which does not match code owner userId: ${codeEntity.user.id}`, {
-                    startTime,
-                    tag: LogTypeEnum.WARN,
-                });
-                throw new BadRequestException(`Invalid reset password code.`);
+                this.logger.warn(
+                    `Attempt to use account deletion code ${code} for userId ${userId}, but code belongs to userId ${codeEntity.user.id}.`,
+                    { startTime, tag: LogTypeEnum.WARN },
+                );
+                throw new BadRequestException(`Invalid account deletion code.`);
             }
-
         }
 
-        await this.dataSource.transaction(async (manager) => {
-
-            await manager.delete(UserEntity, { id: userId }).catch((error) => {
-                this.logger.error(
-                    `Failed to delete user with id ${userId} from the database.`,
-                    { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
-                );
-                throw new InternalServerErrorException(
-                    `Failed to delete user with id ${userId} from the database.`,
-                );
-            });
-            
-            await this.deleteUserAvatar(userId, activeUser).catch((error) => {
-                this.logger.error(
-                    `Failed to delete avatar for user with id ${userId} from the storage.`,
-                    { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
-                );
-            });
-
+        await this.userRepository.delete({ id: userId }).catch((error) => {
+            this.logger.error(
+                `Failed to delete user with id ${userId} from the database.`,
+                { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
+            );
+            throw new InternalServerErrorException(
+                `Failed to delete user with id ${userId} from the database.`,
+            );
         });
+
+        await this.deleteAvatarObjectBestEffort(userId, startTime);
+    }
+
+    private async deleteAvatarObjectBestEffort(
+        userId: number, startTime: number,
+    ): Promise<void> {
+
+        const avatarObjectName = `avatar-${userId.toString().padStart(6, `0`)}.webp`;
+        const existingAvatar = await this.minio
+            .getObject(BucketEnum.USER_AVATARS, avatarObjectName)
+            .catch(() => null);
+
+        if (!existingAvatar) {
+            return;
+        }
+
+        await this.minio
+            .deleteObject(BucketEnum.USER_AVATARS, avatarObjectName)
+            .catch((error) => {
+                this.logger.warn(
+                    `Account was deleted, but avatar cleanup failed for userId: ${userId}. ${(error as Error)?.message}`,
+                    { tag: LogTypeEnum.WARN, startTime },
+                );
+            });
     }
 
     public async getUserAvatar(userId: number): Promise<Buffer> {

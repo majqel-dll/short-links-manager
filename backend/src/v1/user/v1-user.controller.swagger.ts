@@ -3,6 +3,7 @@ import {
     type ApiResponseOptions,
     type ApiParamOptions,
     type ApiBodyOptions,
+    type ApiQueryOptions,
 } from "@nestjs/swagger";
 
 const BasicEntitySchema = {
@@ -131,6 +132,26 @@ export const UserIdParam: ApiParamOptions = {
     example: 1,
 };
 
+export const DeleteAccountCodeParam: ApiParamOptions = {
+    name: "code",
+    description: "Account deletion confirmation code sent to the account email.",
+    example: "123456789",
+};
+
+export const RequestAccountDeletionOperation: ApiOperationOptions = {
+    summary: "Request own account deletion",
+    description:
+        "Sends an account deletion confirmation code to the authenticated user's email address. " +
+        "Requires the **DELETE_OWN_ACCOUNT** permission.",
+};
+
+export const RequestAccountDeletionAcceptedResponse: ApiResponseOptions = {
+    description: "Account deletion confirmation code sent successfully.",
+    schema: MessageSchema(
+        "Account deletion code has been sent to your email to confirm your account deletion.",
+    ),
+};
+
 export const GetUsersOperation: ApiOperationOptions = {
     summary: "List all users",
     description:
@@ -162,8 +183,9 @@ export const GetUsersForbiddenResponse: ApiResponseOptions = {
 export const GetUserByIdOperation: ApiOperationOptions = {
     summary: "Get user by ID",
     description:
-        "Returns the full profile of the user identified by userId, including their assigned roles (with nested permissions), " +
-        "directly assigned permissions, owned redirections, and activity logs. " +
+        "Returns the profile of the user identified by userId. " +
+        "Use the optional boolean query parameters (roles, permissions, redirections, logs, requests) " +
+        "to include related data in the response. " +
         "Users with the **MANAGE_OWN_ACCOUNT** permission may only access their own profile. " +
         "Users with the **MANAGE_OTHER_ACCOUNT** permission may access any profile.",
 };
@@ -176,14 +198,17 @@ export const GetUserByIdOkResponse: ApiResponseOptions = {
             ...UserSchema.properties,
             roles: {
                 type: "array",
+                nullable: true,
                 items: RoleSchema,
             },
             permissions: {
                 type: "array",
+                nullable: true,
                 items: PermissionSchema,
             },
             redirections: {
                 type: "array",
+                nullable: true,
                 items: RedirectionSchema,
             },
         },
@@ -223,10 +248,9 @@ export const ChangeUserDataNotFoundResponse: ApiResponseOptions = {
 export const DeleteAccountOperation: ApiOperationOptions = {
     summary: "Delete user account",
     description:
-        "Permanently deletes the account of the user identified by userId, " +
+    "Permanently deletes the authenticated user's account after confirming a valid deletion code, " +
         "along with all associated data (sessions, redirections, codes, logs). " +
-        "Users with the **DELETE_OWN_ACCOUNT** permission may only delete their own account. " +
-        "Users with the **DELETE_OTHER_ACCOUNT** permission may delete any account. " +
+    "Requires the **DELETE_OWN_ACCOUNT** permission. " +
         "This action is irreversible.",
 };
 
@@ -236,11 +260,23 @@ export const DeleteAccountNoContentResponse: ApiResponseOptions = {
 
 export const DeleteAccountForbiddenResponse: ApiResponseOptions = {
     description:
-        "The authenticated user is attempting to delete another user's account without the **DELETE_OTHER_ACCOUNT** permission.",
+        "Account is not yet activated, has been blocked, or does not have the **DELETE_OWN_ACCOUNT** permission.",
 };
 
 export const DeleteAccountNotFoundResponse: ApiResponseOptions = {
     description: "No user with the given userId exists.",
+};
+
+export const ConfirmDeleteAccountOperation: ApiOperationOptions = {
+    summary: "Confirm own account deletion by code",
+    description:
+        "Confirms account deletion using a valid code from email and deletes the authenticated user's account. " +
+        "Requires the **DELETE_OWN_ACCOUNT** permission.",
+};
+
+export const ConfirmDeleteAccountOkResponse: ApiResponseOptions = {
+    description: "Account deleted successfully.",
+    schema: MessageSchema("Your account has been deleted successfully."),
 };
 
 export const GetUserPermissionsOperation: ApiOperationOptions = {
@@ -430,4 +466,82 @@ export const CommonUnauthorizedResponse: ApiResponseOptions = {
 
 export const CommonInternalServerErrorResponse: ApiResponseOptions = {
     description: "An unexpected error occurred. Please try again later.",
+};
+
+export const TakeQuery: ApiQueryOptions = {
+    name: "take",
+    required: false,
+    type: Number,
+    description: "Maximum number of records to return.",
+    example: 10,
+};
+
+export const SkipQuery: ApiQueryOptions = {
+    name: "skip",
+    required: false,
+    type: Number,
+    description: "Number of records to skip (zero-based offset for pagination).",
+    example: 0,
+};
+
+export const GetUserByIdLogsQuery: ApiQueryOptions = {
+    name: "logs",
+    required: false,
+    type: Boolean,
+    description: "Include the user's activity logs in the response.",
+    example: false,
+};
+
+export const GetUserByIdRolesQuery: ApiQueryOptions = {
+    name: "roles",
+    required: false,
+    type: Boolean,
+    description: "Include the user's assigned roles (with nested permissions) in the response.",
+    example: false,
+};
+
+export const GetUserByIdRedirectionsQuery: ApiQueryOptions = {
+    name: "redirections",
+    required: false,
+    type: Boolean,
+    description: "Include the user's owned redirections in the response.",
+    example: false,
+};
+
+export const GetUserByIdPermissionsQuery: ApiQueryOptions = {
+    name: "permissions",
+    required: false,
+    type: Boolean,
+    description: "Include the user's directly assigned permissions in the response.",
+    example: false,
+};
+
+export const GetUserByIdRequestsQuery: ApiQueryOptions = {
+    name: "requests",
+    required: false,
+    type: Boolean,
+    description: "Include the user's HTTP request history in the response.",
+    example: false,
+};
+
+export const DeleteSpecifiedUserAccountOperation: ApiOperationOptions = {
+    summary: "Delete a specific user account",
+    description:
+        "Permanently deletes the user account identified by userId, " +
+        "along with all associated data (sessions, redirections, codes, logs). " +
+        "Requires the **DELETE_OTHER_ACCOUNT** permission. " +
+        "This action is irreversible.",
+};
+
+export const DeleteSpecifiedUserAccountNoContentResponse: ApiResponseOptions = {
+    description: "User account deleted successfully.",
+};
+
+export const DeleteSpecifiedUserAccountForbiddenResponse: ApiResponseOptions = {
+    description:
+        "The authenticated user does not have the **DELETE_OTHER_ACCOUNT** permission.",
+};
+
+export const DeleteSpecifiedUserAccountNotFoundResponse: ApiResponseOptions = {
+    description: "No user with the given userId exists.",
 };

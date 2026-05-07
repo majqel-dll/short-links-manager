@@ -270,7 +270,7 @@ export class V1CodeService {
                 case CodeActionEnum.RESET_PASSWORD_REQUEST:
                     return `${process.env.ORIGIN}/panel/reset-password?code=${codeEntity.code}`;
                 case CodeActionEnum.DELETE_ACCOUNT_CONFIRM:
-                    return `${process.env.ORIGIN}/api/v1/user/by-code/${codeEntity.code}`;
+                    return `${process.env.ORIGIN}/api/v1/user/by-code/${codeEntity.code}/confirm`;
                 default:
                     return null;
             }

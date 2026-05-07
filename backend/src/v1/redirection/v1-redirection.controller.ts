@@ -28,6 +28,8 @@ import {
     UpdateRedirectionConflictResponse,
     UpdateRedirectionOkResponse,
     UpdateRedirectionOperation,
+    TakeQuery,
+    SkipQuery,
 } from "./v1-redirection.controller.swagger";
 import { type Request } from "express";
 import {
@@ -42,6 +44,7 @@ import {
     ApiOkResponse,
     ApiOperation,
     ApiParam,
+    ApiQuery,
     ApiResponse,
     ApiTags,
 } from "@nestjs/swagger";
@@ -84,6 +87,8 @@ export class V1RedirectionController {
     @ApiBearerAuth()
     @ApiCookieAuth()
     @ApiOperation(GetRedirectionsOperation)
+    @ApiQuery(TakeQuery)
+    @ApiQuery(SkipQuery)
     @ApiOkResponse(GetRedirectionsOkResponse)
     public async getRedirections(
         @ActiveUser() activeUser: ActiveUserPayload,

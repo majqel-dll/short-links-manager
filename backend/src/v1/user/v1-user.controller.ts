@@ -1,4 +1,4 @@
-import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum, CodeActionEnum } from "@libs/enums";
+import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum } from "@libs/enums";
 import { BasicResponse, GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -28,6 +28,7 @@ import {
     ApiOperation,
     ApiConsumes,
     ApiParam,
+    ApiQuery,
     ApiBody,
     ApiTags,
 } from "@nestjs/swagger";
@@ -35,6 +36,10 @@ import {
     GetUserRedirectionsForbiddenResponse,
     GetUserPermissionsForbiddenResponse,
     CreateUserByPanelForbiddenResponse,
+    RequestAccountDeletionOperation,
+    RequestAccountDeletionAcceptedResponse,
+    ConfirmDeleteAccountOperation,
+    ConfirmDeleteAccountOkResponse,
     CommonInternalServerErrorResponse,
     DeleteUserAvatarNoContentResponse,
     CreateUserByPanelConflictResponse,
@@ -67,6 +72,7 @@ import {
     GetUserAvatarOkResponse,
     PostUserAvatarOperation,
     DeleteAccountOperation,
+    DeleteAccountCodeParam,
     GetUserRolesOkResponse,
     GetUserAvatarOperation,
     GetUserByIdOkResponse,
@@ -76,6 +82,17 @@ import {
     PostUserAvatarBody,
     GetUsersOperation,
     UserIdParam,
+    DeleteSpecifiedUserAccountOperation,
+    DeleteSpecifiedUserAccountNoContentResponse,
+    DeleteSpecifiedUserAccountForbiddenResponse,
+    DeleteSpecifiedUserAccountNotFoundResponse,
+    TakeQuery,
+    SkipQuery,
+    GetUserByIdLogsQuery,
+    GetUserByIdRolesQuery,
+    GetUserByIdRedirectionsQuery,
+    GetUserByIdPermissionsQuery,
+    GetUserByIdRequestsQuery,
 } from "./v1-user.controller.swagger";
 import { type Response } from "express";
 import {
@@ -109,7 +126,6 @@ import {
     UserEntity,
 } from "@libs/entities";
 import { V1AuthService } from "../auth";
-import { V1CodeService } from "../code";
 
 @ApiTags(`User`)
 @Controller(`v1/user`)
@@ -124,13 +140,14 @@ export class V1UserController {
     constructor(
         private readonly userService: V1UserService,
         private readonly authService: V1AuthService,
-        private readonly codeService: V1CodeService,
     ) { }
 
     @Get(`list`)
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUsersOperation)
+    @ApiQuery(TakeQuery)
+    @ApiQuery(SkipQuery)
     @ApiOkResponse(GetUsersOkResponse)
     @ApiForbiddenResponse(GetUsersForbiddenResponse)
     public async getUsers(
@@ -144,6 +161,11 @@ export class V1UserController {
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUserByIdOperation)
     @ApiParam(UserIdParam)
+    @ApiQuery(GetUserByIdLogsQuery)
+    @ApiQuery(GetUserByIdRolesQuery)
+    @ApiQuery(GetUserByIdRedirectionsQuery)
+    @ApiQuery(GetUserByIdPermissionsQuery)
+    @ApiQuery(GetUserByIdRequestsQuery)
     @ApiOkResponse(GetUserByIdOkResponse)
     @ApiForbiddenResponse(GetUserByIdForbiddenResponse)
     @ApiNotFoundResponse(GetUserByIdNotFoundResponse)
@@ -152,7 +174,6 @@ export class V1UserController {
         @Query() queryParams: GetUserQueryParamsDto,
         @Param(`userId`) userId?: number,
     ): Promise<UserEntity> {
-        console.log(userId);
         if (
             userId &&
             userId !== activeUser.id &&
@@ -242,15 +263,16 @@ export class V1UserController {
         return await this.userService.getUserRedirections(userId, activeUser);
     }
 
-    @Get(`delete`)
-    @HttpCode(HttpStatus.OK)
+    @Post(`delete/request`)
+    @HttpCode(HttpStatus.ACCEPTED)
     @Permission(PermissionEnum.DELETE_OWN_ACCOUNT)
+    @ApiOperation(RequestAccountDeletionOperation)
+    @ApiAcceptedResponse(RequestAccountDeletionAcceptedResponse)
+    @ApiForbiddenResponse(DeleteAccountForbiddenResponse)
     public async requestAccountDeletion(
         @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<BasicResponse> {
-        await this.codeService.sendVerificationCodeToEmail(
-            activeUser, CodeActionEnum.DELETE_ACCOUNT_CONFIRM
-        );
+        await this.userService.requestToDeleteAccount(activeUser);
         return {
             message: "Account deletion code has been sent to your email to confirm your account deletion.",
         };
@@ -260,23 +282,43 @@ export class V1UserController {
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permission(PermissionEnum.DELETE_OWN_ACCOUNT)
     @ApiOperation(DeleteAccountOperation)
-    @ApiParam(UserIdParam)
+    @ApiParam(DeleteAccountCodeParam)
     @ApiNoContentResponse(DeleteAccountNoContentResponse)
     @ApiForbiddenResponse(DeleteAccountForbiddenResponse)
     @ApiNotFoundResponse(DeleteAccountNotFoundResponse)
     public async deleteActiveUserAccount(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param() { code }: DeleteAccountDto,
+        @Param(`code`) code: DeleteAccountDto["code"],
+    ): Promise<void> {
+        await this.userService.deleteAccount(activeUser.id, activeUser, code);
+    }
+
+    @Get(`by-code/:code/confirm`)
+    @HttpCode(HttpStatus.OK)
+    @Permission(PermissionEnum.DELETE_OWN_ACCOUNT)
+    @ApiOperation(ConfirmDeleteAccountOperation)
+    @ApiParam(DeleteAccountCodeParam)
+    @ApiOkResponse(ConfirmDeleteAccountOkResponse)
+    @ApiForbiddenResponse(DeleteAccountForbiddenResponse)
+    @ApiNotFoundResponse(DeleteAccountNotFoundResponse)
+    public async confirmActiveUserAccountDeletion(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Param(`code`) code: DeleteAccountDto["code"],
     ): Promise<BasicResponse> {
         await this.userService.deleteAccount(activeUser.id, activeUser, code);
         return {
             message: "Your account has been deleted successfully.",
-        }
+        };
     }
 
     @Delete(`:userId`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permission(PermissionEnum.DELETE_OTHER_ACCOUNT)
+    @ApiOperation(DeleteSpecifiedUserAccountOperation)
+    @ApiParam(UserIdParam)
+    @ApiNoContentResponse(DeleteSpecifiedUserAccountNoContentResponse)
+    @ApiForbiddenResponse(DeleteSpecifiedUserAccountForbiddenResponse)
+    @ApiNotFoundResponse(DeleteSpecifiedUserAccountNotFoundResponse)
     public async deleteSpecifiedUserAccount(
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,

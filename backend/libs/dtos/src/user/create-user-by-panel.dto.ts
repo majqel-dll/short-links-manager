@@ -6,7 +6,7 @@ import {
     IsStrongPassword,
     Matches,
 } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateUserByPanelDto {
     @ApiProperty({
@@ -32,10 +32,11 @@ export class CreateUserByPanelDto {
     })
     public login: string;
 
-    @ApiProperty({
+    @ApiPropertyOptional({
         description:
             "Account password. Must contain at least 8 characters, including one uppercase letter, " +
-            "one lowercase letter, one digit, and one special character.",
+            "one lowercase letter, one digit, and one special character. " +
+            "If omitted, the account is created without a password.",
         example: "P@ssw0rd!23",
         format: "password",
         minLength: 8,

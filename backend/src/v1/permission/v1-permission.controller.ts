@@ -32,6 +32,7 @@ import {
     ApiCookieAuth,
     ApiOkResponse,
     ApiOperation,
+    ApiQuery,
     ApiTags,
 } from "@nestjs/swagger";
 import {
@@ -56,6 +57,8 @@ import {
     UpdateUserRoleConflictResponse,
     GetAllRolesOkResponse,
     GetAllRolesOperation,
+    TakeQuery,
+    SkipQuery,
 } from "./v1-permission.controller.swagger";
 import { GetEntitiesResponse } from "@libs/types";
 
@@ -77,6 +80,8 @@ export class V1PermissionController {
     @Permission(PermissionEnum.MANAGE_PERMISSIONS)
     @UseInterceptors(ClassSerializerInterceptor)
     @ApiOperation(GetAllPermissionsOperation)
+    @ApiQuery(TakeQuery)
+    @ApiQuery(SkipQuery)
     @ApiOkResponse(GetAllPermissionsOkResponse)
     @ApiNotFoundResponse(GetAllPermissionsNotFoundResponse)
     public async getPermissions(
@@ -89,6 +94,8 @@ export class V1PermissionController {
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_ROLES)
     @ApiOperation(GetAllRolesOperation)
+    @ApiQuery(TakeQuery)
+    @ApiQuery(SkipQuery)
     @ApiOkResponse(GetAllRolesOkResponse)
     @ApiNotFoundResponse(GetAllRolesNotFoundResponse)
     public async getRoles(

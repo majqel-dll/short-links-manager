@@ -1,4 +1,4 @@
-import { type ApiOperationOptions, type ApiResponseOptions } from "@nestjs/swagger";
+import { type ApiOperationOptions, type ApiResponseOptions, type ApiQueryOptions } from "@nestjs/swagger";
 
 const PermissionSchema = {
     type: "object",
@@ -189,4 +189,20 @@ export const CommonPermissionForbiddenResponse: ApiResponseOptions = {
 
 export const CommonPermissionInternalServerErrorResponse: ApiResponseOptions = {
     description: "An unexpected error occurred. Please try again later.",
+};
+
+export const TakeQuery: ApiQueryOptions = {
+    name: "take",
+    required: false,
+    type: Number,
+    description: "Maximum number of records to return.",
+    example: 10,
+};
+
+export const SkipQuery: ApiQueryOptions = {
+    name: "skip",
+    required: false,
+    type: Number,
+    description: "Number of records to skip (zero-based offset for pagination).",
+    example: 0,
 };
