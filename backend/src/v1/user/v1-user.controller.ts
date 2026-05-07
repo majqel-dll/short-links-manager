@@ -140,7 +140,7 @@ export class V1UserController {
     constructor(
         private readonly userService: V1UserService,
         private readonly authService: V1AuthService,
-    ) { }
+    ) {}
 
     @Get(`list`)
     @HttpCode(HttpStatus.OK)

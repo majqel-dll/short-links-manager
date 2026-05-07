@@ -138,6 +138,9 @@ export const RedirectClientToOperation: ApiOperationOptions = {
     summary: "Resolve short link",
     description:
         "Resolves a route slug to its target URL and performs a 302 redirect. " +
+        "The route is the full path after the domain — it may contain slashes, for example `john/my-link` or `login/a/b/c`. " +
+        "Non-premium routes are scoped per user and use the format `{login}/{slug}`; " +
+        "premium routes are globally unique and use a plain slug. " +
         "Resolved routes are served from an in-memory cache when available; on a cache miss the lookup falls back to the database. " +
         "If the route does not exist or is reserved (favicon.ico, not-found), " +
         "the client is redirected to the frontend not-found page at /panel/redirection/not-found?r={route}. " +

@@ -31,7 +31,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-    ) {}
+    ) { }
 
     public async onApplicationBootstrap(): Promise<void> {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
@@ -69,11 +69,10 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             const cacheResults = await Promise.allSettled(
                 mostCommonRedirections.map(
                     async ({ id, route, isPremium, user, targetUrl }) => {
+                        const cacheKey = isPremium ? route : `${user?.login}/${route}`;
                         return this.cacheManager.set(
-                            route,
-                            isPremium
-                                ? `${id}$$$:${targetUrl}`
-                                : `${id}$$$:${user?.login}/${targetUrl}`,
+                            cacheKey,
+                            `${id}$$$:${targetUrl}`,
                             timeToTheNextMidnightInMs ?? allDayInMiliseconds,
                         );
                     },
@@ -110,12 +109,19 @@ export class V1RedirectionService implements OnApplicationBootstrap {
 
     public async findRedirectionByRoute(route: string): Promise<string> {
         const cachedRedirection = await this.cacheManager.get<string>(route);
-        if (cachedRedirection) {
-            return cachedRedirection;
-        }
+        if (cachedRedirection) return cachedRedirection;
 
+        const segments = route.split(`/`);
         const redirection = await this.redirectionRepository.findOne({
-            where: { route },
+            where: [
+                { route, isPremium: true },
+                {
+                    user: { login: segments[0] },
+                    route: segments.slice(1).join("/"),
+                    isPremium: false,
+                },
+            ],
+            select: { id: true, targetUrl: true }
         });
 
         if (redirection) {
@@ -383,5 +389,9 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             `Redirection with id: ${redirectionId} has been deleted from the database.`,
             { tag: LogTypeEnum.DELETED, startTime },
         );
+    }
+
+    public async isRouteAvailable(route: string, isPremium?: boolean): Promise<boolean> {
+        return true;
     }
 }

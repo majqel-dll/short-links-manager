@@ -73,7 +73,7 @@ import {
 @ApiForbiddenResponse(CommonPermissionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonPermissionInternalServerErrorResponse)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) { }
+    constructor(private readonly permissionService: V1PermissionService) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)

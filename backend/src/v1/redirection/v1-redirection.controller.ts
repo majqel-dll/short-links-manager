@@ -16,7 +16,6 @@ import {
     GetRedirectionByIdOperation,
     UpdateRedirectionOkResponse,
     CreateRedirectionOperation,
-    RedirectClientToRouteParam,
     DeleteRedirectionOperation,
     UpdateRedirectionOperation,
     RedirectClientToOperation,
@@ -58,9 +57,12 @@ import {
     Post,
     Get,
     Req,
+    ParseBoolPipe,
 } from "@nestjs/common";
 import {
     BasicSearchQueryParamsDto,
+    CheckRouteAvailabilityDto,
+    CheckRouteAvailabilityQueryDto,
     CreateRedirectionDto,
     UpdateRedirectionDto,
 } from "@libs/dtos";
@@ -172,17 +174,32 @@ export class V1RedirectionController {
         return { message: "Redirection deleted successfully." };
     }
 
-    @Get(`:route`)
+    @Get(`v1/redirection/availability/:route`)
+    @HttpCode(HttpStatus.OK)
+    @Permission(
+        PermissionEnum.CREATE_BASIC_REDIRECTION,
+        PermissionEnum.CREATE_PREMIUM_REDIRECTION,
+    )
+    @ApiOkResponse(RedirectClientToFoundResponse)
+    public async checkRedirectionRouteAvailability(
+        @Param() { route }: CheckRouteAvailabilityDto,
+        @Query() { premium }: CheckRouteAvailabilityQueryDto,
+    ): Promise<{ available: boolean }> {
+        const isAvailable: boolean = await this.redirectionService.isRouteAvailable(
+            route,
+            premium ?? false,
+        );
+        return { available: isAvailable };
+    }
+
+    @Get(`*route`)
     @HttpCode(HttpStatus.FOUND)
     @Redirect()
     @Auth(AuthTypeEnum.NONE)
     @ApiOperation(RedirectClientToOperation)
-    @ApiParam(RedirectClientToRouteParam)
     @ApiResponse({ status: 302, ...RedirectClientToFoundResponse })
-    public async redirectClientTo(
-        @Param(`route`) route: string,
-        @Req() request: Request,
-    ): Promise<RedirectResponse> {
+    public async redirectClientTo(@Req() request: Request): Promise<RedirectResponse> {
+        const route = request.path.replace(/^\//, ``);
         const urlWithId = await this.redirectionService.findRedirectionByRoute(route);
         if (
             !urlWithId ||
@@ -190,7 +207,10 @@ export class V1RedirectionController {
             route === `favicon.ico` ||
             route === `not-found`
         ) {
-            return { url: `/panel/redirection/not-found?r=${route}`, status: 302 };
+            return {
+                url: `/panel/redirection/not-found?r=${encodeURIComponent(route)}`,
+                status: 302,
+            };
         }
 
         const [redirectionId, url] = urlWithId.split(`$$$:`);

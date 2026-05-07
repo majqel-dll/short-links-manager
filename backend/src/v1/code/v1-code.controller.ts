@@ -51,7 +51,7 @@ import {
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, PermissionGuard)
 export class V1CodeController {
-    constructor(private readonly codeService: V1CodeService) { }
+    constructor(private readonly codeService: V1CodeService) {}
 
     @Get(`:action`)
     @HttpCode(HttpStatus.OK)
