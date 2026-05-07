@@ -29,7 +29,7 @@ export class V1CodeService {
         private readonly logger: Logger,
         private readonly emailerService: EmailerService,
         private readonly dataSource: DataSource,
-    ) {}
+    ) { }
 
     private randomNumber(length = 9): string {
         const maxValue = 10 ** length;
@@ -270,7 +270,7 @@ export class V1CodeService {
                 case CodeActionEnum.RESET_PASSWORD_REQUEST:
                     return `${process.env.ORIGIN}/panel/reset-password?code=${codeEntity.code}`;
                 case CodeActionEnum.DELETE_ACCOUNT_CONFIRM:
-                    return `${process.env.ORIGIN}/api/v1/code/${codeEntity.code}/confirm`;
+                    return `${process.env.ORIGIN}/api/v1/user/by-code/${codeEntity.code}`;
                 default:
                     return null;
             }

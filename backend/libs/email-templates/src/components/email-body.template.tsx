@@ -6,7 +6,7 @@ import React, { JSX } from "react";
 export function EmailBody(
     { children, footer, header }: EmailBodyProps
 ): JSX.Element {
-    const bodyStyle = `bg-gray-100`;
+    const bodyStyle = `bg-gray-100 py-10`;
     const sectionStyle = `
     font-sans text-center max-[850px]:p-5
     max-[650px]:p-4 max-[650px]:text-base

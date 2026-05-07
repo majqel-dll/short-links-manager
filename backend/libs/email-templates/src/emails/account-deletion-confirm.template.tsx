@@ -1,5 +1,6 @@
 import { AccountDeletionRequestEmailData, EmailLayoutProps } from "@libs/types";
 import { EmailCode, EmailContentComponent, EmailLayout } from "../components";
+import { Button } from "@react-email/components";
 import { EmailStatusEnum } from "@libs/enums";
 import React, { JSX } from "react";
 
@@ -10,14 +11,14 @@ export function AccountDeletionConfirmTemplate(
     const content = <>
         <EmailContentComponent>
             <div className="text-center pt-3">
-                Poniżej znajdziesz kod potwierdzający usunięcie Twojego konta {email}.
+                Below you'll find the confirmation code for deleting your account {email}.
             </div>
             <div className="text-center pt-3">
-                To działanie jest nieodwracalne i spowoduje bezpowrotną utratę wszystkich danych.
+                This action is irreversible and will result in the permanent loss of all your data.
             </div>
             <div className="text-center p-3">
-                Kod będzie ważny do: <span className="font-bold">{expiryTime
-                    ? new Date(expiryTime).toLocaleString(`pl-PL`)
+                Code valid until: <span className="font-bold">{expiryTime
+                    ? new Date(expiryTime).toLocaleString(`en-US`)
                     : `$expiryTime`}</span>
             </div>
 
@@ -28,23 +29,27 @@ export function AccountDeletionConfirmTemplate(
         </EmailContentComponent>
 
         <EmailContentComponent>
-            <div className="text-center pt-3">Możesz również kliknąć w poniższy link, aby potwierdzić usunięcie konta:</div>
-            <div className="text-center pt-3"><a href={link} className="text-blue-500">Potwierdzam usunięcie konta.</a></div>
+            <div className="text-center pt-3">You can also click the button below to confirm the account deletion:</div>
+            <div className="text-center my-4">
+                <Button href={link} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg no-underline">
+                    I confirm account deletion
+                </Button>
+            </div>
         </EmailContentComponent>
 
     </>
 
     const props: EmailLayoutProps = {
-        title: `Kod weryfikacyjny dla ${email}`,
+        title: `Account deletion confirmation for ${email}`,
         status: EmailStatusEnum.ERROR,
         header: {
-            status: EmailStatusEnum.SUCCESS,
-            text: `Twój kod zatwierdzający usunięcie konta`,
+            status: EmailStatusEnum.ERROR,
+            text: `Your account deletion confirmation code`,
             withSeparator: true,
         },
         footer: {
-            text: `Dziękujemy za korzystanie z naszego serwisu!`,
-            description: `Jeśli nie prosiłeś o ten kod, powinieneś jak najszybciej zmienić hasło do swojego konta lub skontaktować się z administratorem.`,
+            text: `Thank you for using our service!`,
+            description: `If you didn't request this code, you should change your account password as soon as possible or contact the administrator.`,
             withSeparator: true,
         },
         children: content,

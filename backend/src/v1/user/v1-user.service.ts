@@ -1,41 +1,49 @@
-import {
-    BasicSearchQueryParamsDto,
-    GetUserQueryParamsDto,
-    UpdateUserDto,
-} from "@libs/dtos";
-import { BucketEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
+
+import { BucketEnum, CodeActionEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
+import { V1CodeService } from "../code";
 import { Logger } from "@libs/logger";
 import { S3Service } from "@libs/s3";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import {
     InternalServerErrorException,
     OnApplicationBootstrap,
     ForbiddenException,
     NotFoundException,
     Injectable,
+    BadRequestException,
 } from "@nestjs/common";
 import {
     RedirectionEntity,
     PermissionEntity,
     RoleEntity,
     UserEntity,
+    CodeEntity,
 } from "@libs/entities";
 import sharp from "sharp";
 import argon from "argon2";
-import { CreateUserByPanelDto } from "@libs/dtos/user/create-user-by-panel.dto";
+import {
+    BasicSearchQueryParamsDto,
+    GetUserQueryParamsDto,
+    CreateUserByPanelDto,
+    UpdateUserDto,
+} from "@libs/dtos";
 
 @Injectable()
 export class V1UserService implements OnApplicationBootstrap {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
+        @InjectRepository(CodeEntity)
+        private readonly codeRepository: Repository<CodeEntity>,
         @InjectLogger(V1UserService)
         private readonly logger: Logger,
+        private readonly codeService: V1CodeService,
+        private readonly dataSource: DataSource,
         private readonly minio: S3Service,
-    ) {}
+    ) { }
 
     public async onApplicationBootstrap() {
         const bucketExists = await this.minio.bucketExists(BucketEnum.USER_AVATARS);
@@ -279,29 +287,82 @@ export class V1UserService implements OnApplicationBootstrap {
         return user?.redirections || [];
     }
 
-    public async requestToDeleteAccount() {}
+    public async requestToDeleteAccount(): Promise<boolean> {
+
+
+        await this.codeService.sendVerificationCodeToEmail(
+            { id: 0 }, CodeActionEnum.DELETE_ACCOUNT_CONFIRM
+        );
+
+        return true;
+    }
 
     public async deleteAccount(
         userId: number,
         activeUser: ActiveUserPayload,
-        confirmationCode: string,
+        code?: string,
     ): Promise<void> {
         const startTime: number = Date.now();
-        await this.userRepository.delete({ id: userId }).catch((error) => {
-            this.logger.error(
-                `Failed to delete user with id ${userId} from the database.`,
-                { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
-            );
-            throw new InternalServerErrorException(
-                `Failed to delete user with id ${userId} from the database.`,
-            );
-        });
 
-        await this.deleteUserAvatar(userId, activeUser).catch((error) => {
-            this.logger.error(
-                `Failed to delete avatar for user with id ${userId} from the storage.`,
-                { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
-            );
+        if (code) {
+            const codeEntity = await this.codeRepository.findOne({
+                where: { code, action: CodeActionEnum.DELETE_ACCOUNT_CONFIRM },
+                relations: { user: true },
+            }).catch((error) => {
+                this.logger.error(
+                    `Failed to fetch code data from the database for code: ${code}.`,
+                    { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to fetch code data from the database for code: ${code}.`,
+                );
+            })
+
+            if (!codeEntity) {
+                this.logger.warn(`Attempt to change password with invalid code: ${code}`, {
+                    startTime,
+                    tag: LogTypeEnum.WARN,
+                });
+                throw new BadRequestException(`Invalid reset password code.`);
+            }
+
+            if (codeEntity.expiresAt && codeEntity.expiresAt < new Date()) {
+                this.logger.warn(`Attempt to use expired code: ${code}`, {
+                    startTime,
+                    tag: LogTypeEnum.WARN,
+                });
+                throw new BadRequestException(`This reset password code has expired.`);
+            }
+
+            if (codeEntity.user.id !== userId) {
+                this.logger.warn(`Attempt to use code: ${code} for userId: ${userId} which does not match code owner userId: ${codeEntity.user.id}`, {
+                    startTime,
+                    tag: LogTypeEnum.WARN,
+                });
+                throw new BadRequestException(`Invalid reset password code.`);
+            }
+
+        }
+
+        await this.dataSource.transaction(async (manager) => {
+
+            await manager.delete(UserEntity, { id: userId }).catch((error) => {
+                this.logger.error(
+                    `Failed to delete user with id ${userId} from the database.`,
+                    { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to delete user with id ${userId} from the database.`,
+                );
+            });
+            
+            await this.deleteUserAvatar(userId, activeUser).catch((error) => {
+                this.logger.error(
+                    `Failed to delete avatar for user with id ${userId} from the storage.`,
+                    { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
+                );
+            });
+
         });
     }
 

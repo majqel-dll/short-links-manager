@@ -1,5 +1,5 @@
-import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum } from "@libs/enums";
-import { GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
+import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum, CodeActionEnum } from "@libs/enums";
+import { BasicResponse, GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
@@ -9,6 +9,7 @@ import {
     GetUserQueryParamsDto,
     CreateUserByPanelDto,
     UpdateUserDto,
+    DeleteAccountDto,
 } from "@libs/dtos";
 import { randomUUID } from "crypto";
 import {
@@ -108,6 +109,7 @@ import {
     UserEntity,
 } from "@libs/entities";
 import { V1AuthService } from "../auth";
+import { V1CodeService } from "../code";
 
 @ApiTags(`User`)
 @Controller(`v1/user`)
@@ -122,7 +124,8 @@ export class V1UserController {
     constructor(
         private readonly userService: V1UserService,
         private readonly authService: V1AuthService,
-    ) {}
+        private readonly codeService: V1CodeService,
+    ) { }
 
     @Get(`list`)
     @HttpCode(HttpStatus.OK)
@@ -239,7 +242,21 @@ export class V1UserController {
         return await this.userService.getUserRedirections(userId, activeUser);
     }
 
-    @Delete(`:code`)
+    @Get(`delete`)
+    @HttpCode(HttpStatus.OK)
+    @Permission(PermissionEnum.DELETE_OWN_ACCOUNT)
+    public async requestAccountDeletion(
+        @ActiveUser() activeUser: ActiveUserPayload,
+    ): Promise<BasicResponse> {
+        await this.codeService.sendVerificationCodeToEmail(
+            activeUser, CodeActionEnum.DELETE_ACCOUNT_CONFIRM
+        );
+        return {
+            message: "Account deletion code has been sent to your email to confirm your account deletion.",
+        };
+    }
+
+    @Delete(`by-code/:code`)
     @HttpCode(HttpStatus.NO_CONTENT)
     @Permission(PermissionEnum.DELETE_OWN_ACCOUNT)
     @ApiOperation(DeleteAccountOperation)
@@ -249,9 +266,12 @@ export class V1UserController {
     @ApiNotFoundResponse(DeleteAccountNotFoundResponse)
     public async deleteActiveUserAccount(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`code`) code: string,
-    ): Promise<void> {
-        return await this.userService.deleteAccount(activeUser.id, activeUser, code);
+        @Param() { code }: DeleteAccountDto,
+    ): Promise<BasicResponse> {
+        await this.userService.deleteAccount(activeUser.id, activeUser, code);
+        return {
+            message: "Your account has been deleted successfully.",
+        }
     }
 
     @Delete(`:userId`)
@@ -261,12 +281,7 @@ export class V1UserController {
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
     ): Promise<void> {
-        const { id, permissions } = activeUser;
-        if (userId !== id && !permissions.includes(PermissionEnum.DELETE_OTHER_ACCOUNT)) {
-            throw new ForbiddenException(
-                `You do not have permission to access this resource.`,
-            );
-        }
+        await this.userService.deleteAccount(userId, activeUser);
     }
 
     @Get(`:userId/avatar`)

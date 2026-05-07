@@ -4,14 +4,14 @@ import { EmailStatusEnum } from "@libs/enums";
 import React, { JSX } from "react";
 
 export function RegistrationCodeTemplate(
-    { code, email, expiryTime }: RegistrationCodeEmailData
+    { code, email, expiryTime, link }: RegistrationCodeEmailData
 ): JSX.Element {
 
     const content = <>
         <EmailContentComponent>
-            <div className="text-center pt-3">Poniżej znajdziesz kod aktywacyjny do Twojego konta.</div>
-            <div className="text-center p-3">Wygaśnięcie kodu: <span className="font-bold">{expiryTime
-                ? new Date(expiryTime).toLocaleString(`pl-PL`)
+            <div className="text-center pt-3">Below you'll find the activation code for your account.</div>
+            <div className="text-center p-3">Code expires: <span className="font-bold">{expiryTime
+                ? new Date(expiryTime).toLocaleString(`en-US`)
                 : `$expiryTime`}</span></div>
         </EmailContentComponent>
 
@@ -22,16 +22,16 @@ export function RegistrationCodeTemplate(
     </>
 
     const props: EmailLayoutProps = {
-        title: `Kod weryfikacyjny dla ${email}`,
+        title: `Verification code for ${email}`,
         status: EmailStatusEnum.SUCCESS,
         header: {
             status: EmailStatusEnum.SUCCESS,
-            text: `Twój kod weryfikacyjny`,
+            text: `Your verification code`,
             withSeparator: true,
         },
         footer: {
-            text: `Dziękujemy za rejestrację!`,
-            description: `Jeśli nie prosiłeś o ten kod, możesz bezpiecznie go zignorować.`,
+            text: ``,
+            description: `If you didn't request this code, you can safely ignore it.`,
             withSeparator: true,
         },
         children: content,
