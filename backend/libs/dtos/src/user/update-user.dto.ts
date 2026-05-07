@@ -8,7 +8,7 @@ export class UpdateUserDto {
     })
     @IsOptional()
     @IsString()
-    public newLogin: string;
+    public newLogin?: string;
 
     @ApiPropertyOptional({
         description:
@@ -18,7 +18,7 @@ export class UpdateUserDto {
     })
     @IsOptional()
     @IsEmail()
-    public newEmail: string;
+    public newEmail?: string;
 
     @ApiProperty({
         description: "Current account password required to authorise the profile change.",

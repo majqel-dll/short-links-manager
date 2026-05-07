@@ -5,24 +5,39 @@ export function onAuthRejectionMessage(
     type: AuthTypeEnum,
     { method, route, ip, query }: Request,
 ): string {
+    const toSafeString = (value: unknown): string => {
+        if (typeof value === `string`) {
+            return value;
+        }
+        if (
+            typeof value === `number` ||
+            typeof value === `boolean` ||
+            typeof value === `bigint` ||
+            typeof value === `symbol`
+        ) {
+            return String(value);
+        }
+        if (value && typeof value === `object`) {
+            return JSON.stringify(value);
+        }
+        return "unknown";
+    };
+
+    const routePath = (route as { path?: unknown } | undefined)?.path;
     const methodMessage: string = method
         ? ` Method: ${
-              typeof method === "object"
-                  ? JSON.stringify(method)
-                  : method?.toString() || "unknown"
+              typeof method === "object" ? JSON.stringify(method) : toSafeString(method)
           },`
         : ``;
-    const routeMessage: string = route?.path
+    const routeMessage: string = routePath
         ? ` Route: ${
-              typeof route?.path === "object"
-                  ? JSON.stringify(route.path)
-                  : route?.path.toString() || "unknown"
+              typeof routePath === "object"
+                  ? JSON.stringify(routePath)
+                  : toSafeString(routePath)
           },`
         : ``;
     const ipMessage: string = ip
-        ? ` From IP: ${
-              typeof ip === "object" ? JSON.stringify(ip) : ip.toString() || "unknown"
-          },`
+        ? ` From IP: ${typeof ip === "object" ? JSON.stringify(ip) : toSafeString(ip)},`
         : ``;
     const queryMessage: string =
         query && Object.keys(query).length > 0

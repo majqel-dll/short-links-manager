@@ -49,10 +49,9 @@ export class EmailerService {
         return [html, text];
     }
 
-    public isEmailValid = (email: string): boolean => {
-        const pattern = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-        return pattern.test(email);
-    };
+    public isEmailValid(email: string): boolean {
+        return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email);
+    }
 
     public async send<T extends CodeActionEnum, U extends MailerDataMap[T]>({
         to,
@@ -65,11 +64,11 @@ export class EmailerService {
         html,
     }: MailerConfig<T, U>): Promise<void> {
         const startTime: number = Date.now();
-        if (!to) {
-            throw new Error(`The "to" value is required but received "${to}".`);
+        if (to === undefined || to === null) {
+            throw new Error(`The "to" value is required but received an empty value.`);
         }
 
-        if (!subject) {
+        if (subject === undefined || subject === null) {
             throw new Error(`The "subject" value is required but received "${subject}"`);
         }
 
@@ -79,8 +78,9 @@ export class EmailerService {
                 process.env.SMTP_USER === undefined
             ) {
                 const triggerEvent = event ? ` from event: "${event}" about` : ``;
+                const recipients = Array.isArray(to) ? to.join(",") : to;
                 this.logger.warn(
-                    `The email${triggerEvent} "${subject}" to "${to}" was not sent. Mailing server is unspecified in development.`,
+                    `The email${triggerEvent} "${subject}" to "${recipients}" was not sent. Mailing server is unspecified in development.`,
                     { startTime, tag: LogTypeEnum.EMAIL },
                 );
                 return;

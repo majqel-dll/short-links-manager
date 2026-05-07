@@ -52,7 +52,7 @@ export class S3Service {
                 .trim()
                 .toLowerCase()
                 .replaceAll(` `, `-`)
-                .replaceAll(/[^a-z0-9\-]/g, ``)
+                .replaceAll(/[^a-z0-9-]/g, ``)
                 .slice(0, bucketNameLengthRestriction);
 
             await this.s3.makeBucket(name);
@@ -95,7 +95,7 @@ export class S3Service {
             const stream = await this.s3.getObject(bucketName, objectName);
             return await new Promise((resolve, reject) => {
                 const chunks: Buffer[] = [];
-                stream.on(`data`, (chunk) => chunks.push(chunk));
+                stream.on(`data`, (chunk: Buffer) => chunks.push(chunk));
                 stream.on(`end`, () => resolve(Buffer.concat(chunks)));
                 stream.on(`error`, reject);
             });

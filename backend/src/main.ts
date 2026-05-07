@@ -1,4 +1,4 @@
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { SwaggerModule, DocumentBuilder, type OpenAPIObject } from "@nestjs/swagger";
 import { ConsoleLogger, ValidationPipe } from "@nestjs/common";
 import { useContainer } from "class-validator";
 import { NestFactory } from "@nestjs/core";
@@ -6,7 +6,7 @@ import { AppModule } from "./app.module";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
         logger: new ConsoleLogger({
             timestamp: true,
@@ -23,6 +23,7 @@ async function bootstrap() {
             transform: true,
             whitelist: true,
             forbidNonWhitelisted: true,
+            forbidUnknownValues: true,
             always: true,
         }),
     );
@@ -37,7 +38,7 @@ async function bootstrap() {
         .setVersion(`1.0`)
         .build();
 
-    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    const documentFactory = (): OpenAPIObject => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup("api/docs", app, documentFactory, {
         jsonDocumentUrl: `swagger/json`,
         customSiteTitle: `Short-links-manager API`,

@@ -7,6 +7,7 @@ export class GetUserQueryParamsDto {
     @ApiPropertyOptional({
         description: "Include the user's activity logs in the response.",
         example: false,
+        required: false,
     })
     @IsOptional()
     @Transform(toBoolean)
@@ -17,6 +18,7 @@ export class GetUserQueryParamsDto {
         description:
             "Include the user's assigned roles (with nested permissions) in the response.",
         example: false,
+        required: false,
     })
     @IsOptional()
     @Transform(toBoolean)
@@ -26,6 +28,7 @@ export class GetUserQueryParamsDto {
     @ApiPropertyOptional({
         description: "Include the user's owned redirections in the response.",
         example: false,
+        required: false,
     })
     @IsOptional()
     @Transform(toBoolean)
@@ -35,6 +38,7 @@ export class GetUserQueryParamsDto {
     @ApiPropertyOptional({
         description: "Include the user's directly assigned permissions in the response.",
         example: false,
+        required: false,
     })
     @IsOptional()
     @Transform(toBoolean)
@@ -44,6 +48,7 @@ export class GetUserQueryParamsDto {
     @ApiPropertyOptional({
         description: "Include the user's HTTP request history in the response.",
         example: false,
+        required: false,
     })
     @IsOptional()
     @Transform(toBoolean)

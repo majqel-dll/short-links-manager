@@ -13,7 +13,7 @@ export class BasicEntityProperties {
     public updatedAt?: Date;
 
     @BeforeUpdate()
-    protected updateUpdatedAtProperty() {
+    protected updateUpdatedAtProperty(): void {
         this.updatedAt = new Date();
     }
 }

@@ -31,7 +31,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-    ) { }
+    ) {}
 
     public async onApplicationBootstrap(): Promise<void> {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
@@ -109,7 +109,9 @@ export class V1RedirectionService implements OnApplicationBootstrap {
 
     public async findRedirectionByRoute(route: string): Promise<string> {
         const cachedRedirection = await this.cacheManager.get<string>(route);
-        if (cachedRedirection) return cachedRedirection;
+        if (cachedRedirection) {
+            return cachedRedirection;
+        }
 
         const segments = route.split(`/`);
         const redirection = await this.redirectionRepository.findOne({
@@ -121,7 +123,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
                     isPremium: false,
                 },
             ],
-            select: { id: true, targetUrl: true }
+            select: { id: true, targetUrl: true },
         });
 
         if (redirection) {
@@ -328,7 +330,11 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         }
 
         return await this.redirectionRepository.save(redirection).catch((error) => {
-            if (typeof error === `object` && `code` in error && error?.code === `23505`) {
+            const pgCode =
+                typeof error === `object` && error !== null && `code` in error
+                    ? (error as { code?: unknown }).code
+                    : null;
+            if (pgCode === `23505`) {
                 throw new ConflictException(
                     `Redirection with route "${redirection.route}" already exists.`,
                 );
@@ -391,7 +397,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         );
     }
 
-    public async isRouteAvailable(route: string, isPremium?: boolean): Promise<boolean> {
-        return true;
+    public isRouteAvailable(_route: string, _isPremium?: boolean): Promise<boolean> {
+        return Promise.resolve(true);
     }
 }

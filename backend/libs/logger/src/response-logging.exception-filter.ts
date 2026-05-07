@@ -25,8 +25,8 @@ export class ResponseLoggingExceptionFilter
 
     public catch(exception: unknown, host: ArgumentsHost): void {
         const startTime: number = Date.now();
-        const response = host.switchToHttp().getResponse();
-        const request = host.switchToHttp().getRequest();
+        const response = host.switchToHttp().getResponse<Response>();
+        const request = host.switchToHttp().getRequest<Request>();
         void this.noticeErrorResponse(exception, request, response, startTime);
         super.catch(exception, host);
     }

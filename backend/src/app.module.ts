@@ -68,7 +68,7 @@ import {
 export class AppModule implements OnModuleInit, NestModule {
     constructor(@InjectLogger(AppModule) private readonly logger: Logger) {}
 
-    public configure(consumer: MiddlewareConsumer) {
+    public configure(consumer: MiddlewareConsumer): void {
         consumer
             .apply(RequestLoggingMiddleware)
             .forRoutes(
@@ -77,7 +77,7 @@ export class AppModule implements OnModuleInit, NestModule {
             );
     }
 
-    public onModuleInit() {
+    public onModuleInit(): void {
         void onBootstrapMessageUtil(AppModule.name, this.logger);
     }
 }

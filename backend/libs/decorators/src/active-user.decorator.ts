@@ -4,7 +4,10 @@ import { MetadataKeyEnum } from "@libs/enums";
 import { type Request } from "express";
 
 export const ActiveUser = createParamDecorator(
-    (field: string, ctx: ExecutionContext): ActiveUserPayload => {
+    (
+        field: keyof ActiveUserPayload | undefined,
+        ctx: ExecutionContext,
+    ): ActiveUserPayload | ActiveUserPayload[keyof ActiveUserPayload] | null => {
         const request = ctx.switchToHttp().getRequest<Request>();
         const user = request[MetadataKeyEnum.USER_KEY];
         if (!user) {

@@ -39,10 +39,11 @@ export class CreateUserByPanelDto {
             "If omitted, the account is created without a password.",
         example: "P@ssw0rd!23",
         format: "password",
+        required: false,
         minLength: 8,
     })
     @IsOptional()
     @IsString()
     @IsStrongPassword()
-    public password: string;
+    public password?: string;
 }

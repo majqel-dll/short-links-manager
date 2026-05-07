@@ -1,11 +1,10 @@
-import { Logger as NestLogger, Injectable } from "@nestjs/common";
+import { Logger as NestLogger } from "@nestjs/common";
 import { ErrorConfig, LoggerConfig } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DeepPartial, Repository } from "typeorm";
 import { LogLabelEnum } from "@libs/enums";
 import { LogEntity } from "@libs/entities";
 
-@Injectable()
 export class Logger {
     private appName: string = __dirname.split("/").slice(-1).join("/");
     private logger: NestLogger;
@@ -51,7 +50,7 @@ export class Logger {
         }
     }
 
-    public log<T extends unknown>(message: T, config?: LoggerConfig): T {
+    public log<T>(message: T, config?: LoggerConfig): T {
         const context = config?.context ?? null;
         const save = config?.save ?? this.shouldSave;
 
@@ -59,12 +58,16 @@ export class Logger {
             void this.saveLog(message, LogLabelEnum.LOG, config);
         }
 
-        context ? NestLogger.log(message, context) : void this.logger.log(message);
+        if (context) {
+            void NestLogger.log(message, context);
+        } else {
+            void this.logger.log(message);
+        }
 
         return message;
     }
 
-    public warn<T extends unknown>(message: T, config?: LoggerConfig): T {
+    public warn<T>(message: T, config?: LoggerConfig): T {
         const context = config?.context ?? null;
         const save = config?.save ?? this.shouldSave;
 
@@ -72,12 +75,16 @@ export class Logger {
             void this.saveLog(message, LogLabelEnum.WARN, config);
         }
 
-        context ? NestLogger.warn(message, context) : void this.logger.warn(message);
+        if (context) {
+            NestLogger.warn(message, context);
+        } else {
+            void this.logger.warn(message);
+        }
 
         return message;
     }
 
-    public error<T extends unknown>(message: T, config?: ErrorConfig): T {
+    public error<T>(message: T, config?: ErrorConfig): T {
         const context = config?.context ?? null;
         const save = config?.save ?? this.shouldSave;
         const error = config?.error ?? null;
@@ -87,15 +94,23 @@ export class Logger {
         }
 
         if (error) {
-            context ? NestLogger.error(error, context) : void this.logger.error(error);
+            if (context) {
+                void NestLogger.error(error, context);
+            } else {
+                void this.logger.error(error);
+            }
         }
 
-        context ? NestLogger.error(message, error) : void this.logger.error(message);
+        if (context) {
+            NestLogger.error(message, error);
+        } else {
+            void this.logger.error(message);
+        }
 
         return message;
     }
 
-    public debug<T extends unknown>(message: T, config?: LoggerConfig): T {
+    public debug<T>(message: T, config?: LoggerConfig): T {
         const context = config?.context ?? null;
         const save = config?.save ?? this.shouldSave;
 
@@ -103,7 +118,11 @@ export class Logger {
             void this.saveLog(message, LogLabelEnum.DEBUG, config);
         }
 
-        context ? NestLogger.debug(message, context) : void this.logger.debug(message);
+        if (context) {
+            NestLogger.debug(message, context);
+        } else {
+            void this.logger.debug(message);
+        }
 
         return message;
     }

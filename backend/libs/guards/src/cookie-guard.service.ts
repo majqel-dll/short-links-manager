@@ -28,7 +28,7 @@ export class CookieGuardService implements CanActivate {
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
-        const request: Request = context.switchToHttp().getRequest();
+        const request: Request = context.switchToHttp().getRequest<Request>();
         const message = onAuthRejectionMessage(AuthTypeEnum.COOKIE, request);
 
         const loggerPayload = {
@@ -37,34 +37,38 @@ export class CookieGuardService implements CanActivate {
             tag: LogTypeEnum.PERMISSIONS_DENIED,
         };
 
-        const token = request.cookies?.[`accessToken`];
+        const cookies = request.cookies as Record<string, unknown> | undefined;
+        const token =
+            typeof cookies?.[`accessToken`] === `string` ? cookies[`accessToken`] : null;
         if (!token) {
             void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`Invalid authorization format.`);
         }
 
-        const payload = await this.jwtService.verifyAsync(token).catch((error) => {
-            void this.logger.error(`Received incorrect or malformed payload ${message}`, {
-                error: error as Error,
-                startTime,
-                tag: LogTypeEnum.PERMISSIONS_DENIED,
+        const payload = await this.jwtService
+            .verifyAsync<ActiveUserPayload>(token)
+            .catch((error) => {
+                void this.logger.error(
+                    `Received incorrect or malformed payload ${message}`,
+                    {
+                        error: error as Error,
+                        startTime,
+                        tag: LogTypeEnum.PERMISSIONS_DENIED,
+                    },
+                );
+                throw new UnauthorizedException(`Invalid authorization format.`);
             });
-            throw new UnauthorizedException(`Invalid authorization format.`);
-        });
 
         if (!(`permissions` in payload) || !(`roles` in payload)) {
             throw new UnauthorizedException(`Refresh token used as access token.`);
         }
 
-        const user = await this.userRepository.findOne({
-            where: { id: payload?.id },
-        });
-
-        loggerPayload.userId = user.id ?? null;
+        const user = await this.userRepository.findOne({ where: { id: payload.id } });
         if (!user) {
             void this.logger.warn(message, loggerPayload);
             throw new UnauthorizedException(`User not found.`);
         }
+        loggerPayload.userId = user.id ?? null;
 
         if (user.activatedAt === null && request.url !== `/v1/code`) {
             void this.logger.warn(message, loggerPayload);

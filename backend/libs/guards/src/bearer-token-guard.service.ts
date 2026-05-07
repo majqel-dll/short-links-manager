@@ -28,7 +28,7 @@ export class BearerTokenGuardService implements CanActivate {
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const startTime: number = Date.now();
-        const request: Request = context.switchToHttp().getRequest();
+        const request: Request = context.switchToHttp().getRequest<Request>();
         const authHeader = request.headers[`authorization`];
         const message = onAuthRejectionMessage(AuthTypeEnum.BEARER, request);
 
@@ -42,7 +42,7 @@ export class BearerTokenGuardService implements CanActivate {
         }
 
         const payload: ActiveUserPayload = await this.jwtService
-            .verifyAsync(token)
+            .verifyAsync<ActiveUserPayload>(token)
             .catch((error) => {
                 void this.logger.error(
                     `Received incorrect or malformed payload ${message}`,

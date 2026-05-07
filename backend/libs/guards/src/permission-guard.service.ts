@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { PermissionEntity, RoleEntity, UserEntity } from "@libs/entities";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ActiveUserPayload } from "@libs/types";
 import { InjectLogger } from "@libs/decorators";
 import { Reflector } from "@nestjs/core";
 import { Logger } from "@libs/logger";
@@ -13,6 +12,7 @@ import {
     PermissionOnRole,
     RoleEnum,
 } from "@libs/enums";
+import { type Request } from "express";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -46,22 +46,26 @@ export class PermissionGuard implements CanActivate {
                 return true;
             }
 
-            const request = context.switchToHttp().getRequest();
-            const user: ActiveUserPayload = request[MetadataKeyEnum.USER_KEY];
+            const request = context.switchToHttp().getRequest<Request>();
+            const user = request[MetadataKeyEnum.USER_KEY];
+
+            if (!user) {
+                this.logger.warn(
+                    `Unauthenticated user attempted to access a resource requiring permissions.`,
+                    {
+                        userId: null,
+                        startTime,
+                        tag: LogTypeEnum.PERMISSIONS_DENIED,
+                    },
+                );
+                return false;
+            }
 
             const loggerPayload = {
                 userId: user.id ?? null,
                 startTime,
                 tag: LogTypeEnum.PERMISSIONS_DENIED,
             };
-
-            if (!user) {
-                this.logger.warn(
-                    `Unauthenticated user attempted to access a resource requiring permissions.`,
-                    loggerPayload,
-                );
-                return false;
-            }
 
             const userWithRoles = await this.userRepository.findOne({
                 where: { id: user.id },

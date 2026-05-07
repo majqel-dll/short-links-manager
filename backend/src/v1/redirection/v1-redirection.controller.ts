@@ -57,7 +57,6 @@ import {
     Post,
     Get,
     Req,
-    ParseBoolPipe,
 } from "@nestjs/common";
 import {
     BasicSearchQueryParamsDto,

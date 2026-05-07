@@ -24,7 +24,6 @@ import {
 import {
     BasicSearchQueryParamsDto,
     GetUserQueryParamsDto,
-    CreateUserByPanelDto,
     UpdateUserDto,
 } from "@libs/dtos";
 import argon from "argon2";
@@ -44,7 +43,7 @@ export class V1UserService implements OnApplicationBootstrap {
         private readonly minio: S3Service,
     ) {}
 
-    public async onApplicationBootstrap() {
+    public async onApplicationBootstrap(): Promise<void> {
         const bucketExists = await this.minio.bucketExists(BucketEnum.USER_AVATARS);
         if (!bucketExists) {
             await this.minio.createBucket(BucketEnum.USER_AVATARS);
@@ -138,10 +137,6 @@ export class V1UserService implements OnApplicationBootstrap {
             });
 
         return user;
-    }
-
-    public async createUserByPanel(payload: CreateUserByPanelDto): Promise<UserEntity> {
-        return null;
     }
 
     public async updateUserData(
@@ -375,9 +370,12 @@ export class V1UserService implements OnApplicationBootstrap {
         startTime: number,
     ): Promise<void> {
         const avatarObjectName = `avatar-${userId.toString().padStart(6, `0`)}.webp`;
-        const existingAvatar = await this.minio
+        const existingAvatarResult: unknown = await this.minio
             .getObject(BucketEnum.USER_AVATARS, avatarObjectName)
             .catch(() => null);
+        const existingAvatar = Buffer.isBuffer(existingAvatarResult)
+            ? existingAvatarResult
+            : null;
 
         if (!existingAvatar) {
             return;

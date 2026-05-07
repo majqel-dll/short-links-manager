@@ -45,7 +45,7 @@ export class SessionEntity extends BasicEntityProperties {
     @JoinColumn({ name: `ipId` })
     public ip?: HttpIpAddressEntity;
 
-    public isKeyFresh() {
+    public isKeyFresh(): boolean {
         if (!this.isActive) {
             return false;
         }
@@ -57,7 +57,7 @@ export class SessionEntity extends BasicEntityProperties {
     }
 
     @BeforeUpdate()
-    public checkIfTokenIsFresh() {
+    public checkIfTokenIsFresh(): void {
         if (!this.isKeyFresh()) {
             this.isActive = false;
         }

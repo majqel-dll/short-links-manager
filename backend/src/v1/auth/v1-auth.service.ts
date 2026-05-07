@@ -104,8 +104,12 @@ export class V1AuthService {
             });
 
             return user;
-        } catch (error) {
-            if (typeof error === `object` && `code` in error && error?.code === "23505") {
+        } catch (error: unknown) {
+            const pgCode =
+                typeof error === `object` && error !== null && `code` in error
+                    ? (error as { code?: unknown }).code
+                    : null;
+            if (pgCode === "23505") {
                 throw new ConflictException(
                     `User with such login or email already exists.`,
                 );
@@ -198,7 +202,7 @@ export class V1AuthService {
 
         void this.userRepository
             .update({ id: user.id }, { lastLoginAt: new Date() })
-            .catch((error) => {
+            .catch((error: Error) => {
                 void this.logger.error(
                     `Failed to update last login date for user ${user.id}.`,
                     { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION_FAIL, error },
@@ -224,7 +228,7 @@ export class V1AuthService {
         const startTime = Date.now();
         const updateResult = await this.sessionRepository
             .update({ userId: id, sessionUuid }, { isActive: false })
-            .catch((error) => {
+            .catch((error: Error) => {
                 void this.logger.error(
                     `Failed to terminate session ${sessionUuid} for user ${id}.`,
                     { startTime, tag: LogTypeEnum.INTERNAL_ACTION_FAIL, error },
@@ -250,7 +254,7 @@ export class V1AuthService {
         const startTime: number = Date.now();
         await this.sessionRepository
             .update({ userId: id, isActive: true }, { isActive: false })
-            .catch((error) => {
+            .catch((error: Error) => {
                 void this.logger.error(`Failed to terminate sessions for user ${id}.`, {
                     startTime,
                     tag: LogTypeEnum.INTERNAL_ACTION_FAIL,
@@ -270,7 +274,7 @@ export class V1AuthService {
     public async findActiveSessionForUser(userId: number): Promise<SessionEntity[]> {
         const activeSessions = await this.sessionRepository
             .find({ where: { userId, isActive: true } })
-            .catch((error) => {
+            .catch((error: Error) => {
                 void this.logger.error(
                     `Failed to find active sessions for user ${userId}.`,
                     { startTime: Date.now(), tag: LogTypeEnum.INTERNAL_ACTION_FAIL, error },
@@ -326,7 +330,7 @@ export class V1AuthService {
 
         const passwordHash = await argon2
             .hash(newPassword, { type: argon2.argon2id, timeCost: 3, memoryCost: 2 ** 16 })
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(`Failed to encrypt new password.`, {
                     startTime,
                     error,
@@ -337,7 +341,7 @@ export class V1AuthService {
 
         await this.userRepository
             .update({ id: existingUser.id }, { passwordHash })
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(`Failed to save new password.`, {
                     startTime,
                     error,
@@ -394,13 +398,13 @@ export class V1AuthService {
                 where: { code, action: CodeActionEnum.RESET_PASSWORD_REQUEST },
                 relations: { user: true },
             })
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(
-                    `Failed to find code ${code} for activation. Error: ${(error as Error)?.message}`,
+                    `Failed to find code ${code} for activation. Error: ${error.message}`,
                     {
                         startTime,
                         tag: LogTypeEnum.DATABASE_READ_FAIL,
-                        error: error as Error,
+                        error,
                     },
                 );
                 throw new InternalServerErrorException(
@@ -447,7 +451,7 @@ export class V1AuthService {
 
         const passwordHash = await argon2
             .hash(newPassword, { type: argon2.argon2id, timeCost: 3, memoryCost: 2 ** 16 })
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(`Failed to encrypt new password.`, {
                     startTime,
                     error,
@@ -462,7 +466,7 @@ export class V1AuthService {
             user.lastPasswordChange = new Date();
             codeEntity.usedAt = new Date();
 
-            await manager.save(CodeEntity, codeEntity).catch((error) => {
+            await manager.save(CodeEntity, codeEntity).catch((error: Error) => {
                 this.logger.error(`Failed to mark code ${code} as used.`, {
                     startTime,
                     error,
@@ -473,7 +477,7 @@ export class V1AuthService {
                 );
             });
 
-            await manager.save(UserEntity, user).catch((error) => {
+            await manager.save(UserEntity, user).catch((error: Error) => {
                 this.logger.error(`Failed to save password change in the database.`, {
                     startTime,
                     error,
@@ -488,7 +492,7 @@ export class V1AuthService {
                     { userId: user.id, isActive: true },
                     { isActive: false },
                 )
-                .catch((error) => {
+                .catch((error: Error) => {
                     this.logger.error(
                         `Failed to terminate active sessions after password change.`,
                         {
@@ -512,11 +516,11 @@ export class V1AuthService {
     public async refreshToken({ refreshToken }: RefreshTokenDto): Promise<SignInResponse> {
         const startTime: number = Date.now();
         const payload: RefreshTokenPayload = await this.jwtService
-            .verifyAsync(refreshToken)
-            .catch((error) => {
+            .verifyAsync<RefreshTokenPayload>(refreshToken)
+            .catch((error: unknown) => {
                 this.logger.error(`Failed to read passed key.`, {
                     startTime,
-                    error,
+                    error: error as Error,
                     tag: LogTypeEnum.AUTHORIZATION_FAIL,
                 });
                 throw new ForbiddenException();
@@ -556,7 +560,7 @@ export class V1AuthService {
         }
 
         if (!session.isKeyFresh()) {
-            this.sessionRepository.update({ id: session.id }, { isActive: false });
+            await this.sessionRepository.update({ id: session.id }, { isActive: false });
             throw new ForbiddenException(`Specified token has already expired.`);
         }
 
@@ -577,7 +581,7 @@ export class V1AuthService {
                 { id: session.id },
                 { sessionUuid: newSessionUuid, expiresAt: refreshTokenExpiringDate },
             )
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(`Failed to save new refresh token.`, {
                     error,
                     startTime,
@@ -594,7 +598,7 @@ export class V1AuthService {
                 secret: process.env.SECRET,
                 expiresIn: refreshTokenExpiresIn,
             })
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(`Failed to sign new refresh token token payload.`, {
                     error,
                     startTime,
@@ -609,12 +613,12 @@ export class V1AuthService {
             createdAt: new Date().toISOString(),
             roles: user.roles.map(({ name }) => name),
             permissions: [
-                ...new Set(
+                ...new Set([
                     ...user.permissions.map(({ value }) => value),
                     ...user.roles.flatMap(({ permissions }) =>
                         permissions.map(({ value }) => value),
                     ),
-                ),
+                ]),
             ] as PermissionEnum[],
         };
 
@@ -623,7 +627,7 @@ export class V1AuthService {
                 secret: process.env.SECRET,
                 expiresIn: tokenExpiresIn,
             })
-            .catch((error) => {
+            .catch((error: Error) => {
                 this.logger.error(`Failed to sign new access token payload.`, {
                     error,
                     startTime,

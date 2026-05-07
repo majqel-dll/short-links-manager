@@ -27,6 +27,7 @@ export class ChangeUserPermissionsDto {
             "List of user-permission pairs to process. Must contain at least one entry. " +
             "Each entry links one user to one permission.",
         type: [PermissionOperationDto],
+        isArray: true,
         minItems: 1,
     })
     @IsDefined()

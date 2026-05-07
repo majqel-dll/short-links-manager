@@ -35,22 +35,42 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         });
     }
 
-    private async extractUserId(req: Request): Promise<number> {
+    private getAccessToken(req: Request): string | null {
+        const cookies = req.cookies as Record<string, unknown> | undefined;
+        const cookieToken = cookies?.[`accessToken`];
+        if (typeof cookieToken === `string`) {
+            return cookieToken;
+        }
+
+        const header = req.headers?.[`authorization`];
+        if (typeof header === `string`) {
+            return header.split(` `).at(1) ?? null;
+        }
+
+        return null;
+    }
+
+    private getUserIdFromDecodedToken(payload: unknown): number | null {
+        if (typeof payload !== `object` || payload === null || !(`id` in payload)) {
+            return null;
+        }
+
+        const userId = (payload as { id?: unknown }).id;
+        return typeof userId === `number` ? userId : null;
+    }
+
+    private async extractUserId(req: Request): Promise<number | null> {
         const startTime: number = Date.now();
         try {
-            let token = req.cookies?.[`accessToken`];
-            if (!token) {
-                const header = req.headers?.[`authorization`];
-                token = header?.split(` `).at(1);
-            }
-
+            const token = this.getAccessToken(req);
             if (!token) {
                 return null;
             }
 
-            const payload: ActiveUserPayload = await this.jwtService.verifyAsync(token, {
-                secret: process.env.SECRET,
-            });
+            const payload: ActiveUserPayload =
+                await this.jwtService.verifyAsync<ActiveUserPayload>(token, {
+                    secret: process.env.SECRET,
+                });
 
             return payload.id;
         } catch (error) {
@@ -62,15 +82,15 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
             };
 
             if (error instanceof Error && error.name === "TokenExpiredError") {
-                let token = req.cookies?.[`accessToken`];
+                const token = this.getAccessToken(req);
                 if (!token) {
-                    const header = req.headers?.[`authorization`];
-                    token = header?.split(` `).at(1);
+                    return null;
                 }
-
-                const payload: ActiveUserPayload = await this.jwtService.decode(token);
-                if (payload?.id) {
-                    return payload.id;
+                const userId = this.getUserIdFromDecodedToken(
+                    this.jwtService.decode(token),
+                );
+                if (userId !== null) {
+                    return userId;
                 }
 
                 message = `Received expired token in monitoring middleware.`;
@@ -108,6 +128,11 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 contentType: headers?.["content-type"] ?? null,
             } as DeepPartial<HttpRequestHeaderEntity>);
 
+            const cleanedBody =
+                req?.body && typeof req.body === `object`
+                    ? this.cleanBody(req.body as Record<string, unknown>)
+                    : null;
+
             const requestEntry = this.requestRepository.create({
                 requestUuid: req.executionId,
                 requestTimestamp: new Date(),
@@ -120,10 +145,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
                 protocol: req?.protocol ?? null,
                 params: req?.params ?? null,
                 query: req?.query ?? null,
-                body:
-                    req?.body && typeof req.body === `object`
-                        ? this.cleanBody(req.body)
-                        : null,
+                body: cleanedBody,
                 ipId: existingIp?.id ?? null,
                 userId: userId ?? null,
             } as DeepPartial<HttpRequestEntity>);
@@ -184,7 +206,7 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
         }
     }
 
-    private cleanBody<T extends object>(body: T): T {
+    private cleanBody(body: Record<string, unknown>): Record<string, unknown> {
         body = structuredClone(body);
         const keys = [
             `password`,
