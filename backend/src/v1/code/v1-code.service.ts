@@ -1,12 +1,3 @@
-import {
-    BadRequestException,
-    ClassSerializerInterceptor,
-    Injectable,
-    InternalServerErrorException,
-    Logger,
-    NotFoundException,
-    UseInterceptors,
-} from "@nestjs/common";
 import { DataSource, IsNull, MoreThanOrEqual, Or, Repository } from "typeorm";
 import { CodeActionEnum } from "@libs/enums/code/code-action.enum";
 import { UserEntity, CodeEntity } from "@libs/entities";
@@ -14,9 +5,18 @@ import { ThrottlerException } from "@nestjs/throttler";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { ActiveUserPayload } from "@libs/types";
-import { LogTypeEnum } from "@libs/enums";
 import { EmailerService } from "@libs/emailer";
+import { LogTypeEnum } from "@libs/enums";
 import { randomInt } from "crypto";
+import {
+    InternalServerErrorException,
+    ClassSerializerInterceptor,
+    BadRequestException,
+    NotFoundException,
+    UseInterceptors,
+    Injectable,
+    Logger,
+} from "@nestjs/common";
 @Injectable()
 @UseInterceptors(ClassSerializerInterceptor)
 export class V1CodeService {
@@ -29,7 +29,7 @@ export class V1CodeService {
         private readonly logger: Logger,
         private readonly emailerService: EmailerService,
         private readonly dataSource: DataSource,
-    ) { }
+    ) {}
 
     private randomNumber(length = 9): string {
         const maxValue = 10 ** length;

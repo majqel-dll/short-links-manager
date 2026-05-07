@@ -1,59 +1,35 @@
-import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum } from "@libs/enums";
 import { BasicResponse, GetEntitiesResponse, type ActiveUserPayload } from "@libs/types";
+import { PermissionEnum, AuthTypeEnum, ActivationSourceEnum } from "@libs/enums";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { V1UserService } from "./v1-user.service";
 import {
-    BasicSearchQueryParamsDto,
-    GetUserQueryParamsDto,
-    CreateUserByPanelDto,
-    UpdateUserDto,
-    DeleteAccountDto,
-} from "@libs/dtos";
-import { randomUUID } from "crypto";
-import {
-    ApiInternalServerErrorResponse,
-    ApiUnauthorizedResponse,
-    ApiBadRequestResponse,
-    ApiConflictResponse,
-    ApiForbiddenResponse,
-    ApiNoContentResponse,
-    ApiAcceptedResponse,
-    ApiNotFoundResponse,
-    ApiCreatedResponse,
-    ApiCookieAuth,
-    ApiBearerAuth,
-    ApiOkResponse,
-    ApiOperation,
-    ApiConsumes,
-    ApiParam,
-    ApiQuery,
-    ApiBody,
-    ApiTags,
-} from "@nestjs/swagger";
-import {
+    DeleteSpecifiedUserAccountNoContentResponse,
+    DeleteSpecifiedUserAccountForbiddenResponse,
+    DeleteSpecifiedUserAccountNotFoundResponse,
+    RequestAccountDeletionAcceptedResponse,
     GetUserRedirectionsForbiddenResponse,
     GetUserPermissionsForbiddenResponse,
+    DeleteSpecifiedUserAccountOperation,
     CreateUserByPanelForbiddenResponse,
-    RequestAccountDeletionOperation,
-    RequestAccountDeletionAcceptedResponse,
-    ConfirmDeleteAccountOperation,
-    ConfirmDeleteAccountOkResponse,
     CommonInternalServerErrorResponse,
     DeleteUserAvatarNoContentResponse,
     CreateUserByPanelConflictResponse,
     DeleteUserAvatarForbiddenResponse,
     CreateUserByPanelCreatedResponse,
     DeleteUserAvatarNotFoundResponse,
+    RequestAccountDeletionOperation,
     PostUserAvatarBadRequestResponse,
     ChangeUserDataForbiddenResponse,
     PostUserAvatarForbiddenResponse,
+    ConfirmDeleteAccountOkResponse,
     GetUserAvatarForbiddenResponse,
     ChangeUserDataAcceptedResponse,
     ChangeUserDataNotFoundResponse,
     DeleteAccountForbiddenResponse,
     DeleteAccountNoContentResponse,
+    ConfirmDeleteAccountOperation,
     DeleteAccountNotFoundResponse,
     PostUserAvatarCreatedResponse,
     GetUserAvatarNotFoundResponse,
@@ -63,11 +39,14 @@ import {
     GetUserRedirectionsOperation,
     GetUserPermissionsOkResponse,
     GetUserByIdNotFoundResponse,
+    GetUserByIdRedirectionsQuery,
+    GetUserByIdPermissionsQuery,
     GetUserPermissionsOperation,
     CommonUnauthorizedResponse,
     CreateUserByPanelOperation,
     DeleteUserAvatarOperation,
     GetUsersForbiddenResponse,
+    GetUserByIdRequestsQuery,
     ChangeUserDataOperation,
     GetUserAvatarOkResponse,
     PostUserAvatarOperation,
@@ -77,22 +56,15 @@ import {
     GetUserAvatarOperation,
     GetUserByIdOkResponse,
     GetUserRolesOperation,
+    GetUserByIdRolesQuery,
     GetUserByIdOperation,
+    GetUserByIdLogsQuery,
     GetUsersOkResponse,
     PostUserAvatarBody,
     GetUsersOperation,
     UserIdParam,
-    DeleteSpecifiedUserAccountOperation,
-    DeleteSpecifiedUserAccountNoContentResponse,
-    DeleteSpecifiedUserAccountForbiddenResponse,
-    DeleteSpecifiedUserAccountNotFoundResponse,
     TakeQuery,
     SkipQuery,
-    GetUserByIdLogsQuery,
-    GetUserByIdRolesQuery,
-    GetUserByIdRedirectionsQuery,
-    GetUserByIdPermissionsQuery,
-    GetUserByIdRequestsQuery,
 } from "./v1-user.controller.swagger";
 import { type Response } from "express";
 import {
@@ -120,11 +92,39 @@ import {
     Res,
 } from "@nestjs/common";
 import {
+    ApiInternalServerErrorResponse,
+    ApiUnauthorizedResponse,
+    ApiBadRequestResponse,
+    ApiConflictResponse,
+    ApiForbiddenResponse,
+    ApiNoContentResponse,
+    ApiAcceptedResponse,
+    ApiNotFoundResponse,
+    ApiCreatedResponse,
+    ApiCookieAuth,
+    ApiBearerAuth,
+    ApiOkResponse,
+    ApiOperation,
+    ApiConsumes,
+    ApiParam,
+    ApiQuery,
+    ApiBody,
+    ApiTags,
+} from "@nestjs/swagger";
+import {
     RedirectionEntity,
     PermissionEntity,
     RoleEntity,
     UserEntity,
 } from "@libs/entities";
+import {
+    BasicSearchQueryParamsDto,
+    GetUserQueryParamsDto,
+    CreateUserByPanelDto,
+    DeleteAccountDto,
+    UpdateUserDto,
+} from "@libs/dtos";
+import { randomUUID } from "crypto";
 import { V1AuthService } from "../auth";
 
 @ApiTags(`User`)
@@ -274,7 +274,8 @@ export class V1UserController {
     ): Promise<BasicResponse> {
         await this.userService.requestToDeleteAccount(activeUser);
         return {
-            message: "Account deletion code has been sent to your email to confirm your account deletion.",
+            message:
+                "Account deletion code has been sent to your email to confirm your account deletion.",
         };
     }
 

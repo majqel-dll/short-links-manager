@@ -1,4 +1,8 @@
-import { type ApiOperationOptions, type ApiResponseOptions, type ApiQueryOptions } from "@nestjs/swagger";
+import {
+    type ApiOperationOptions,
+    type ApiResponseOptions,
+    type ApiQueryOptions,
+} from "@nestjs/swagger";
 
 const PermissionSchema = {
     type: "object",

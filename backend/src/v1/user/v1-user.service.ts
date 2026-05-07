@@ -1,19 +1,18 @@
-
 import { BucketEnum, CodeActionEnum, LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { V1CodeService } from "../code";
 import { Logger } from "@libs/logger";
 import { S3Service } from "@libs/s3";
-import { DataSource, Repository } from "typeorm";
 import {
     InternalServerErrorException,
     OnApplicationBootstrap,
+    BadRequestException,
     ForbiddenException,
     NotFoundException,
     Injectable,
-    BadRequestException,
 } from "@nestjs/common";
 import {
     RedirectionEntity,
@@ -22,14 +21,14 @@ import {
     UserEntity,
     CodeEntity,
 } from "@libs/entities";
-import sharp from "sharp";
-import argon from "argon2";
 import {
     BasicSearchQueryParamsDto,
     GetUserQueryParamsDto,
     CreateUserByPanelDto,
     UpdateUserDto,
 } from "@libs/dtos";
+import argon from "argon2";
+import sharp from "sharp";
 
 @Injectable()
 export class V1UserService implements OnApplicationBootstrap {
@@ -43,7 +42,7 @@ export class V1UserService implements OnApplicationBootstrap {
         private readonly codeService: V1CodeService,
         private readonly dataSource: DataSource,
         private readonly minio: S3Service,
-    ) { }
+    ) {}
 
     public async onApplicationBootstrap() {
         const bucketExists = await this.minio.bucketExists(BucketEnum.USER_AVATARS);
@@ -287,12 +286,12 @@ export class V1UserService implements OnApplicationBootstrap {
         return user?.redirections || [];
     }
 
-    public async requestToDeleteAccount(
-        { id }: Pick<ActiveUserPayload, "id">,
-    ): Promise<void> {
+    public async requestToDeleteAccount({
+        id,
+    }: Pick<ActiveUserPayload, "id">): Promise<void> {
         await this.codeService.sendVerificationCodeToEmail(
             { id },
-            CodeActionEnum.DELETE_ACCOUNT_CONFIRM
+            CodeActionEnum.DELETE_ACCOUNT_CONFIRM,
         );
     }
 
@@ -304,20 +303,26 @@ export class V1UserService implements OnApplicationBootstrap {
         const startTime: number = Date.now();
 
         if (code) {
-            const codeEntity = await this.codeRepository.findOne({
-                where: { code, action: CodeActionEnum.DELETE_ACCOUNT_CONFIRM },
-                relations: { user: true },
-            }).catch((error) => {
-                this.logger.error(
-                    `Failed to fetch code data from the database for code: ${code}.`,
-                    { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
-                );
-                throw new InternalServerErrorException(
-                    `Failed to fetch code data from the database for code: ${code}.`,
-                );
-            })
+            const codeEntity = await this.codeRepository
+                .findOne({
+                    where: { code, action: CodeActionEnum.DELETE_ACCOUNT_CONFIRM },
+                    relations: { user: true },
+                })
+                .catch((error) => {
+                    this.logger.error(
+                        `Failed to fetch code data from the database for code: ${code}.`,
+                        {
+                            error: error as Error,
+                            tag: LogTypeEnum.DATABASE_FAIL,
+                            startTime,
+                        },
+                    );
+                    throw new InternalServerErrorException(
+                        `Failed to fetch code data from the database for code: ${code}.`,
+                    );
+                });
 
-            if (!codeEntity || !codeEntity.user) {
+            if (!codeEntity?.user) {
                 this.logger.warn(`Attempt to delete account with invalid code: ${code}`, {
                     startTime,
                     tag: LogTypeEnum.WARN,
@@ -366,9 +371,9 @@ export class V1UserService implements OnApplicationBootstrap {
     }
 
     private async deleteAvatarObjectBestEffort(
-        userId: number, startTime: number,
+        userId: number,
+        startTime: number,
     ): Promise<void> {
-
         const avatarObjectName = `avatar-${userId.toString().padStart(6, `0`)}.webp`;
         const existingAvatar = await this.minio
             .getObject(BucketEnum.USER_AVATARS, avatarObjectName)

@@ -4,24 +4,6 @@ import { PermissionEntity, RoleEntity } from "@libs/entities";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { Auth, Permission } from "@libs/decorators";
 import {
-    ClassSerializerInterceptor,
-    UseInterceptors,
-    HttpStatus,
-    Controller,
-    UseGuards,
-    HttpCode,
-    Body,
-    Get,
-    Post,
-    Put,
-    Query,
-} from "@nestjs/common";
-import {
-    BasicSearchQueryParamsDto,
-    ChangeUserPermissionsDto,
-    ChangeRoleDto,
-} from "@libs/dtos";
-import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,
     ApiBadRequestResponse,
@@ -45,6 +27,7 @@ import {
     CommonPermissionForbiddenResponse,
     GetAllPermissionsNotFoundResponse,
     UpdateUserRoleNotFoundResponse,
+    UpdateUserRoleConflictResponse,
     GetAllRolesNotFoundResponse,
     GetAllPermissionsOkResponse,
     DetachPermissionOkResponse,
@@ -54,13 +37,30 @@ import {
     DetachPermissionOperation,
     UpdateUserRoleOkResponse,
     UpdateUserRoleOperation,
-    UpdateUserRoleConflictResponse,
     GetAllRolesOkResponse,
     GetAllRolesOperation,
     TakeQuery,
     SkipQuery,
 } from "./v1-permission.controller.swagger";
 import { GetEntitiesResponse } from "@libs/types";
+import {
+    ClassSerializerInterceptor,
+    UseInterceptors,
+    HttpStatus,
+    Controller,
+    UseGuards,
+    HttpCode,
+    Body,
+    Get,
+    Post,
+    Put,
+    Query,
+} from "@nestjs/common";
+import {
+    BasicSearchQueryParamsDto,
+    ChangeUserPermissionsDto,
+    ChangeRoleDto,
+} from "@libs/dtos";
 
 @ApiTags(`Permission`)
 @Controller(`v1/permission`)
@@ -73,7 +73,7 @@ import { GetEntitiesResponse } from "@libs/types";
 @ApiForbiddenResponse(CommonPermissionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonPermissionInternalServerErrorResponse)
 export class V1PermissionController {
-    constructor(private readonly permissionService: V1PermissionService) {}
+    constructor(private readonly permissionService: V1PermissionService) { }
 
     @Get()
     @HttpCode(HttpStatus.OK)

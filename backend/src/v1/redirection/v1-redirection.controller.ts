@@ -1,9 +1,3 @@
-import {
-    BasicResponse,
-    GetEntitiesResponse,
-    RedirectResponse,
-    type ActiveUserPayload,
-} from "@libs/types";
 import { V1RedirectionService } from "./v1-redirection.service";
 import { ActiveUser, Auth, Permission } from "@libs/decorators";
 import { AuthTypeEnum, PermissionEnum } from "@libs/enums";
@@ -11,23 +5,23 @@ import { RedirectionEntity } from "@libs/entities";
 import {
     CommonRedirectionInternalServerErrorResponse,
     CommonRedirectionUnauthorizedResponse,
+    GetRedirectionByIdRedirectionIdParam,
+    DeleteRedirectionRedirectionIdParam,
     CommonRedirectionForbiddenResponse,
     DeleteRedirectionNoContentResponse,
+    UpdateRedirectionConflictResponse,
     CreateRedirectionCreatedResponse,
-    CreateRedirectionOperation,
-    DeleteRedirectionOperation,
-    DeleteRedirectionRedirectionIdParam,
+    RedirectClientToFoundResponse,
     GetRedirectionByIdOkResponse,
     GetRedirectionByIdOperation,
-    GetRedirectionByIdRedirectionIdParam,
+    UpdateRedirectionOkResponse,
+    CreateRedirectionOperation,
+    RedirectClientToRouteParam,
+    DeleteRedirectionOperation,
+    UpdateRedirectionOperation,
+    RedirectClientToOperation,
     GetRedirectionsOkResponse,
     GetRedirectionsOperation,
-    RedirectClientToFoundResponse,
-    RedirectClientToOperation,
-    RedirectClientToRouteParam,
-    UpdateRedirectionConflictResponse,
-    UpdateRedirectionOkResponse,
-    UpdateRedirectionOperation,
     TakeQuery,
     SkipQuery,
 } from "./v1-redirection.controller.swagger";
@@ -49,27 +43,33 @@ import {
     ApiTags,
 } from "@nestjs/swagger";
 import {
-    Body,
     ClassSerializerInterceptor,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
-    Query,
-    Redirect,
-    Req,
     UseInterceptors,
+    ParseIntPipe,
+    HttpStatus,
+    Controller,
+    HttpCode,
+    Redirect,
+    Delete,
+    Param,
+    Patch,
+    Query,
+    Body,
+    Post,
+    Get,
+    Req,
 } from "@nestjs/common";
 import {
     BasicSearchQueryParamsDto,
     CreateRedirectionDto,
     UpdateRedirectionDto,
 } from "@libs/dtos";
+import {
+    type ActiveUserPayload,
+    GetEntitiesResponse,
+    RedirectResponse,
+    BasicResponse,
+} from "@libs/types";
 
 @ApiTags(`Redirection`)
 @Controller()

@@ -248,9 +248,9 @@ export const ChangeUserDataNotFoundResponse: ApiResponseOptions = {
 export const DeleteAccountOperation: ApiOperationOptions = {
     summary: "Delete user account",
     description:
-    "Permanently deletes the authenticated user's account after confirming a valid deletion code, " +
+        "Permanently deletes the authenticated user's account after confirming a valid deletion code, " +
         "along with all associated data (sessions, redirections, codes, logs). " +
-    "Requires the **DELETE_OWN_ACCOUNT** permission. " +
+        "Requires the **DELETE_OWN_ACCOUNT** permission. " +
         "This action is irreversible.",
 };
 
@@ -496,7 +496,8 @@ export const GetUserByIdRolesQuery: ApiQueryOptions = {
     name: "roles",
     required: false,
     type: Boolean,
-    description: "Include the user's assigned roles (with nested permissions) in the response.",
+    description:
+        "Include the user's assigned roles (with nested permissions) in the response.",
     example: false,
 };
 

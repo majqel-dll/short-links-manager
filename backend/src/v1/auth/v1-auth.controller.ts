@@ -7,6 +7,9 @@ import { parseExpiresIn } from "@libs/utils";
 import { AuthGuard } from "@libs/guards";
 import { type Response } from "express";
 import {
+    ConfirmPasswordResetBadRequestResponse,
+    ConfirmPasswordResetAcceptedResponse,
+    RequestPasswordResetAcceptedResponse,
     ChangePasswordUnauthorizedResponse,
     CommonInternalServerErrorResponse,
     ChangePasswordBadRequestResponse,
@@ -15,6 +18,8 @@ import {
     RefreshTokenBadRequestResponse,
     SignOutSessionNotFoundResponse,
     RefreshTokenForbiddenResponse,
+    RequestPasswordResetOperation,
+    ConfirmPasswordResetOperation,
     SignInUnauthorizedResponse,
     CommonUnauthorizedResponse,
     SignOutSessionOkResponse,
@@ -35,11 +40,6 @@ import {
     SignOutOperation,
     SignInOperation,
     SignUpOperation,
-    RequestPasswordResetOperation,
-    RequestPasswordResetAcceptedResponse,
-    ConfirmPasswordResetOperation,
-    ConfirmPasswordResetAcceptedResponse,
-    ConfirmPasswordResetBadRequestResponse,
 } from "./v1-auth.controller.swagger";
 import {
     ClassSerializerInterceptor,

@@ -1,4 +1,5 @@
 import { BasicResponse, RedirectResponse, type ActiveUserPayload } from "@libs/types";
+import { AuthTypeEnum, CodeActionEnum } from "@libs/enums";
 import { AuthGuard, PermissionGuard } from "@libs/guards";
 import { ActiveUser, Auth } from "@libs/decorators";
 import { GetCodeQueryParamsDto } from "@libs/dtos";
@@ -18,18 +19,6 @@ import {
     CommonCodeBadRequestResponse,
     CommonCodeForbiddenResponse,
 } from "./v1-code.controller.swagger";
-import {
-    ClassSerializerInterceptor,
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    UseGuards,
-    Redirect,
-    HttpCode,
-    Param,
-    Get,
-} from "@nestjs/common";
-import { AuthTypeEnum, CodeActionEnum } from "@libs/enums";
 import { CodeEntity } from "@libs/entities";
 import {
     ApiInternalServerErrorResponse,
@@ -45,13 +34,24 @@ import {
     ApiParam,
     ApiTags,
 } from "@nestjs/swagger";
+import {
+    ClassSerializerInterceptor,
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    UseGuards,
+    Redirect,
+    HttpCode,
+    Param,
+    Get,
+} from "@nestjs/common";
 
 @ApiTags("Code")
 @Controller(`v1/code`)
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard, PermissionGuard)
 export class V1CodeController {
-    constructor(private readonly codeService: V1CodeService) {}
+    constructor(private readonly codeService: V1CodeService) { }
 
     @Get(`:action`)
     @HttpCode(HttpStatus.OK)

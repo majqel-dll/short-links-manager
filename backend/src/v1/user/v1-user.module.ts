@@ -4,9 +4,9 @@ import { DatabaseModule } from "@libs/database";
 import { GuardsModule } from "@libs/guards";
 import { LoggerModule } from "@libs/logger";
 import { Module } from "@nestjs/common";
-import { S3Module } from "@libs/s3";
 import { V1CodeModule } from "../code";
 import { V1AuthModule } from "../auth";
+import { S3Module } from "@libs/s3";
 
 @Module({
     imports: [
