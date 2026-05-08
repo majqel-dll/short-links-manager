@@ -6,7 +6,7 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
 import { Logger } from "@libs/logger";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import {
     InternalServerErrorException,
     OnApplicationBootstrap,
@@ -31,7 +31,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-    ) {}
+    ) { }
 
     public async onApplicationBootstrap(): Promise<void> {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
@@ -47,27 +47,44 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            const mostCommonRedirections = await this.redirectionRepository
+            const mostCommonRedirectionRows = await this.redirectionRepository
                 .createQueryBuilder("redirection")
-                .leftJoinAndSelect("redirection.user", "user")
-                .addSelect(
-                    (sub) =>
-                        sub
-                            .select("COUNT(r.id)", "requestCount")
-                            .from(HttpRequestEntity, "r")
-                            .where("r.redirectionId = redirection.id")
-                            .andWhere("r.requestTimestamp >= :thirtyDaysAgo", {
-                                thirtyDaysAgo,
-                            }),
-                    "requestCount",
+                .leftJoin(
+                    HttpRequestEntity,
+                    "request",
+                    "request.redirectionId = redirection.id AND request.requestTimestamp >= :thirtyDaysAgo",
+                    { thirtyDaysAgo },
                 )
-                .orderBy("requestCount", "DESC")
-                .take(1024)
-                .getMany();
+                .select("redirection.id", "id")
+                .addSelect("COUNT(request.id)", "requestCount")
+                .groupBy("redirection.id")
+                .orderBy("COUNT(request.id)", "DESC")
+                .addOrderBy("redirection.id", "ASC")
+                .limit(1024)
+                .getRawMany<{ id: number; requestCount: string }>();
+
+            const sortedIds = mostCommonRedirectionRows.map((row) => Number(row.id));
+            const mostCommonRedirections =
+                sortedIds.length > 0
+                    ? await this.redirectionRepository.find({
+                        where: { id: In(sortedIds) },
+                        relations: { user: true },
+                    })
+                    : [];
+
+            const redirectionById = new Map(
+                mostCommonRedirections.map((redirection) => [redirection.id, redirection]),
+            );
+            const orderedMostCommonRedirections = sortedIds
+                .map((id) => redirectionById.get(id))
+                .filter(
+                    (redirection): redirection is RedirectionEntity =>
+                        redirection !== undefined,
+                );
 
             const allDayInMiliseconds = 24 * 60 * 60 * 1000;
             const cacheResults = await Promise.allSettled(
-                mostCommonRedirections.map(
+                orderedMostCommonRedirections.map(
                     async ({ id, route, isPremium, user, targetUrl }) => {
                         const cacheKey = isPremium ? route : `${user?.login}/${route}`;
                         return this.cacheManager.set(
@@ -160,9 +177,12 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         userId: number,
         { id, permissions }: ActiveUserPayload,
         { take, skip }: BasicSearchQueryParamsDto = {},
-    ): Promise<GetEntitiesResponse<RedirectionEntity>> {
+    ): Promise<
+        GetEntitiesResponse<
+            RedirectionEntity & { totalClicks: number; recentClicks: number }
+        >
+    > {
         const startTime: number = Date.now();
-
         if (userId !== id && !permissions.includes(PermissionEnum.READ_OTHER_REDIRECTION)) {
             this.logger.error(
                 `User with id: ${id} attempted to access redirections of user with id: ${userId} without proper permissions.`,
@@ -196,6 +216,44 @@ export class V1RedirectionService implements OnApplicationBootstrap {
                 );
             });
 
+        const clickMap = new Map<number, { totalClicks: number; recentClicks: number }>();
+
+        if (redirections.length > 0) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            const ids = redirections.map((r) => r.id);
+            const clickCounts = await this.httpRequestRepository
+                .createQueryBuilder("req")
+                .select("req.redirectionId", "redirectionId")
+                .addSelect("COUNT(req.id)", "totalClicks")
+                .addSelect(
+                    "COUNT(CASE WHEN req.requestTimestamp >= :thirtyDaysAgo THEN 1 END)",
+                    "recentClicks",
+                )
+                .where("req.redirectionId IN (:...ids)", { ids })
+                .setParameter("thirtyDaysAgo", thirtyDaysAgo)
+                .groupBy("req.redirectionId")
+                .getRawMany<{
+                    redirectionId: number;
+                    totalClicks: string;
+                    recentClicks: string;
+                }>();
+
+            for (const row of clickCounts) {
+                clickMap.set(Number(row.redirectionId), {
+                    totalClicks: Number(row.totalClicks),
+                    recentClicks: Number(row.recentClicks),
+                });
+            }
+        }
+
+        const data = redirections.map((redirection) => ({
+            ...redirection,
+            totalClicks: clickMap.get(redirection.id)?.totalClicks ?? 0,
+            recentClicks: clickMap.get(redirection.id)?.recentClicks ?? 0,
+        })) as (RedirectionEntity & { totalClicks: number; recentClicks: number })[];
+
         const meta = {
             totalRecords: total,
             currentPage: skip ?? 0,
@@ -203,7 +261,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             totalPages: take ? Math.ceil(total / take) : 1,
         };
 
-        return { data: redirections, meta };
+        return { data, meta };
     }
 
     public async getRedirectionById(
@@ -391,13 +449,42 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             );
         });
 
+        const route = redirection.isPremium
+            ? redirection.route
+            : `${redirection.user?.login}/${redirection.route}`;
+
+        this.cacheManager.del(route).catch((error) => {
+            this.logger.error(
+                `Failed to delete redirection with route: ${route} from the cache after deletion from the database.`,
+                { error: error as Error, tag: LogTypeEnum.DELETE_FAIL, startTime },
+            );
+        });
+
         this.logger.log(
             `Redirection with id: ${redirectionId} has been deleted from the database.`,
             { tag: LogTypeEnum.DELETED, startTime },
         );
     }
 
-    public isRouteAvailable(_route: string, _isPremium?: boolean): Promise<boolean> {
-        return Promise.resolve(true);
+    public async isRouteAvailable(
+        route: string,
+        isPremium = false,
+        { id, permissions }: ActiveUserPayload,
+    ): Promise<boolean> {
+        if (!permissions.includes(PermissionEnum.CREATE_PREMIUM_REDIRECTION) && isPremium) {
+            return false;
+        }
+
+        const cachedRedirection = await this.cacheManager.get<string>(route);
+        if (cachedRedirection) {
+            return false;
+        }
+
+        const where = isPremium
+            ? { route, isPremium: true }
+            : { route, isPremium: false, user: { id } };
+
+        const redirection = await this.redirectionRepository.findOne({ where });
+        return redirection === null;
     }
 }

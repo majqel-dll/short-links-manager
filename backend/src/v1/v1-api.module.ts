@@ -9,8 +9,8 @@ const AllV1ApiModules = [
     V1AuthModule,
     V1CodeModule,
     V1PermissionModule,
-    V1RedirectionModule,
     V1UserModule,
+    V1RedirectionModule,
 ];
 
 @Module({

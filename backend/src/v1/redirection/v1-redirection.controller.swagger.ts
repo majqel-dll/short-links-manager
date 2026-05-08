@@ -172,6 +172,51 @@ export const CommonRedirectionInternalServerErrorResponse: ApiResponseOptions = 
     description: "An unexpected error occurred. Please try again later.",
 };
 
+export const CheckRouteAvailabilityOperation: ApiOperationOptions = {
+    summary: "Check route availability",
+    description:
+        "Checks whether a given route slug is available for creation. " +
+        "For premium routes (`premium=true`) the slug must be globally unique across all users. " +
+        "For non-premium routes (`premium=false` or omitted) the slug must be unique within the authenticated user's own routes. " +
+        "Returns `{ available: true }` if the slug can be registered, or `{ available: false }` if it is already taken (found in cache or database). " +
+        "Also returns `{ available: false }` when `premium=true` but the caller lacks the **CREATE_PREMIUM_REDIRECTION** permission. " +
+        "Requires the **CREATE_BASIC_REDIRECTION** or **CREATE_PREMIUM_REDIRECTION** permission.",
+};
+
+export const CheckRouteAvailabilityOkResponse: ApiResponseOptions = {
+    description: "Availability check completed successfully.",
+    schema: {
+        type: "object",
+        properties: {
+            available: {
+                type: "boolean",
+                description:
+                    "true if the route can be registered, false if it is already taken or the caller lacks the required premium permission.",
+                example: true,
+            },
+        },
+        required: ["available"],
+    },
+};
+
+export const CheckRouteAvailabilityRouteQuery: ApiQueryOptions = {
+    name: "route",
+    required: true,
+    type: String,
+    description:
+        "The route slug to check. May only contain letters (A–Z, a–z), digits (0–9), hyphens (-) and underscores (_).",
+    example: "my-link",
+};
+
+export const CheckRouteAvailabilityPremiumQuery: ApiQueryOptions = {
+    name: "premium",
+    required: false,
+    type: Boolean,
+    description:
+        "When true, checks global uniqueness (premium route). Defaults to false (per-user uniqueness).",
+    example: false,
+};
+
 export const TakeQuery: ApiQueryOptions = {
     name: "take",
     required: false,

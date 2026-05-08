@@ -156,10 +156,13 @@ export class RequestLoggingMiddleware implements NestMiddleware, OnModuleInit {
             }
             req.requestEntityId = requestRecord.id;
 
-            void this.logger.log(`Request has been spotted and registered.`, {
-                startTime,
-                tag: LogTypeEnum.NOTIFICATION,
-            });
+            void this.logger.log(
+                `Request has been spotted and registered on endpoint ${req.path}.`,
+                {
+                    startTime,
+                    tag: LogTypeEnum.NOTIFICATION,
+                },
+            );
         } catch (error) {
             void this.logger.error(`Failed to save request properties in database.`, {
                 startTime,

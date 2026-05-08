@@ -158,12 +158,12 @@ export class V1AuthService {
             createdAt: new Date().toISOString(),
             roles: user.roles.map(({ name }) => name),
             permissions: [
-                ...new Set(
+                ...new Set([
                     ...user.permissions.map(({ value }) => value),
                     ...user.roles.flatMap(({ permissions }) =>
                         permissions.map(({ value }) => value),
                     ),
-                ),
+                ]),
             ] as PermissionEnum[],
         };
 

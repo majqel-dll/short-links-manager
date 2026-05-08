@@ -11,6 +11,10 @@ import {
     DeleteRedirectionNoContentResponse,
     UpdateRedirectionConflictResponse,
     CreateRedirectionCreatedResponse,
+    CheckRouteAvailabilityPremiumQuery,
+    CheckRouteAvailabilityRouteQuery,
+    CheckRouteAvailabilityOkResponse,
+    CheckRouteAvailabilityOperation,
     RedirectClientToFoundResponse,
     GetRedirectionByIdOkResponse,
     GetRedirectionByIdOperation,
@@ -24,6 +28,7 @@ import {
     TakeQuery,
     SkipQuery,
 } from "./v1-redirection.controller.swagger";
+import { AuthGuard } from "@libs/guards";
 import { type Request } from "express";
 import {
     ApiInternalServerErrorResponse,
@@ -45,6 +50,7 @@ import {
     ClassSerializerInterceptor,
     UseInterceptors,
     ParseIntPipe,
+    NotFoundException,
     HttpStatus,
     Controller,
     HttpCode,
@@ -57,11 +63,11 @@ import {
     Post,
     Get,
     Req,
+    UseGuards,
 } from "@nestjs/common";
 import {
-    BasicSearchQueryParamsDto,
-    CheckRouteAvailabilityDto,
     CheckRouteAvailabilityQueryDto,
+    BasicSearchQueryParamsDto,
     CreateRedirectionDto,
     UpdateRedirectionDto,
 } from "@libs/dtos";
@@ -74,13 +80,14 @@ import {
 
 @ApiTags(`Redirection`)
 @Controller()
+@UseGuards(AuthGuard)
 @Auth(AuthTypeEnum.BEARER, AuthTypeEnum.COOKIE)
 @UseInterceptors(ClassSerializerInterceptor)
 @ApiUnauthorizedResponse(CommonRedirectionUnauthorizedResponse)
 @ApiForbiddenResponse(CommonRedirectionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonRedirectionInternalServerErrorResponse)
 export class V1RedirectionController {
-    constructor(private readonly redirectionService: V1RedirectionService) {}
+    constructor(private readonly redirectionService: V1RedirectionService) { }
 
     @Get(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
@@ -173,20 +180,26 @@ export class V1RedirectionController {
         return { message: "Redirection deleted successfully." };
     }
 
-    @Get(`v1/redirection/availability/:route`)
+    @Get(`v1/redirection/availability`)
     @HttpCode(HttpStatus.OK)
     @Permission(
         PermissionEnum.CREATE_BASIC_REDIRECTION,
         PermissionEnum.CREATE_PREMIUM_REDIRECTION,
     )
-    @ApiOkResponse(RedirectClientToFoundResponse)
+    @ApiBearerAuth()
+    @ApiCookieAuth()
+    @ApiOperation(CheckRouteAvailabilityOperation)
+    @ApiQuery(CheckRouteAvailabilityRouteQuery)
+    @ApiQuery(CheckRouteAvailabilityPremiumQuery)
+    @ApiOkResponse(CheckRouteAvailabilityOkResponse)
     public async checkRedirectionRouteAvailability(
-        @Param() { route }: CheckRouteAvailabilityDto,
-        @Query() { premium }: CheckRouteAvailabilityQueryDto,
+        @Query() { premium, route }: CheckRouteAvailabilityQueryDto,
+        @ActiveUser() activeUser: ActiveUserPayload,
     ): Promise<{ available: boolean }> {
         const isAvailable: boolean = await this.redirectionService.isRouteAvailable(
             route,
-            premium ?? false,
+            premium,
+            activeUser,
         );
         return { available: isAvailable };
     }
@@ -198,13 +211,19 @@ export class V1RedirectionController {
     @ApiOperation(RedirectClientToOperation)
     @ApiResponse({ status: 302, ...RedirectClientToFoundResponse })
     public async redirectClientTo(@Req() request: Request): Promise<RedirectResponse> {
+
         const route = request.path.replace(/^\//, ``);
+        if (route.startsWith(`panel/redirection/not-found`)) {
+            throw new NotFoundException(`Route not found.`);
+        }
+
         const urlWithId = await this.redirectionService.findRedirectionByRoute(route);
+        console.log(urlWithId);
         if (
             !urlWithId ||
             route === `` ||
-            route === `favicon.ico` ||
-            route === `not-found`
+            route.startsWith(`favicon.ico`) ||
+            route.startsWith(`not-found`)
         ) {
             return {
                 url: `/panel/redirection/not-found?r=${encodeURIComponent(route)}`,

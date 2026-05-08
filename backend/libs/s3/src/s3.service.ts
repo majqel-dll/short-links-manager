@@ -1,3 +1,4 @@
+/* eslint-disable @darraghor/nestjs-typed/injectable-should-be-provided */
 import { InjectLogger } from "@libs/decorators";
 import { randomUUID as uuidv4 } from "crypto";
 import { Client, RemoveOptions } from "minio";

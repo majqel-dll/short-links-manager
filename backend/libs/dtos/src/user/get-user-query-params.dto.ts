@@ -12,7 +12,7 @@ export class GetUserQueryParamsDto {
     @IsOptional()
     @Transform(toBoolean)
     @IsBoolean()
-    public logs: boolean;
+    public logs?: boolean;
 
     @ApiPropertyOptional({
         description:
@@ -23,7 +23,7 @@ export class GetUserQueryParamsDto {
     @IsOptional()
     @Transform(toBoolean)
     @IsBoolean()
-    public roles: boolean;
+    public roles?: boolean;
 
     @ApiPropertyOptional({
         description: "Include the user's owned redirections in the response.",
@@ -33,7 +33,7 @@ export class GetUserQueryParamsDto {
     @IsOptional()
     @Transform(toBoolean)
     @IsBoolean()
-    public redirections: boolean;
+    public redirections?: boolean;
 
     @ApiPropertyOptional({
         description: "Include the user's directly assigned permissions in the response.",
@@ -43,7 +43,7 @@ export class GetUserQueryParamsDto {
     @IsOptional()
     @Transform(toBoolean)
     @IsBoolean()
-    public permissions: boolean;
+    public permissions?: boolean;
 
     @ApiPropertyOptional({
         description: "Include the user's HTTP request history in the response.",
@@ -53,5 +53,5 @@ export class GetUserQueryParamsDto {
     @IsOptional()
     @Transform(toBoolean)
     @IsBoolean()
-    public requests: boolean;
+    public requests?: boolean;
 }
