@@ -37,7 +37,6 @@ export class RedirectionEntity extends BasicEntityProperties {
         onDelete: `CASCADE`,
     })
     @JoinColumn({ name: `userId` })
-    @Exclude()
     public user: UserEntity;
 
     @OneToMany(() => HttpRequestEntity, (request) => request.redirection, {
