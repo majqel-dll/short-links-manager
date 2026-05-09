@@ -12,10 +12,10 @@ x-redis-base: &redis-base
 services:
     short-links-manager-redis-dev:
         <<: *redis-base
-        profiles: [dev, redis-dev]
+        profiles: [ dev, redis-dev ]
         ports:
             - "127.0.0.1:6379:6379"
 
     short-links-manager-redis-prod:
         <<: *redis-base
-        profiles: [prod, redis-prod]
+        profiles: [ prod, redis-prod ]

@@ -36,7 +36,7 @@ services:
     tty: true
     volumes:
       - ../backend:/usr/src/app
-    profiles: [dev, backend-dev]
+    profiles: [ dev, backend-dev ]
     depends_on:
       - short-links-manager-database-dev
       - short-links-manager-redis-dev
@@ -54,7 +54,7 @@ services:
       context: ../
       target: production
       dockerfile: ./docker/Dockerfile.backend
-    profiles: [prod, backend-prod]
+    profiles: [ prod, backend-prod ]
     depends_on:
       - short-links-manager-database-prod
       - short-links-manager-redis-prod

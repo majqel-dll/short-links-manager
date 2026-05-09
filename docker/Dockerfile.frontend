@@ -1,4 +1,4 @@
-ARG IMAGE=node:25
+ARG IMAGE=node:26
 
 # BASE
 
@@ -22,12 +22,13 @@ FROM base AS development
 
 COPY --chown=node:node ./frontend/package*.json .
 
-RUN mkdir -p /usr/src/app/node_modules && \
-    chown -R node:node /usr/src/app/node_modules
+RUN mkdir -p /usr/src/app/node_modules
 
 RUN npm install @angular/cli
 
-RUN npm install
+RUN npm install --package-lock-only && npm ci 
+
+RUN chown -R node:node /usr/src/app/node_modules
 
 COPY --chown=node:node ./frontend .
 

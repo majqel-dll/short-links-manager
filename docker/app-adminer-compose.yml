@@ -8,7 +8,7 @@ x-app-adminer-base: &app-adminer-base
 services:
   short-links-manager-adminer-dev:
     <<: *app-adminer-base
-    profiles: [dev, prod-native]
+    profiles: [ dev, prod-native ]
     depends_on:
       - short-links-manager-database-dev
     ports:
@@ -16,6 +16,6 @@ services:
 
   short-links-manager-adminer-prod:
     <<: *app-adminer-base
-    profiles: [prod]
+    profiles: [ prod ]
     depends_on:
       - short-links-manager-database-prod

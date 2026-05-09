@@ -22,4 +22,4 @@ services:
 
   short-links-manager-minio-prod:
     <<: *minio-base
-    profiles: [prod, minio-prod]
+    profiles: [ prod, minio-prod ]

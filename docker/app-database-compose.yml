@@ -15,10 +15,10 @@ x-database-base: &database-base
 services:
     short-links-manager-database-dev:
         <<: *database-base
-        profiles: [dev, database-dev]
+        profiles: [ dev, database-dev ]
         ports:
             - "5432:5432"
 
     short-links-manager-database-prod:
         <<: *database-base
-        profiles: [prod, database-prod]
+        profiles: [ prod, database-prod ]

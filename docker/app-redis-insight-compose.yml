@@ -3,7 +3,7 @@ services:
         image: redis/redisinsight:latest
         container_name: short-links-manager-redis-insight
         restart: always
-        profiles: [dev, redis-insight-dev]
+        profiles: [ dev, redis-insight-dev ]
         depends_on:
             - short-links-manager-redis-dev
         ports:

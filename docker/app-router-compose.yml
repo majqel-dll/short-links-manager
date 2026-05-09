@@ -10,7 +10,7 @@ x-app-router-base: &app-router-base
 services:
   short-links-manager-router-dev:
     <<: *app-router-base
-    profiles: [dev]
+    profiles: [ dev ]
     volumes:
       - caddy-config:/config
       - ../Caddyfile.dev:/etc/caddy/Caddyfile
@@ -18,7 +18,7 @@ services:
 
   short-links-manager-router-prod:
     <<: *app-router-base
-    profiles: [prod]
+    profiles: [ prod ]
     volumes:
       - caddy_config:/config
       - ../Caddyfile.prod:/etc/caddy/Caddyfile
