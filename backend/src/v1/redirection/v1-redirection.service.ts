@@ -33,7 +33,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-    ) { }
+    ) {}
 
     public async onApplicationBootstrap(): Promise<void> {
         const timeToTheNextMidnightInMs = new Date().setHours(24, 0, 0, 0) - Date.now();
@@ -69,9 +69,9 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             const mostCommonRedirections =
                 sortedIds.length > 0
                     ? await this.redirectionRepository.find({
-                        where: { id: In(sortedIds) },
-                        relations: { user: true },
-                    })
+                          where: { id: In(sortedIds) },
+                          relations: { user: true },
+                      })
                     : [];
 
             const redirectionById = new Map(
@@ -306,7 +306,6 @@ export class V1RedirectionService implements OnApplicationBootstrap {
 
         redirection.user = { login: userName } as UserEntity;
         return redirection;
-
     }
 
     public async createRedirection(
@@ -323,15 +322,17 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             );
         }
 
-        const { login } = await this.userRepository.findOne({ where: { id } }).catch((error) => {
-            this.logger.error(
-                `Failed to fetch user with id: ${id} from the database while creating redirection.`,
-                { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
-            );
-            throw new InternalServerErrorException(
-                `Failed to fetch user with id: ${id} from the database while creating redirection.`,
-            );
-        });
+        const { login } = await this.userRepository
+            .findOne({ where: { id } })
+            .catch((error: Error) => {
+                this.logger.error(
+                    `Failed to fetch user with id: ${id} from the database while creating redirection.`,
+                    { error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+                );
+                throw new InternalServerErrorException(
+                    `Failed to fetch user with id: ${id} from the database while creating redirection.`,
+                );
+            });
 
         const newRedirection = this.redirectionRepository.create({
             isPremium,
@@ -340,15 +341,27 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             userId: id,
         });
 
-        return await this.redirectionRepository.save(newRedirection).catch((error) => {
-            this.logger.error(
-                `Failed to create new redirection for user with id: ${id} in the database.`,
-                { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
-            );
-            throw new InternalServerErrorException(
-                `Failed to create new redirection for user ${login} in the database.`,
-            );
-        });
+        const savedRedirection = await this.redirectionRepository
+            .save(newRedirection)
+            .catch((error: Error) => {
+                this.logger.error(
+                    `Failed to create new redirection for user with id: ${id} in the database.`,
+                    { error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+                );
+
+                if ("code" in error && error.code === "23505") {
+                    throw new ConflictException(
+                        `Redirection with route "${route}" already exists in specified scope "${isPremium ? `global` : `user`}".`,
+                    );
+                }
+
+                throw new InternalServerErrorException(
+                    `Failed to create new redirection for user ${login} in the database.`,
+                );
+            });
+
+        savedRedirection.user = { login } as UserEntity;
+        return savedRedirection;
     }
 
     public async updateRedirection(

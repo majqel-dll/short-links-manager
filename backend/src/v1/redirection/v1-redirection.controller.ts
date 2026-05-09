@@ -87,7 +87,7 @@ import {
 @ApiForbiddenResponse(CommonRedirectionForbiddenResponse)
 @ApiInternalServerErrorResponse(CommonRedirectionInternalServerErrorResponse)
 export class V1RedirectionController {
-    constructor(private readonly redirectionService: V1RedirectionService) { }
+    constructor(private readonly redirectionService: V1RedirectionService) {}
 
     @Get(`v1/redirection`)
     @HttpCode(HttpStatus.OK)
@@ -211,7 +211,6 @@ export class V1RedirectionController {
     @ApiOperation(RedirectClientToOperation)
     @ApiResponse({ status: 302, ...RedirectClientToFoundResponse })
     public async redirectClientTo(@Req() request: Request): Promise<RedirectResponse> {
-
         const route = request.path.replace(/^\//, ``);
         if (route.startsWith(`panel/redirection/not-found`)) {
             throw new NotFoundException(`Route not found.`);
