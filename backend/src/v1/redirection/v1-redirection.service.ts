@@ -1,12 +1,12 @@
-import { HttpRequestEntity, RedirectionEntity } from "@libs/entities";
+import { HttpRequestEntity, RedirectionEntity, UserEntity } from "@libs/entities";
 import { ActiveUserPayload, GetEntitiesResponse } from "@libs/types";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { LogTypeEnum, PermissionEnum } from "@libs/enums";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectLogger } from "@libs/decorators";
-import { Logger } from "@libs/logger";
 import { In, Repository } from "typeorm";
+import { Logger } from "@libs/logger";
 import {
     InternalServerErrorException,
     OnApplicationBootstrap,
@@ -27,6 +27,8 @@ export class V1RedirectionService implements OnApplicationBootstrap {
         private readonly redirectionRepository: Repository<RedirectionEntity>,
         @InjectRepository(HttpRequestEntity)
         private readonly httpRequestRepository: Repository<HttpRequestEntity>,
+        @InjectRepository(UserEntity)
+        private readonly userRepository: Repository<UserEntity>,
         @InjectLogger(V1RedirectionService)
         private readonly logger: Logger,
         @Inject(CACHE_MANAGER)
@@ -299,8 +301,12 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             );
         }
 
+        const userName = redirection.user.login;
         delete redirection.user;
+
+        redirection.user = { login: userName } as UserEntity;
         return redirection;
+
     }
 
     public async createRedirection(
@@ -317,6 +323,16 @@ export class V1RedirectionService implements OnApplicationBootstrap {
             );
         }
 
+        const { login } = await this.userRepository.findOne({ where: { id } }).catch((error) => {
+            this.logger.error(
+                `Failed to fetch user with id: ${id} from the database while creating redirection.`,
+                { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
+            );
+            throw new InternalServerErrorException(
+                `Failed to fetch user with id: ${id} from the database while creating redirection.`,
+            );
+        });
+
         const newRedirection = this.redirectionRepository.create({
             isPremium,
             route,
@@ -330,7 +346,7 @@ export class V1RedirectionService implements OnApplicationBootstrap {
                 { error: error as Error, tag: LogTypeEnum.DATABASE_FAIL, startTime },
             );
             throw new InternalServerErrorException(
-                `Failed to create new redirection for user with id: ${id} in the database.`,
+                `Failed to create new redirection for user ${login} in the database.`,
             );
         });
     }

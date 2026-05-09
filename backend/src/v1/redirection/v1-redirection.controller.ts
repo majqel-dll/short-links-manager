@@ -218,7 +218,6 @@ export class V1RedirectionController {
         }
 
         const urlWithId = await this.redirectionService.findRedirectionByRoute(route);
-        console.log(urlWithId);
         if (
             !urlWithId ||
             route === `` ||
