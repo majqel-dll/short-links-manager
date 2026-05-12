@@ -17,6 +17,5 @@ export class FooterComponent {
 
     public assets: AppAssetsService = inject(AppAssetsService);
     public year = this.assets.year;
-    public footerContent = this.assets.footerContent;
-    
+
 }

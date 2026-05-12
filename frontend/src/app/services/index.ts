@@ -1,4 +1,3 @@
-export * from "./auth-guard.service";
 export * from "./auth.service";
 export * from "./code.service";
 export * from "./log.service";

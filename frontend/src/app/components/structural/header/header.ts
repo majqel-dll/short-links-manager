@@ -1,11 +1,11 @@
 import { AppAssetsService } from "@services/assets.service";
 import { Component, inject, OnDestroy } from "@angular/core";
-import { MenuComponent } from "@components/index";
-import { Subscription } from "rxjs";
+import { CommonModule } from '@angular/common';
 import { AuthService } from "@services/index";
+import { Subscription } from "rxjs";
 
 @Component({
-    imports: [MenuComponent],
+    imports: [CommonModule],
     selector: `app-header`,
     templateUrl: `./header.html`,
     styleUrls: [`./header.scss`],

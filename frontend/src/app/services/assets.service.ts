@@ -6,6 +6,8 @@ export class AppAssetsService {
 
     public appName: string = `Short-links Manager`;
     public year: string = new Date().getFullYear().toString();
+    public authorGithubProfileUrl: string = atob('aHR0cHM6Ly9naXRodWIuY29tL21hanFlbC1kbGw=');
+
     public footerContent: FooterSection[] = [
         {
             label: "Projects",
@@ -18,8 +20,8 @@ export class AppAssetsService {
         {
             label: "My media",
             properties: [
+                { label: `GitHub`, href: this.authorGithubProfileUrl },
                 { label: `Discord`, href: atob('aHR0cHM6Ly9kaXNjb3JkLmdnLzVlZ3dKUEJNNXQ=') },
-                { label: `GitHub`, href: atob('aHR0cHM6Ly9naXRodWIuY29tL21hanFlbC1kbGw=') },
                 { label: `YouTube`, href: atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vQG1idWdhanNreQ==') },
                 { label: `Instagram`, href: atob('aHR0cHM6Ly93d3cuaW5zdGFncmFtLmNvbS9tYnVnYWpza3kv') },
             ]

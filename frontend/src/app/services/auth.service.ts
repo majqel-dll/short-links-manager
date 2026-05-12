@@ -1,32 +1,50 @@
-import { BehaviorSubject, firstValueFrom, interval, Subscription } from "rxjs";
-import { Injectable, OnDestroy } from "@angular/core";
+import { BehaviorSubject, firstValueFrom } from "rxjs";
 import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: `root` })
-export class AuthService implements OnDestroy {
+export class AuthService {
 
     constructor(
         private readonly httpClient: HttpClient,
-    ) {
-
-        console.log("test")
-
-     }
-
-
-    public async signIn(login: string, password: string): Promise<void> {
-
-        const response = await firstValueFrom(this.httpClient.post<{ validity: string }>(`/api/auth/sign-in`, { login, password }));
-
-    }
+    ) { }
 
     public isSignedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
-
-
-    ngOnDestroy(): void {
-
+    public async signIn(login: string, password: string): Promise<boolean> {
+        try {
+            await firstValueFrom(this.httpClient.post(`/v1/auth/sign-in`, { login, password }));
+            this.isSignedIn.next(true);
+            return true;
+        } catch (error) {
+            console.error(`Failed to sign in:`, error);
+            this.isSignedIn.next(false);
+            return false;
+        }
     }
 
+    public async refreshToken(): Promise<boolean> {
+        try {
+            await firstValueFrom(this.httpClient.post(`/v1/auth/token/refresh`, null));
+            this.isSignedIn.next(true);
+            return true;
+        } catch (error) {
+            this.isSignedIn.next(false);
+            return false;
+        }
+    }
+
+    public async signOut(): Promise<boolean> {
+        try {
+            await firstValueFrom(this.httpClient.delete(`/v1/auth/sign-out`));
+            this.isSignedIn.next(false);
+            return true;
+        } catch (error) {
+            console.error(`Failed to sign out:`, error);
+            this.isSignedIn.next(false);
+            return false;
+        }
+
+    }
 
 }

@@ -28,6 +28,12 @@
       "@components/*": [
         "./src/app/components/*"
       ],
+      "@interceptors/*": [
+        "./src/app/interceptors/*"
+      ],
+      "@guards/*": [
+        "./src/app/guards/*"
+      ],
       "@pages/*": [
         "./src/app/pages/*"
       ],
