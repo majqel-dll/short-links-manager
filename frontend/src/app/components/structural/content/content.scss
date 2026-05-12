@@ -1,0 +1,34 @@
+@use "../../../../styles.constants.scss" as constants;
+
+.content-wrapper {
+    min-height: calc(100dvh - constants.$header-height-lg);
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: calc(constants.$header-height-lg / 2);
+
+}
+
+@media (max-width: constants.$breakdown-width-md) {
+    .content-wrapper {
+        min-height: calc(100dvh - constants.$header-height-md);
+        padding-top: calc(constants.$header-height-md / 2);
+    }
+}
+
+@media (max-width: constants.$breakdown-width-sm) {
+    .content-wrapper {
+        height: calc(100dvh - constants.$header-height-sm);
+        padding-top: calc(constants.$header-height-sm / 2);
+    }
+}
+
+@media (max-width: constants.$breakdown-width-xs) {
+    .content-wrapper {
+        height: calc(100dvh - constants.$header-height-xs);
+        padding-top: calc(constants.$header-height-xs / 2);
+    }
+}

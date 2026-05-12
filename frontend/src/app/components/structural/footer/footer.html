@@ -1,0 +1,32 @@
+<footer class="footer-wrapper">
+
+    <div class="footer-content-box">
+
+        <div class="footer-content-wrapper">
+            @for(section of footerContent; track section){
+            <div class="footer-column">
+                <label class="section-label">{{section.label}}</label>
+                @if(section.properties.length >0){
+                <ul>
+                    @for(property of section.properties; track property){
+                    @if('href' in property){
+                    <li><a class="footer-link" href={{property.href}} target="_blank">{{property.label}}</a></li>
+                    } @else if("routerLink" in property){
+                    <li><a class="footer-link" routerLinkActive="active-route" [routerLink]="property.routerLink">{{property.label}}</a></li>
+                    }
+                    }
+                </ul>
+                }
+
+            </div>
+            }
+
+        </div>
+
+        <div class="footer-credits-wrapper">
+            © Mathsqrt2 {{year}}
+        </div>
+
+    </div>
+
+</footer>

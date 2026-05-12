@@ -1,0 +1,14 @@
+<header class="header-wrapper">
+
+    <div class="logo-wrapper" routerLink="/">
+        <img src="logo.svg" alt="logo" class="logo-symbol" draggable="false" />
+        <span class="app-name">
+            {{appName}}
+        </span>
+    </div>
+
+    @if(isSignedIn){
+    <div>header-menu</div>
+    }
+
+</header>

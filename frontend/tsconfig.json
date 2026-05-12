@@ -10,10 +10,37 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "strictNullChecks": false,
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "types": [
+      "jest"
+    ],
+    "module": "preserve",
+    "paths": {
+      "@functional/*": [
+        "./src/app/components/functional/*"
+      ],
+      "@structural/*": [
+        "./src/app/components/structural/*"
+      ],
+      "@components/*": [
+        "./src/app/components/*"
+      ],
+      "@pages/*": [
+        "./src/app/pages/*"
+      ],
+      "@services/*": [
+        "./src/app/services/*"
+      ],
+      "@models/*": [
+        "./src/app/types/*"
+      ],
+      "@app/*": [
+        "./src/app/*"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

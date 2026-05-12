@@ -1,0 +1,107 @@
+@use "../../../../styles.constants.scss" as constants;
+
+.header-wrapper {
+    width: 100%;
+    height: constants.$header-height-lg;
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(180deg,
+            constants.$header-gradient-high 20%,
+            constants.$header-gradient-low );
+    border-bottom: constants.$header-border-width solid constants.$main-accent-color;
+    box-shadow: 0 0 constants.$footer-box-shadow hsl(213, 40%, 20%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24pt;
+    box-sizing: border-box;
+}
+
+.header-list {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    gap: 10pt;
+    padding: 0;
+
+    li {
+        transition: all 0.2s ease-in-out;
+        list-style-type: none;
+
+        &:hover {
+            cursor: pointer;
+            color: constants.$main-text-color-hover;
+            transform: scale(0.95);
+            text-shadow: 0 0;
+        }
+    }
+}
+
+.app-name {
+    font-size: 26px;
+}
+
+.logo-symbol {
+    width: 48px;
+}
+
+.logo-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    gap: 10px;
+    transition: all 0.4s ease-in-out;
+    cursor: pointer;
+
+    &:hover {
+        filter: brightness(0.7);
+        transform: scale(0.97);
+    }
+}
+
+@media (max-width: constants.$breakdown-width-md) {
+    .header-wrapper {
+        height: constants.$header-height-md;
+        padding: 0 20pt;
+    }
+
+    .logo-symbol {
+        width: 36px;
+    }
+
+    .app-name {
+        font-size: 23px;
+    }
+}
+
+@media (max-width: constants.$breakdown-width-sm) {
+    .header-wrapper {
+        height: constants.$header-height-sm;
+        padding: 0 16pt;
+    }
+
+    .logo-symbol {
+        width: 30px;
+    }
+
+    .app-name {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: constants.$breakdown-width-xs) {
+    .header-wrapper {
+        height: constants.$header-height-xs;
+        padding: 0 12pt;
+    }
+
+    .logo-symbol {
+        width: 24px;
+    }
+        .app-name {
+        font-size: 16px;
+    }
+}
