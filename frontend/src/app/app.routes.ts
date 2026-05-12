@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { App } from './app';
+import { App } from './pages/app/app';
 
 export const routes: Routes = [
     { path: ``, pathMatch: `full`, component: App },
