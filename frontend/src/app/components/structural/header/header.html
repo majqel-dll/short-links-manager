@@ -7,16 +7,14 @@
         </span>
     </div>
 
-    @if(isSignedIn){
-
-    <div>
-        <ul>
-            <li>sign out</li>
-            <li routerLink="/profile">profile</li>
-            <li routerLink="/settings">settings</li>
-        </ul>
-    </div>
-    }
-
+    <ul class="user-menu">
+        @if(isSignedIn){
+        <li><img class="avatar-thumbnail" routerLink="/profile" src="/v1/user/3/avatar" /></li>
+        <li routerLinkActive="" routerLink="/settings">settings</li>
+        <li (click)="signOut()" class="sign-out">sign out</li>
+        } @else {
+        <li routerLinkActive="" routerLink="/sign-in">sign in</li>
+        }
+    </ul>
 
 </header>

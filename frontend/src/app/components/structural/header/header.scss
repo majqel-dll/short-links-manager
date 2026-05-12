@@ -46,6 +46,40 @@
     width: 48px;
 }
 
+.avatar-thumbnail {
+    height: calc(constants.$header-height-lg * 0.6);
+    width: calc(constants.$header-height-lg * 0.6);
+    border-radius: 50%;
+}
+
+.user-menu {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 24px;
+    justify-content: center;
+    list-style-type: none;
+    margin-left: 8px;
+
+    & li {
+
+        transition: all 0.2s ease-in-out;
+        
+        &.sign-out {
+            &:hover {
+                color: constants.$error-text-color;
+            }
+        }
+        &:hover {
+            cursor: pointer;
+            color: constants.$main-text-color-hover;
+            transform: scale(0.95);
+            text-shadow: 0 0;
+        }
+
+    }
+}
+
 .logo-wrapper {
     display: flex;
     flex-direction: row;
@@ -63,6 +97,13 @@
 }
 
 @media (max-width: constants.$breakdown-width-md) {
+
+    .avatar-thumbnail {
+        height: calc(constants.$header-height-md * 0.6);
+        width: calc(constants.$header-height-md * 0.6);
+        border-radius: 50%;
+    }
+
     .header-wrapper {
         height: constants.$header-height-md;
         padding: 0 20pt;
@@ -78,6 +119,13 @@
 }
 
 @media (max-width: constants.$breakdown-width-sm) {
+
+    .avatar-thumbnail {
+        height: calc(constants.$header-height-sm * 0.6);
+        width: calc(constants.$header-height-sm * 0.6);
+        border-radius: 50%;
+    }
+
     .header-wrapper {
         height: constants.$header-height-sm;
         padding: 0 16pt;
@@ -93,6 +141,12 @@
 }
 
 @media (max-width: constants.$breakdown-width-xs) {
+    .avatar-thumbnail {
+        height: calc(constants.$header-height-xs * 0.6);
+        width: calc(constants.$header-height-xs * 0.6);
+        border-radius: 50%;
+    }
+
     .header-wrapper {
         height: constants.$header-height-xs;
         padding: 0 12pt;
@@ -101,7 +155,8 @@
     .logo-symbol {
         width: 24px;
     }
-        .app-name {
+
+    .app-name {
         font-size: 16px;
     }
 }

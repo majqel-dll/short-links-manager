@@ -2,14 +2,16 @@ import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalE
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AuthInterceptorProvider } from '@interceptors/auth.interceptor';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { routes } from './app.routes';
 import { AuthService } from '@services/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withRouterConfig({
+      onSameUrlNavigation: 'reload'
+    })),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withInterceptorsFromDi()),
     AuthInterceptorProvider,
