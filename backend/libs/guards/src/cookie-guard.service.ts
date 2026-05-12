@@ -37,7 +37,7 @@ export class CookieGuardService implements CanActivate {
             tag: LogTypeEnum.PERMISSIONS_DENIED,
         };
 
-        const cookies = request.cookies as Record<string, unknown> | undefined;
+        const cookies = request.cookies as Record<string, unknown> | undefined;        
         const token =
             typeof cookies?.[`accessToken`] === `string` ? cookies[`accessToken`] : null;
         if (!token) {

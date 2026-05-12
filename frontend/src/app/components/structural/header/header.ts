@@ -1,31 +1,29 @@
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { AppAssetsService } from "@services/assets.service";
-import { Component, inject, OnDestroy } from "@angular/core";
+import { AuthService } from "@services/auth.service";
 import { CommonModule } from '@angular/common';
-import { AuthService } from "@services/index";
 import { Subscription } from "rxjs";
 
 @Component({
-    imports: [CommonModule],
     selector: `app-header`,
     templateUrl: `./header.html`,
     styleUrls: [`./header.scss`],
+    imports: [CommonModule],
 })
 
-export class HeaderComponent implements OnDestroy {
+export class HeaderComponent implements OnDestroy, OnInit {
 
     public assets: AppAssetsService = inject(AppAssetsService);
+    public authService: AuthService = inject(AuthService);
     public appName = this.assets.appName;
 
     private subscription: Subscription = null;
     protected isSignedIn = false;
 
-    constructor(
-        private readonly authService: AuthService
-    ) {
+    public ngOnInit(): void {
         this.subscription = this.authService.isSignedIn.subscribe(isSignedIn => {
             this.isSignedIn = isSignedIn;
         });
-
     }
 
     public ngOnDestroy(): void {

@@ -5,6 +5,7 @@ $breakdown-width-xs: 480px;
 $main-text-color: hsl(0, 0%, 92%);
 $main-text-color-hover: hsl(0, 0%, 73%);
 $main-text-size: 16pt;
+$error-text-color: hsl(0, 100%, 70%);
 $main-accent-color: hsl(215, 67%, 49%);
 $secondary-accent-color: hsl(281, 74%, 54%);
 
@@ -38,3 +39,9 @@ $background-default-color: hsl(215, 2%, 8%);
 $scrollbar-background-color: rgba(46, 50, 56, 1);
 $scrollbar-background-color-hoover: rgba(57, 63, 70, 1);
 $scrollbar-thumb-color: rgba(46, 50, 56, 1);
+
+// ANIMATIONS //
+
+$default-duration: 0.3s;
+$quick-duration: 0.1s;
+$slow-duration: 0.55s;

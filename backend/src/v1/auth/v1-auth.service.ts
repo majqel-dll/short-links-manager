@@ -7,6 +7,7 @@ import { randomUUID as uuidv4 } from "crypto";
 import { JwtService } from "@nestjs/jwt";
 import { V1CodeService } from "../code";
 import { Logger } from "@libs/logger";
+import { Request } from "express";
 import argon2 from "argon2";
 import {
     InternalServerErrorException,
@@ -21,7 +22,6 @@ import {
     CreateUserByPanelDto,
     PasswordChangeDto,
     ResetPasswordDto,
-    RefreshTokenDto,
     SignUpDto,
     SignInDto,
 } from "@libs/dtos";
@@ -49,7 +49,7 @@ export class V1AuthService {
         private readonly codeService: V1CodeService,
         private readonly dataSource: DataSource,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     public async createNewAccount(
         { login, email, password }: SignUpDto | CreateUserByPanelDto,
@@ -513,8 +513,16 @@ export class V1AuthService {
         );
     }
 
-    public async refreshToken({ refreshToken }: RefreshTokenDto): Promise<SignInResponse> {
+    public async refreshToken(request: Request): Promise<SignInResponse> {
         const startTime: number = Date.now();
+        const cookies = request.cookies as Record<string, unknown> | undefined;
+        const refreshToken =
+            typeof cookies?.[`refreshToken`] === `string` ? cookies[`refreshToken`] : null;
+        if (!refreshToken) {
+            void this.logger.warn(`Failed to read refresh token from cookies.`);
+            throw new UnauthorizedException(`Invalid refresh token format or missing token in cookies.`);
+        }
+
         const payload: RefreshTokenPayload = await this.jwtService
             .verifyAsync<RefreshTokenPayload>(refreshToken)
             .catch((error: unknown) => {
@@ -526,13 +534,13 @@ export class V1AuthService {
                 throw new ForbiddenException();
             });
 
-        if (!payload?.sessionUuid || !payload.loginAttemptUuid) {
+        if (!payload?.sessionUuid) {
             throw new BadRequestException(`Incorrect token.`);
         }
 
-        const { sessionUuid, loginAttemptUuid } = payload;
+        const { sessionUuid } = payload;
         const session = await this.sessionRepository.findOne({
-            where: { loginAttemptUuid, isActive: true },
+            where: { sessionUuid, isActive: true },
             relations: { user: { permissions: true, roles: { permissions: true } } },
         });
 
@@ -552,7 +560,7 @@ export class V1AuthService {
             });
 
             await this.signOut({
-                sessionUuid: session.sessionUuid,
+                sessionUuid,
                 id: user.id,
             });
 
@@ -579,7 +587,10 @@ export class V1AuthService {
         await this.sessionRepository
             .update(
                 { id: session.id },
-                { sessionUuid: newSessionUuid, expiresAt: refreshTokenExpiringDate },
+                {
+                    sessionUuid: newSessionUuid,
+                    expiresAt: refreshTokenExpiringDate
+                },
             )
             .catch((error: Error) => {
                 this.logger.error(`Failed to save new refresh token.`, {

@@ -45,7 +45,7 @@ export class ResponseLoggingExceptionFilter
         const size = calculateSize(error);
         const requestUuid = request.executionId;
 
-        const message = `Responded ${responseType} (${statusCode}) after ${duration}ms, with ${size} bytes of data.`;
+        const message = `Responded ${responseType}, status ${statusCode} after ${duration}ms, with ${size} bytes of data.`;
         const responseRecord = this.httpResponseRepository.create({
             size,
             error,

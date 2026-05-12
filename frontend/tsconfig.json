@@ -40,6 +40,9 @@
       "@services/*": [
         "./src/app/services/*"
       ],
+      "@utils/*": [
+        "./src/app/utils/*"
+      ],
       "@models/*": [
         "./src/app/types/*"
       ],

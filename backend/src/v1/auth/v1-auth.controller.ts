@@ -1,11 +1,11 @@
 import { type ActiveUserPayload, BasicResponse } from "@libs/types";
+import { type Response, type Request } from "express";
 import { type SessionEntity } from "@libs/entities";
 import { ActiveUser, Auth } from "@libs/decorators";
 import { V1AuthService } from "./v1-auth.service";
 import { AuthTypeEnum } from "@libs/enums";
 import { parseExpiresIn } from "@libs/utils";
 import { AuthGuard } from "@libs/guards";
-import { type Response } from "express";
 import {
     ConfirmPasswordResetBadRequestResponse,
     ConfirmPasswordResetAcceptedResponse,
@@ -54,6 +54,7 @@ import {
     Get,
     Post,
     Res,
+    Req,
 } from "@nestjs/common";
 import {
     ApiInternalServerErrorResponse,
@@ -74,7 +75,6 @@ import {
 import {
     GetPasswordResetKeyDto,
     PasswordChangeDto,
-    RefreshTokenDto,
     ResetPasswordDto,
     SignInDto,
     SignUpDto,
@@ -124,6 +124,7 @@ export class V1AuthController {
             httpOnly: true,
             secure: true,
             sameSite: `strict`,
+            path: `/v1/auth/token/refresh`,
             maxAge: parseExpiresIn(credentials.refreshToken.expiresIn),
         });
     }
@@ -254,10 +255,10 @@ export class V1AuthController {
     @ApiForbiddenResponse(RefreshTokenForbiddenResponse)
     @ApiInternalServerErrorResponse(CommonInternalServerErrorResponse)
     public async refreshAccessToken(
-        @Body() body: RefreshTokenDto,
+        @Req() request: Request,
         @Res({ passthrough: true }) res: Response,
     ): Promise<void> {
-        const credentials = await this.authService.refreshToken(body);
+        const credentials = await this.authService.refreshToken(request);
         res.cookie(`accessToken`, credentials.accessToken.value, {
             httpOnly: true,
             secure: true,

@@ -1,6 +1,7 @@
 import { BehaviorSubject, firstValueFrom } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { deleteCookie } from "@utils/delete-cookie.util";
 
 @Injectable({ providedIn: `root` })
 export class AuthService {
@@ -13,7 +14,9 @@ export class AuthService {
 
     public async signIn(login: string, password: string): Promise<boolean> {
         try {
-            await firstValueFrom(this.httpClient.post(`/v1/auth/sign-in`, { login, password }));
+            await firstValueFrom(
+                this.httpClient.post(`/v1/auth/sign-in`, { login, password })
+            ).catch(error => { throw error });
             this.isSignedIn.next(true);
             return true;
         } catch (error) {
@@ -25,10 +28,13 @@ export class AuthService {
 
     public async refreshToken(): Promise<boolean> {
         try {
-            await firstValueFrom(this.httpClient.post(`/v1/auth/token/refresh`, null));
+            await firstValueFrom(
+                this.httpClient.post(`/v1/auth/token/refresh`, {}, { withCredentials: true })
+            ).catch(error => { throw error });
             this.isSignedIn.next(true);
             return true;
         } catch (error) {
+            console.error(`Failed to refresh token:`, error);
             this.isSignedIn.next(false);
             return false;
         }
@@ -36,15 +42,17 @@ export class AuthService {
 
     public async signOut(): Promise<boolean> {
         try {
-            await firstValueFrom(this.httpClient.delete(`/v1/auth/sign-out`));
+            await firstValueFrom(this.httpClient.delete(`/v1/auth/sign-out`)
+            ).catch(error => { throw error });
             this.isSignedIn.next(false);
+            deleteCookie(`accessToken`);
+            deleteCookie(`refreshToken`, `/v1/auth`);
             return true;
         } catch (error) {
             console.error(`Failed to sign out:`, error);
             this.isSignedIn.next(false);
             return false;
         }
-
     }
 
 }

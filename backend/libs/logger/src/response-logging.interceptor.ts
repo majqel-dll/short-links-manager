@@ -67,7 +67,7 @@ export class ResponseLoggingInterceptor implements NestInterceptor {
         const statusCode = response?.statusCode;
         const responseType = detectResponseType(data);
         const sizeInBytes = calculateSize(data);
-        const message = `Responded ${responseType} (${statusCode}) after ${duration}ms, with ${sizeInBytes} bytes.`;
+        const message = `Responded ${responseType}, status ${statusCode} after ${duration}ms, with ${sizeInBytes} bytes.`;
 
         const responseRecord = this.httpResponseRepository.create({
             size: sizeInBytes,

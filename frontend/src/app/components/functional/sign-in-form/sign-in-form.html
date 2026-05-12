@@ -1,0 +1,44 @@
+<form id="form-field" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+    <h3>SIGN IN</h3>
+    <div class="form-group">
+        <label for="login">Login</label>
+        <input type="text" name="login" id="login" class="input" formControlName="login" placeholder="login">
+
+    </div>
+
+    @if(loginForm.get('login').touched && !loginForm.get('login').valid){
+    <div>
+        <span class="error-code">The login is required</span>
+    </div>
+    }
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <div class="row">
+            <input [type]="isPasswordVisible ?'text' : 'password' " name="password" id="password" class="input"
+                formControlName="password" placeholder="password">
+            <input type="button" name="showAndHide" id="showAndHide" class="input button"
+                [value]="isPasswordVisible ? 'hide' : 'show'" (click)="togglePasswordVisibility()">
+        </div>
+    </div>
+
+    @if(loginForm.get('password').touched && !loginForm.get('password').valid){
+    <div>
+        <span class="error-code">The password is required</span>
+    </div>
+    }
+
+    @if(accessDenied){
+    <div>
+        <span class="error-code">Incorrect login or password</span>
+    </div>
+    }
+
+    <div class="buttons-field">
+        <input type="submit" class="form-button" id="form-submit" value="sign in" [disabled]="!loginForm.valid">
+        <label for="register-href" class="reg-label">Haven't account yet?</label>
+        <input type="button" class="form-button" id="register-href" value="register" routerLink="/register">
+    </div>
+
+</form>
