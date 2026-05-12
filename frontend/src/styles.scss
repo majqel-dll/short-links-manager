@@ -1,1 +1,59 @@
-/* You can add global styles to this file, and also import other style files */
+@use "./styles.constants.scss" as s;
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap");
+
+body {
+    margin: 0;
+    padding: 0;
+    color: s.$main-text-color;
+}
+
+* {
+    user-select: none;
+    font-family: montserrat;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+::-webkit-scrollbar {
+    background-color: s.$scrollbar-background-color;
+    width: 12px;
+    border: 1px solid black;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: s.$scrollbar-thumb-color;
+    border: 2px solid rgb(31, 31, 31);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: s.$scrollbar-background-color-hoover;
+}
+
+@media (max-width: s.$breakdown-width-md) {}
+
+@media (max-width: s.$breakdown-width-sm) {
+    * {
+        font-size: 14px;
+
+    }
+}
+
+@media (max-width: s.$breakdown-width-xs) {
+    * {
+        font-size: 13px;
+    }
+}
+
+a {
+    transition: all 0.15s ease-in-out;
+    text-decoration: none;
+    color: s.$main-text-color;
+
+    &:hover {
+        color: s.$main-text-color-hover;
+    }
+}
+
+.active-route {
+    color: s.$main-text-color-hover;
+}

@@ -1,0 +1,40 @@
+$breakdown-width-md: 1440px;
+$breakdown-width-sm: 968px;
+$breakdown-width-xs: 480px;
+
+$main-text-color: hsl(0, 0%, 92%);
+$main-text-color-hover: hsl(0, 0%, 73%);
+$main-text-size: 16pt;
+$main-accent-color: hsl(215, 67%, 49%);
+$secondary-accent-color: hsl(281, 74%, 54%);
+
+// HEADER //
+
+$header-height-lg: 72pt;
+$header-height-md: 64pt;
+$header-height-sm: 56pt;
+$header-height-xs: 48pt;
+
+$header-border-width: 3pt;
+$header-gradient-high: hsl(215, 8%, 8%);
+$header-gradient-low: hsl(215, 40%, 12%);
+
+// FOOTER //
+
+$footer-height-lg: 200pt;
+$footer-height-md: 225pt;
+$footer-height-sm: 250pt;
+$footer-height-xs: 300pt;
+
+$footer-border-width: 2pt;
+$footer-box-shadow: 32pt;
+$footer-gradient-high: hsl(281, 8%, 8%);
+$footer-gradient-low: hsl(281, 40%, 10%);
+
+// CONTEXT MENU //
+
+$background-default-color: hsl(215, 2%, 8%);
+
+$scrollbar-background-color: rgba(46, 50, 56, 1);
+$scrollbar-background-color-hoover: rgba(57, 63, 70, 1);
+$scrollbar-thumb-color: rgba(46, 50, 56, 1);
