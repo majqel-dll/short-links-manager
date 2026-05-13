@@ -1,0 +1,81 @@
+@use "../../../styles.constants.scss" as constants;
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 192px;
+    padding-bottom: 192px;
+}
+
+.post {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    max-width: 50dvw
+}
+
+.image {
+    width: calc(50dvw/3);
+    height: auto;
+    border-radius: 12px;
+}
+
+@media (max-width: constants.$breakdown-width-md) {
+
+    .content {
+        gap: 96px;
+        padding-bottom: 192px;
+    }
+
+    .image {
+        width: 50dvw;
+    }
+
+    .post {
+        flex-direction: column;
+        
+        &.left {
+            flex-direction: column-reverse;
+        }
+        max-width: 50dvw;
+        gap: 4px;
+    }
+
+}
+
+@media (max-width: constants.$breakdown-width-sm) {
+
+    .content {
+        gap: 96px;
+        padding-bottom: 96px;
+    }
+
+    .image {
+        width: 70dvw;
+    }
+
+    .post {
+        max-width: 70dvw;
+        gap: 4px;
+    }
+}
+
+@media (max-width: constants.$breakdown-width-xs) {
+
+    .content {
+        gap: 48px;
+        padding-bottom: 96px;
+    }
+
+    .image {
+        width: 85dvw;
+    }
+
+    .post {
+        max-width: 85dvw;
+        gap: 2px;
+    }
+}

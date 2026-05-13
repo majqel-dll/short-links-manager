@@ -8,26 +8,27 @@
     align-items: center;
     justify-content: flex-start;
     padding-top: calc(constants.$header-height-lg * 2);
+    height: fit-content;
 
 }
 
 @media (max-width: constants.$breakdown-width-md) {
     .content-wrapper {
         min-height: calc(100dvh - constants.$header-height-md);
-        padding-top: calc(constants.$header-height-md * 2);
+        padding-top: calc(constants.$header-height-md * 1.4);
     }
 }
 
 @media (max-width: constants.$breakdown-width-sm) {
     .content-wrapper {
-        height: calc(100dvh - constants.$header-height-sm);
-        padding-top: calc(constants.$header-height-sm * 2);
+        min-height: calc(100dvh - constants.$header-height-sm);
+        padding-top: calc(constants.$header-height-sm);
     }
 }
 
 @media (max-width: constants.$breakdown-width-xs) {
     .content-wrapper {
-        height: calc(100dvh - constants.$header-height-xs);
-        padding-top: calc(constants.$header-height-xs * 2);
+        min-height: calc(100dvh - constants.$header-height-xs);
+        padding-top: calc(constants.$header-height-xs * 0.71);
     }
 }

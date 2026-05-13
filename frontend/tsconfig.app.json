@@ -4,13 +4,14 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": [
-      "node"
+      "node",
     ]
   },
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
+    "/node_modules/**",
     "src/**/*.spec.ts",
     "src/**/*.test.ts"
   ]

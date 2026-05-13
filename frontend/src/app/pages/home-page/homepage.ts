@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
+import { SignInFormComponent } from '@functional/sign-in-form/sign-in-form';
 
 @Component({
   selector: 'app-homepage',
-  imports: [],
+  imports: [SignInFormComponent],
   templateUrl: './homepage.html',
-  styleUrl: './homepage.scss',
+  styleUrls: ['./homepage.scss', '../sign-in-page/sign-in-page.scss'],
 })
 export class Homepage {
 
