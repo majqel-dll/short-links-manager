@@ -15,7 +15,7 @@ export class PermissionService {
     private userService = inject(UserService);
     private httpClient = inject(HttpClient);
 
-    constructor() {        
+    constructor() {
         this.userService.user.subscribe(user => {
             if (!user) {
                 this.permissions.clear();
@@ -28,16 +28,14 @@ export class PermissionService {
     }
 
     private async getUserRoles(): Promise<void> {
-
         try {
 
-            const response = await firstValueFrom(
+            const data = await firstValueFrom(
                 this.httpClient.get<RolesResponse>(`/v1/user/roles`,
                     { withCredentials: true })
             ).catch(error => { throw error });
-
-            this.roles = new Set(response.data.map(({ name }: RoleItem) => (name)));
-            console.debug(this.roles);
+            this.roles = new Set(data.map(({ name }: RoleItem) => (name)));
+            console.log(`User roles has been fetched.`);
 
         } catch (error) {
             console.error(`Failed to get user roles list.`)
@@ -48,12 +46,11 @@ export class PermissionService {
     private async getUserPermissions(): Promise<void> {
         try {
 
-            const response = await firstValueFrom(
+            const data = await firstValueFrom(
                 this.httpClient.get<PermissionsResponse>(`/v1/user/permissions`, { withCredentials: true })
             ).catch(error => { throw error });
-
-            this.permissions = new Set(response.data.map(({ value }: PermissionItem) => (value)));
-            console.debug(this.permissions);
+            this.permissions = new Set(data.map(({ value }: PermissionItem) => (value)));
+            console.log(`User permissions has been fetched.`);
 
         } catch (error) {
             console.error(`Failed to get user permissions list.`)

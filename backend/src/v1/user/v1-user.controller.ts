@@ -297,7 +297,7 @@ export class V1UserController {
         await this.userService.deleteAccount(userId, activeUser);
     }
 
-    @Get(`:userId/avatar`)
+    @Get([`avatar`, `:userId/avatar`])
     @HttpCode(HttpStatus.OK)
     @ApiOperation(GetUserAvatarOperation)
     @ApiParam(UserIdParam)
@@ -306,11 +306,18 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserAvatarForbiddenResponse)
     public async getUserAvatar(
         @Res({ passthrough: true }) res: Response,
-        @Param(`userId`, new ParseIntPipe()) userId: number,
+        @ActiveUser() activeUser?: ActiveUserPayload,
+        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
     ): Promise<StreamableFile> {
-        const avatarBuffer = await this.userService.getUserAvatar(userId);
+
+        const { id } = activeUser || {};
+        if (id === undefined && userId === undefined) {
+            throw new ForbiddenException(`You haven't specified user to perform this action.`);
+        }
+
+        const avatarBuffer = await this.userService.getUserAvatar(userId ?? id);
         if (avatarBuffer === null) {
-            throw new NotFoundException(`Avatar not found for user with id ${userId}.`);
+            throw new NotFoundException(`Avatar not found for user with id ${userId ?? id}.`);
         }
 
         res.setHeader(`Content-Disposition`, `attachment; filename="${randomUUID()}.webp"`);

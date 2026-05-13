@@ -1,7 +1,7 @@
+import { loggedInGuard, authGuard, signInOrUpGuard } from './guards';
 import { NotFoundPage } from './pages/not-found-page/not-found-page';
 import { ProfilePage } from '@pages/profile-page/profile-page';
 import { PanelPage } from './pages/panel-page/panel-page';
-import { loggedInGuard, authGuard } from './guards';
 import { SignUpPage } from '@pages/sign-up-page';
 import { SignInPage } from '@pages/sign-in-page';
 import { Homepage } from '@pages/home-page';
@@ -17,8 +17,8 @@ export const routes: Routes = [
     { path: ``, pathMatch: `full`, component: Homepage },
     { path: 'redirection', component: SignInPage, canActivate: [authGuard] },
     { path: 'profile', component: ProfilePage, canActivate: [authGuard] },
-    { path: `sign-in`, component: SignInPage },
-    { path: `sign-up`, component: SignUpPage },
+    { path: `sign-in`, component: SignInPage, canActivate: [signInOrUpGuard] },
+    { path: `sign-up`, component: SignUpPage, canActivate: [signInOrUpGuard] },
     { path: `redirection/not-found`, component: NotFoundPage },
     { path: `**`, redirectTo: `redirection/not-found` },
 ];

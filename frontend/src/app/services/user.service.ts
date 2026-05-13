@@ -3,6 +3,7 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { AuthService } from "./auth.service";
 import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { UserData } from "@models/user.types";
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -23,11 +24,12 @@ export class UserService {
     private async getUserData(): Promise<void> {
         try {
 
-            const response = await firstValueFrom(
-                this.httpClient.get<Record<string, unknown>>(`/v1/user`,
+            const data = await firstValueFrom(
+                this.httpClient.get<UserData>(`/v1/user`,
                     { withCredentials: true })
             ).catch(error => { throw error });
-            this.user.next(response);
+            console.log(`User data has been fetched.`);
+            this.user.next(data);
 
         } catch (error) {
             console.error(`Failed to get user data:`);
@@ -36,6 +38,5 @@ export class UserService {
         }
     }
 
-    public user = new BehaviorSubject<Record<string, unknown>>(null);
-
+    public user = new BehaviorSubject<UserData>(null);
 }

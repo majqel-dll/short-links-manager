@@ -32,6 +32,7 @@ export class AuthService {
                 this.httpClient.post(`/v1/auth/token/refresh`, {}, { withCredentials: true })
             ).catch(error => { throw error });
             this.isSignedIn.next(true);
+            console.log(`Token refreshed successfully.`);
             return true;
         } catch (error) {
             console.error(`Failed to refresh token:`);

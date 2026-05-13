@@ -1,10 +1,10 @@
-import { Component, inject, OnDestroy, OnInit } from "@angular/core";
-import { Router, RouterLink, RouterLinkActive } from "@angular/router";
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { AppAssetsService } from "@services/assets.service";
 import { AuthService } from "@services/auth.service";
+import { Component, inject } from "@angular/core";
 import { CommonModule } from '@angular/common';
-import { Subscription } from "rxjs";
-
+import { Location } from '@angular/common';
+import { filter, map, Observable } from "rxjs";
 @Component({
     selector: `app-header`,
     templateUrl: `./header.html`,
@@ -12,27 +12,32 @@ import { Subscription } from "rxjs";
     imports: [CommonModule, RouterLinkActive, RouterLink],
 })
 
-export class HeaderComponent implements OnDestroy, OnInit {
+export class HeaderComponent {
 
-    public assets: AppAssetsService = inject(AppAssetsService);
-    public authService: AuthService = inject(AuthService);
-    public router: Router = inject(Router);
-    public appName = this.assets.appName;
-    public userId: number = null;
+    private assets: AppAssetsService = inject(AppAssetsService);
+    private authService: AuthService = inject(AuthService);
+    private location = inject(Location);
+    private router = inject(Router);
 
-    private subscription: Subscription = null;
-    protected isSignedIn = false;
+    showSignInLink$: Observable<boolean> = this.router.events.pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        map(({ urlAfterRedirects }) => {
+            return !urlAfterRedirects.includes('sign-in') && !urlAfterRedirects.includes('sign-up');
+        })
+    );
+    protected appName = this.assets.appName;
+    protected isSignedIn: boolean = false;
 
-    public ngOnInit(): void {
-        this.subscription = this.authService.isSignedIn
-            .subscribe(isSignedIn => {
-                this.isSignedIn = isSignedIn;
-            });
+    constructor() {
+
+        this.authService.isSignedIn.subscribe(isSignedIn => {
+            this.isSignedIn = isSignedIn;
+        });
+
+        this.location.subscribe((location) => {
+            console.log(location)
+        })
     }
-
-    public ngOnDestroy(): void {
-        this.subscription.unsubscribe();
-    };
 
     public async signOut(): Promise<void> {
         await this.authService.signOut();

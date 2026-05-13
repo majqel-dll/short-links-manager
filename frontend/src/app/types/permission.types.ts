@@ -9,10 +9,6 @@ export type RoleItem = {
     name: string,
 }
 
-export type RolesResponse = {
-    data: RoleItem[],
-}
+export type RolesResponse = RoleItem[]
 
-export type PermissionsResponse = {
-    data: PermissionItem[],
-}
+export type PermissionsResponse = PermissionItem[];
