@@ -318,28 +318,6 @@ export class V1UserController {
         return new StreamableFile(avatarBuffer);
     }
 
-    @Get(["", `:userId`])
-    @HttpCode(HttpStatus.OK)
-    @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    @ApiOperation(GetUserByIdOperation)
-    @ApiParam(UserIdParam)
-    @ApiQuery(GetUserByIdLogsQuery)
-    @ApiQuery(GetUserByIdRolesQuery)
-    @ApiQuery(GetUserByIdRedirectionsQuery)
-    @ApiQuery(GetUserByIdPermissionsQuery)
-    @ApiQuery(GetUserByIdRequestsQuery)
-    @ApiOkResponse(GetUserByIdOkResponse)
-    @ApiForbiddenResponse(GetUserByIdForbiddenResponse)
-    @ApiNotFoundResponse(GetUserByIdNotFoundResponse)
-    public async getUserData(
-        @ActiveUser() activeUser: ActiveUserPayload,
-        @Query() queryParams: GetUserQueryParamsDto,
-        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
-    ): Promise<UserEntity> {
-        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
-        return await this.userService.getUserById(userId ?? activeUser.id, queryParams);
-    }
-
     @Post(`:userId/avatar`)
     @HttpCode(HttpStatus.CREATED)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
@@ -382,6 +360,28 @@ export class V1UserController {
     ): Promise<void> {
         hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
         return await this.userService.deleteUserAvatar(userId);
+    }
+
+    @Get(["", `:userId`])
+    @HttpCode(HttpStatus.OK)
+    @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
+    @ApiOperation(GetUserByIdOperation)
+    @ApiParam(UserIdParam)
+    @ApiQuery(GetUserByIdLogsQuery)
+    @ApiQuery(GetUserByIdRolesQuery)
+    @ApiQuery(GetUserByIdRedirectionsQuery)
+    @ApiQuery(GetUserByIdPermissionsQuery)
+    @ApiQuery(GetUserByIdRequestsQuery)
+    @ApiOkResponse(GetUserByIdOkResponse)
+    @ApiForbiddenResponse(GetUserByIdForbiddenResponse)
+    @ApiNotFoundResponse(GetUserByIdNotFoundResponse)
+    public async getUserData(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Query() queryParams: GetUserQueryParamsDto,
+        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
+    ): Promise<UserEntity> {
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.getUserById(userId ?? activeUser.id, queryParams);
     }
 
 }
