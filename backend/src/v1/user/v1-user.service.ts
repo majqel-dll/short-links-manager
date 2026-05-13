@@ -41,24 +41,12 @@ export class V1UserService implements OnApplicationBootstrap {
         private readonly codeService: V1CodeService,
         private readonly dataSource: DataSource,
         private readonly minio: S3Service,
-    ) {}
+    ) { }
 
     public async onApplicationBootstrap(): Promise<void> {
         const bucketExists = await this.minio.bucketExists(BucketEnum.USER_AVATARS);
         if (!bucketExists) {
             await this.minio.createBucket(BucketEnum.USER_AVATARS);
-        }
-    }
-
-    private validateUserPermissionToAccessResource(
-        userId: number,
-        id: number,
-        permissions: PermissionEnum[],
-    ): void {
-        if (userId !== id && !permissions.includes(PermissionEnum.MANAGE_OTHER_ACCOUNT)) {
-            throw new ForbiddenException(
-                `You do not have permission to access this resource.`,
-            );
         }
     }
 
@@ -99,10 +87,8 @@ export class V1UserService implements OnApplicationBootstrap {
 
     public async getUserById(
         userId: number,
-        { id, permissions }: ActiveUserPayload,
         queryParams: GetUserQueryParamsDto,
     ): Promise<UserEntity> {
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
 
         const {
             logs,
@@ -141,12 +127,10 @@ export class V1UserService implements OnApplicationBootstrap {
 
     public async updateUserData(
         userId: number,
-        { id, permissions }: ActiveUserPayload,
         { newLogin, newEmail, currentPassword }: UpdateUserDto,
     ): Promise<void> {
-        const startTime: number = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
 
+        const startTime: number = Date.now();
         const user = await this.userRepository
             .findOne({
                 where: { id: userId },
@@ -193,13 +177,8 @@ export class V1UserService implements OnApplicationBootstrap {
         });
     }
 
-    public async getUserPermissions(
-        userId: number,
-        { id, permissions }: ActiveUserPayload,
-    ): Promise<PermissionEntity[]> {
+    public async getUserPermissions(userId: number): Promise<PermissionEntity[]> {
         const startTime: number = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
-
         const user = await this.userRepository
             .findOne({
                 where: { id: userId },
@@ -233,11 +212,8 @@ export class V1UserService implements OnApplicationBootstrap {
 
     public async getUserRoles(
         userId: number,
-        { id, permissions }: ActiveUserPayload,
     ): Promise<RoleEntity[]> {
         const startTime = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
-
         const user = await this.userRepository
             .findOne({
                 where: { id: userId },
@@ -258,10 +234,8 @@ export class V1UserService implements OnApplicationBootstrap {
 
     public async getUserRedirections(
         userId: number,
-        { id, permissions }: ActiveUserPayload,
     ): Promise<RedirectionEntity[]> {
         const startTime = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
 
         const user = await this.userRepository
             .findOne({
@@ -417,12 +391,9 @@ export class V1UserService implements OnApplicationBootstrap {
 
     public async postUserAvatar(
         userId: number,
-        { id, permissions }: ActiveUserPayload,
         avatar: Express.Multer.File,
     ): Promise<void> {
         const startTime = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
-
         const processedAvatar = await sharp(avatar.buffer)
             .resize(768, 768, { fit: "inside", withoutEnlargement: true })
             .webp({ quality: 50 })
@@ -492,12 +463,9 @@ export class V1UserService implements OnApplicationBootstrap {
     }
 
     public async deleteUserAvatar(
-        userId: number,
-        { id, permissions }: ActiveUserPayload,
+        userId: number
     ): Promise<void> {
         const startTime = Date.now();
-        this.validateUserPermissionToAccessResource(userId, id, permissions);
-
         const existingAvatar = await this.minio
             .getObject(
                 BucketEnum.USER_AVATARS,

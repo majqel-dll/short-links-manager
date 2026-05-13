@@ -1,7 +1,7 @@
 import { firstValueFrom } from "rxjs/internal/firstValueFrom";
 import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { AuthService } from "./auth.service";
+import { UserService } from "./user.service";
 import {
     PermissionsResponse,
     PermissionItem,
@@ -9,24 +9,22 @@ import {
     RoleItem,
 } from "@models/permission.types";
 
-
-
 @Injectable({ providedIn: `root` })
 export class PermissionService {
 
-    private authService = inject(AuthService);
+    private userService = inject(UserService);
     private httpClient = inject(HttpClient);
 
-    constructor() {
-        this.authService.isSignedIn.subscribe(isSignedIn => {
-            if (!isSignedIn) {
+    constructor() {        
+        this.userService.user.subscribe(user => {
+            if (!user) {
                 this.permissions.clear();
                 this.roles.clear();
             } else {
                 this.getUserRoles();
                 this.getUserPermissions();
             }
-        })
+        });
     }
 
     private async getUserRoles(): Promise<void> {
@@ -34,11 +32,12 @@ export class PermissionService {
         try {
 
             const response = await firstValueFrom(
-                this.httpClient.get<RolesResponse>(`/v1/permission/roles`,
+                this.httpClient.get<RolesResponse>(`/v1/user/roles`,
                     { withCredentials: true })
             ).catch(error => { throw error });
 
             this.roles = new Set(response.data.map(({ name }: RoleItem) => (name)));
+            console.debug(this.roles);
 
         } catch (error) {
             console.error(`Failed to get user roles list.`)
@@ -50,10 +49,11 @@ export class PermissionService {
         try {
 
             const response = await firstValueFrom(
-                this.httpClient.get<PermissionsResponse>(`/v1/permission`, { withCredentials: true })
+                this.httpClient.get<PermissionsResponse>(`/v1/user/permissions`, { withCredentials: true })
             ).catch(error => { throw error });
 
             this.permissions = new Set(response.data.map(({ value }: PermissionItem) => (value)));
+            console.debug(this.permissions);
 
         } catch (error) {
             console.error(`Failed to get user permissions list.`)

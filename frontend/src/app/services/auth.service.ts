@@ -34,7 +34,8 @@ export class AuthService {
             this.isSignedIn.next(true);
             return true;
         } catch (error) {
-            console.error(`Failed to refresh token:`, error);
+            console.error(`Failed to refresh token:`);
+            console.error(error);
             this.isSignedIn.next(false);
             return false;
         }

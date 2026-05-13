@@ -157,32 +157,6 @@ export class V1UserController {
         return await this.userService.getUsers(queryParams);
     }
 
-    @Get(["", `:userId`])
-    @HttpCode(HttpStatus.OK)
-    @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
-    @ApiOperation(GetUserByIdOperation)
-    @ApiParam(UserIdParam)
-    @ApiQuery(GetUserByIdLogsQuery)
-    @ApiQuery(GetUserByIdRolesQuery)
-    @ApiQuery(GetUserByIdRedirectionsQuery)
-    @ApiQuery(GetUserByIdPermissionsQuery)
-    @ApiQuery(GetUserByIdRequestsQuery)
-    @ApiOkResponse(GetUserByIdOkResponse)
-    @ApiForbiddenResponse(GetUserByIdForbiddenResponse)
-    @ApiNotFoundResponse(GetUserByIdNotFoundResponse)
-    public async getUserData(
-        @ActiveUser() activeUser: ActiveUserPayload,
-        @Query() queryParams: GetUserQueryParamsDto,
-        @Param(`userId`) userId?: number,
-    ): Promise<UserEntity> {
-        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
-        return await this.userService.getUserById(
-            userId ?? activeUser.id,
-            activeUser,
-            queryParams,
-        );
-    }
-
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @Permission(PermissionEnum.MANAGE_OTHER_ACCOUNT)
@@ -211,7 +185,7 @@ export class V1UserController {
         @Body() body: UpdateUserDto,
     ): Promise<void> {
         hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
-        return await this.userService.updateUserData(userId, activeUser, body);
+        return await this.userService.updateUserData(userId, body);
     }
 
     @Get([`permissions`, `:userId/permissions`])
@@ -223,10 +197,10 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserPermissionsForbiddenResponse)
     public async getUserPermissions(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`) userId?: number,
+        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
     ): Promise<PermissionEntity[]> {
         hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
-        return await this.userService.getUserPermissions(userId ?? activeUser.id, activeUser);
+        return await this.userService.getUserPermissions(userId ?? activeUser.id);
     }
 
     @Get([`roles`, `:userId/roles`])
@@ -238,10 +212,10 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserRolesForbiddenResponse)
     public async getUserRoles(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`) userId?: number,
+        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
     ): Promise<RoleEntity[]> {
         hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
-        return await this.userService.getUserRoles(userId ?? activeUser.id, activeUser);
+        return await this.userService.getUserRoles(userId ?? activeUser.id);
     }
 
     @Get([`redirections`, `:userId/redirections`])
@@ -253,10 +227,10 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserRedirectionsForbiddenResponse)
     public async getUserRedirections(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`) userId?: number,
+        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
     ): Promise<RedirectionEntity[]> {
         hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
-        return await this.userService.getUserRedirections(userId ?? activeUser.id, activeUser);
+        return await this.userService.getUserRedirections(userId ?? activeUser.id);
     }
 
     @Post(`delete/request`)
@@ -344,6 +318,28 @@ export class V1UserController {
         return new StreamableFile(avatarBuffer);
     }
 
+    @Get(["", `:userId`])
+    @HttpCode(HttpStatus.OK)
+    @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
+    @ApiOperation(GetUserByIdOperation)
+    @ApiParam(UserIdParam)
+    @ApiQuery(GetUserByIdLogsQuery)
+    @ApiQuery(GetUserByIdRolesQuery)
+    @ApiQuery(GetUserByIdRedirectionsQuery)
+    @ApiQuery(GetUserByIdPermissionsQuery)
+    @ApiQuery(GetUserByIdRequestsQuery)
+    @ApiOkResponse(GetUserByIdOkResponse)
+    @ApiForbiddenResponse(GetUserByIdForbiddenResponse)
+    @ApiNotFoundResponse(GetUserByIdNotFoundResponse)
+    public async getUserData(
+        @ActiveUser() activeUser: ActiveUserPayload,
+        @Query() queryParams: GetUserQueryParamsDto,
+        @Param(`userId`, new ParseIntPipe({ optional: true })) userId?: number,
+    ): Promise<UserEntity> {
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.getUserById(userId ?? activeUser.id, queryParams);
+    }
+
     @Post(`:userId/avatar`)
     @HttpCode(HttpStatus.CREATED)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
@@ -368,7 +364,8 @@ export class V1UserController {
         )
         avatar: Express.Multer.File,
     ): Promise<void> {
-        return await this.userService.postUserAvatar(userId, activeUser, avatar);
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.postUserAvatar(userId, avatar);
     }
 
     @Delete(`:userId/avatar`)
@@ -383,6 +380,8 @@ export class V1UserController {
         @ActiveUser() activeUser: ActiveUserPayload,
         @Param(`userId`, new ParseIntPipe()) userId: number,
     ): Promise<void> {
-        return await this.userService.deleteUserAvatar(userId, activeUser);
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.deleteUserAvatar(userId);
     }
+
 }
