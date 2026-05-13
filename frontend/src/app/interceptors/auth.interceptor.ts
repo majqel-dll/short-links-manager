@@ -25,7 +25,6 @@ export class AuthInterceptor implements HttpInterceptor {
                 request.url.includes(`/v1/auth/token/refresh`) ||
                 request.url.includes(`/v1/auth/sign-in`) ||
                 request.url.includes(`/v1/auth/sign-out`);
-
             if (error.status === 401 && !isAuthEndpoint) {
                 return this.handle401Error(requestWithCookies, next);
             }

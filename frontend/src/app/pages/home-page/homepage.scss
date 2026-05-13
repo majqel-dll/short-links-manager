@@ -17,13 +17,12 @@
     align-items: center;
     gap: 32px;
     max-width: 50dvw;
-    box-shadow: 0 0 32px constants.$main-accent-color-glow;
 }
 
 .image {
     width: calc(50dvw/3);
     height: auto;
-    border-radius: 12px;
+    border-radius: 24px;
 }
 
 @media (max-width: constants.$breakdown-width-md) {

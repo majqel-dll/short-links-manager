@@ -10,3 +10,4 @@ export * from "./on-auth-rejection-message.util";
 export * from "./parse-expires-in.util";
 export * from "./to-boolean.util";
 export * from "./get-style-for-status.util";
+export * from "./has-permission.util";

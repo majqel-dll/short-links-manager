@@ -1,7 +1,7 @@
+import { deleteCookie } from "@utils/delete-cookie.util";
 import { BehaviorSubject, firstValueFrom } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { deleteCookie } from "@utils/delete-cookie.util";
 
 @Injectable({ providedIn: `root` })
 export class AuthService {

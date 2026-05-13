@@ -126,6 +126,7 @@ import {
 } from "@libs/dtos";
 import { randomUUID } from "crypto";
 import { V1AuthService } from "../auth";
+import { hasPermission } from "@libs/utils";
 
 @ApiTags(`User`)
 @Controller(`v1/user`)
@@ -140,7 +141,7 @@ export class V1UserController {
     constructor(
         private readonly userService: V1UserService,
         private readonly authService: V1AuthService,
-    ) {}
+    ) { }
 
     @Get(`list`)
     @HttpCode(HttpStatus.OK)
@@ -174,16 +175,7 @@ export class V1UserController {
         @Query() queryParams: GetUserQueryParamsDto,
         @Param(`userId`) userId?: number,
     ): Promise<UserEntity> {
-        if (
-            userId &&
-            userId !== activeUser.id &&
-            !activeUser.permissions.includes(PermissionEnum.MANAGE_OTHER_ACCOUNT)
-        ) {
-            throw new ForbiddenException(
-                `You do not have permission to access data of other users.`,
-            );
-        }
-
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
         return await this.userService.getUserById(
             userId ?? activeUser.id,
             activeUser,
@@ -218,10 +210,11 @@ export class V1UserController {
         @Param(`userId`, new ParseIntPipe()) userId: number,
         @Body() body: UpdateUserDto,
     ): Promise<void> {
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
         return await this.userService.updateUserData(userId, activeUser, body);
     }
 
-    @Get(`:userId/permissions`)
+    @Get([`permissions`, `:userId/permissions`])
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUserPermissionsOperation)
@@ -230,12 +223,13 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserPermissionsForbiddenResponse)
     public async getUserPermissions(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`, new ParseIntPipe()) userId: number,
+        @Param(`userId`) userId?: number,
     ): Promise<PermissionEntity[]> {
-        return await this.userService.getUserPermissions(userId, activeUser);
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.getUserPermissions(userId ?? activeUser.id, activeUser);
     }
 
-    @Get(`:userId/roles`)
+    @Get([`roles`, `:userId/roles`])
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUserRolesOperation)
@@ -244,12 +238,13 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserRolesForbiddenResponse)
     public async getUserRoles(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`, new ParseIntPipe()) userId: number,
+        @Param(`userId`) userId?: number,
     ): Promise<RoleEntity[]> {
-        return await this.userService.getUserRoles(userId, activeUser);
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.getUserRoles(userId ?? activeUser.id, activeUser);
     }
 
-    @Get(`:userId/redirections`)
+    @Get([`redirections`, `:userId/redirections`])
     @HttpCode(HttpStatus.OK)
     @Permission(PermissionEnum.MANAGE_OWN_ACCOUNT, PermissionEnum.MANAGE_OTHER_ACCOUNT)
     @ApiOperation(GetUserRedirectionsOperation)
@@ -258,9 +253,10 @@ export class V1UserController {
     @ApiForbiddenResponse(GetUserRedirectionsForbiddenResponse)
     public async getUserRedirections(
         @ActiveUser() activeUser: ActiveUserPayload,
-        @Param(`userId`, new ParseIntPipe()) userId: number,
+        @Param(`userId`) userId?: number,
     ): Promise<RedirectionEntity[]> {
-        return await this.userService.getUserRedirections(userId, activeUser);
+        hasPermission(userId, activeUser, PermissionEnum.MANAGE_OTHER_ACCOUNT);
+        return await this.userService.getUserRedirections(userId ?? activeUser.id, activeUser);
     }
 
     @Post(`delete/request`)

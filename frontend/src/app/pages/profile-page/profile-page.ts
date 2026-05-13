@@ -1,4 +1,5 @@
-import { Component } from "@angular/core";
+import { PermissionService, UserService } from "@services/index";
+import { Component, inject } from "@angular/core";
 
 @Component({
     selector: 'app-profile-page',
@@ -6,4 +7,10 @@ import { Component } from "@angular/core";
     styleUrls: ['./profile-page.scss'],
 })
 
-export class ProfilePage { }
+export class ProfilePage {
+
+    protected permissionService = inject(PermissionService);
+    protected userService = inject(UserService);
+
+
+}
