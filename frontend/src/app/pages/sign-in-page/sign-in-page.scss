@@ -1,0 +1,33 @@
+@use "../../../styles.constants.scss" as constants;
+
+
+.reg-label {
+    margin-top: 32px;
+    font-size: 13px;
+    color: constants.$main-text-color-hover;
+}
+
+.form-button {
+
+    padding: 12px 16px;
+    border-radius: 8px;
+    outline: none;
+    border: none;
+
+    color: white;
+
+    transition: all 0.3s ease-in-out;
+
+    &:enabled {
+        background-color: constants.$main-accent-color;
+
+        &:hover {
+            cursor: pointer;
+            transform: scale(0.95);
+        }
+    }
+
+    &:disabled {
+        background-color: rgb(36, 42, 46);
+    }
+}
