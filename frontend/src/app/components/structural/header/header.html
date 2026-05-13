@@ -9,10 +9,16 @@
 
     <ul class="user-menu">
         @if(isSignedIn){
-        <li><img class="avatar-thumbnail" routerLink="/profile" src="/v1/user/3/avatar" /></li>
+
+            @if(userId){
+                <li><img class="avatar-thumbnail" routerLink="/profile" src="/v1/user/{{userId}}/avatar" /></li>
+            } @else {
+                <li routerLink="/profile" routerLinkActive="active-route">profile</li>
+            }
+
         <li (click)="signOut()" class="sign-out">sign out</li>
         } @else {
-        <li routerLinkActive="" routerLink="/sign-in">sign in</li>
+        <li routerLinkActive="active" routerLink="/sign-in">sign in</li>
         }
     </ul>
 

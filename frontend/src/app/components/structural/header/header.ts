@@ -18,6 +18,7 @@ export class HeaderComponent implements OnDestroy, OnInit {
     public authService: AuthService = inject(AuthService);
     public router: Router = inject(Router);
     public appName = this.assets.appName;
+    public userId: number = null;
 
     private subscription: Subscription = null;
     protected isSignedIn = false;
