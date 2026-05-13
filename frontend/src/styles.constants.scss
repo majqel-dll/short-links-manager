@@ -3,11 +3,15 @@ $breakdown-width-sm: 968px;
 $breakdown-width-xs: 480px;
 
 $main-text-color: hsl(0, 0%, 92%);
+$main-text-color-glow: rgba(235, 235, 235, 0.25);
 $main-text-color-hover: hsl(0, 0%, 73%);
 $main-text-size: 16pt;
 $error-text-color: hsl(0, 100%, 70%);
+$error-text-color-glow: rgba(255, 102, 102, 0.25);
 $main-accent-color: hsl(215, 67%, 49%);
+$main-accent-color-glow: rgba(41, 111, 209, 0.25);
 $secondary-accent-color: hsl(281, 74%, 54%);
+$secondary-accent-color-glow: rgba(170, 51, 225, 0.25);
 
 // HEADER //
 
@@ -35,6 +39,7 @@ $footer-gradient-low: hsl(281, 40%, 10%);
 // CONTEXT MENU //
 
 $background-default-color: hsl(215, 2%, 8%);
+$background-dark-color: hsl(215, 2%, 3%);
 
 $scrollbar-background-color: rgba(46, 50, 56, 1);
 $scrollbar-background-color-hoover: rgba(57, 63, 70, 1);

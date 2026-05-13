@@ -12,7 +12,7 @@
 
         </div>
         <div>
-            <img class="image" src="image_1.png" />
+            <img class="image" src="image_1.png" draggable="false" />
         </div>
 
     </div>
@@ -20,7 +20,7 @@
     <div class="post left">
 
         <div>
-            <img class="image" src="image_2.png" />
+            <img class="image" src="image_2.png" draggable="false" />
         </div>
         <div>
             <h2>Fast redirects. Clean links. Full control</h2>
@@ -37,7 +37,8 @@
     <div class="post">
         <sign-in-form>
             <label for="register-href" class="reg-label">Haven't account yet?</label>
-            <input type="button" class="form-button" id="register-href" value="register" routerLink="/register">
+            <input type="button" class="form-button" id="register-href" value="register" routerLink="/sign-up"
+                (click)="scrollToTop()">
         </sign-in-form>
     </div>
 
