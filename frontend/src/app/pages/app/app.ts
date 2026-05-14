@@ -1,5 +1,5 @@
 import { ContentComponent, HeaderComponent, FooterComponent } from '@structural/index';
-import { Component, signal } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-root',
@@ -10,8 +10,12 @@ import { RouterOutlet } from '@angular/router';
     RouterOutlet
   ],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrls: ['./app.scss']
 })
 export class App {
-  protected readonly title = signal('short-link-manager');
+
+  @HostListener('contextmenu', ['$event']) disableContextMenu(event: PointerEvent): void {
+    event.preventDefault();
+  }
+
 }

@@ -38,5 +38,34 @@ export class UserService {
         }
     }
 
+    public async getUserAvatar(): Promise<void> { }
+
+    public async setUserPermissions(): Promise<void> { }
+
+    public async changeUserPassword(): Promise<void> { }
+
+    public async deactivateUser(): Promise<void> { }
+
+    public async setEmailStatus(): Promise<void> { }
+
+    public async sendVerificationEmail(): Promise<void> { }
+
+    public async updateEmailValue(): Promise<void> { }
+
+    public async removeEmailValue(): Promise<void> { }
+
+    public async checkIfActivateCodeExists(): Promise<void> { }
+
+    public async verifyByRequest(): Promise<void> { }
+
+    public async createUserInPanel(): Promise<void> { }
+
+    public async updateUserObject(): Promise<void> { }
+
+    public async setUserAvatar(): Promise<void> { }
+
+    public async deleteUserAvatar(): Promise<void> { }
+
+
     public user = new BehaviorSubject<UserData>(null);
 }

@@ -3,8 +3,7 @@ import { AppAssetsService } from "@services/assets.service";
 import { AuthService } from "@services/auth.service";
 import { Component, inject } from "@angular/core";
 import { CommonModule } from '@angular/common';
-import { Location } from '@angular/common';
-import { filter, map, Observable } from "rxjs";
+import { map, Observable, startWith } from "rxjs";
 @Component({
     selector: `app-header`,
     templateUrl: `./header.html`,
@@ -16,13 +15,15 @@ export class HeaderComponent {
 
     private assets: AppAssetsService = inject(AppAssetsService);
     private authService: AuthService = inject(AuthService);
-    private location = inject(Location);
     private router = inject(Router);
 
     protected showSignInLink$: Observable<boolean> = this.router.events.pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        map(({ urlAfterRedirects }) => {
-            return !urlAfterRedirects.includes('sign-in') && !urlAfterRedirects.includes('sign-up');
+        startWith(null),
+        map((event) => {
+            const currentUrl = event instanceof NavigationEnd
+                ? event.urlAfterRedirects
+                : this.router.url;
+            return !currentUrl.includes('sign-in') && !currentUrl.includes('sign-up');
         })
     );
     protected appName = this.assets.appName;
@@ -33,10 +34,6 @@ export class HeaderComponent {
         this.authService.isSignedIn.subscribe(isSignedIn => {
             this.isSignedIn = isSignedIn;
         });
-
-        this.location.subscribe((location) => {
-            console.log(location)
-        })
     }
 
     public async signOut(): Promise<void> {
