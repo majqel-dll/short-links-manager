@@ -19,7 +19,7 @@ export class HeaderComponent {
     private location = inject(Location);
     private router = inject(Router);
 
-    showSignInLink$: Observable<boolean> = this.router.events.pipe(
+    protected showSignInLink$: Observable<boolean> = this.router.events.pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         map(({ urlAfterRedirects }) => {
             return !urlAfterRedirects.includes('sign-in') && !urlAfterRedirects.includes('sign-up');

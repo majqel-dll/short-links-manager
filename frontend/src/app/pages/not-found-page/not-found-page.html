@@ -1,1 +1,15 @@
-<p>not-found-page works!</p>
+<div class="post">
+
+    <div class="description">
+        <h3>404 The redirection you're looking for not found</h3>
+        <p>It seems that the redirection you're looking for doesn't exist. Please check the URL and try again.</p>
+        @if(requestedRedirection){
+        <p>The requested redirection <span class="redirection">"{{requestedRedirection}}"</span></p>
+        }
+    </div>
+
+    <div class="image-wrapper" draggable="false">
+        <img class="image" src="not-found-image.png" alt="not found illustration" draggable="false" />
+    </div>
+
+</div>
