@@ -1,9 +1,9 @@
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
 import { firstValueFrom } from "rxjs/internal/firstValueFrom";
 import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { AuthService } from "./auth.service";
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
 import { UserData } from "@models/user.types";
+import { AuthService } from "./auth.service";
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
