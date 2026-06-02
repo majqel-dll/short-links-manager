@@ -4,6 +4,7 @@ import { AuthService } from "@services/auth.service";
 import { Component, inject } from "@angular/core";
 import { CommonModule } from '@angular/common';
 import { map, Observable, startWith } from "rxjs";
+import { UserService } from "@services/user.service";
 @Component({
     selector: `app-header`,
     templateUrl: `./header.html`,
@@ -13,9 +14,12 @@ import { map, Observable, startWith } from "rxjs";
 
 export class HeaderComponent {
 
-    private assets: AppAssetsService = inject(AppAssetsService);
-    private authService: AuthService = inject(AuthService);
-    private router = inject(Router);
+    private readonly assets: AppAssetsService = inject(AppAssetsService);
+    private readonly authService: AuthService = inject(AuthService);
+    private readonly userService = inject(UserService);
+    private readonly router = inject(Router);
+
+    protected avatar: string = null;
 
     protected showSignInLink$: Observable<boolean> = this.router.events.pipe(
         startWith(null),
@@ -30,10 +34,8 @@ export class HeaderComponent {
     protected isSignedIn: boolean = false;
 
     constructor() {
-
-        this.authService.isSignedIn.subscribe(isSignedIn => {
-            this.isSignedIn = isSignedIn;
-        });
+        this.authService.isSignedIn.subscribe(state => this.isSignedIn = state);
+        this.userService.avatar.subscribe(avatar => this.avatar = avatar);
     }
 
     public async signOut(): Promise<void> {

@@ -3,17 +3,17 @@
     <div class="profile-title">
         <h3>{{user.login}} Profile</h3>
     </div>
-    
+
     <div>
         <img src="" alt="Profile picture" class="profile-picture">
     </div>
 
     <div class="profile-info">
-        
+
         @if(editMode){
-            <input type="text" value="{{user.login}}" class="edit-login-input">
+        <input type="text" value="{{user.login}}" class="edit-login-input">
         } @else {
-            <p>login: {{user.login}}</p>
+        <p>login: {{user.login}}</p>
         }
 
         <p>email: {{user.email}}</p>

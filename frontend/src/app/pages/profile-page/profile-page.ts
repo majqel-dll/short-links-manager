@@ -17,9 +17,7 @@ export class ProfilePage {
     protected editMode: boolean = false;
 
     constructor() {
-        this.userService.user.subscribe(user => {
-            this.user = user;
-        })
+        this.userService.user.subscribe(user => this.user = user);
     }
 
 }

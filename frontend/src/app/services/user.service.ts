@@ -4,6 +4,7 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { UserData } from "@models/user.types";
 import { AuthService } from "./auth.service";
+import { Subject } from "rxjs";
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -11,12 +12,17 @@ export class UserService {
     private authService = inject(AuthService);
     private httpClient = inject(HttpClient);
 
+    public user = new BehaviorSubject<UserData>(null);
+    public avatar = new BehaviorSubject<string>(null);
+
     constructor() {
         this.authService.isSignedIn.subscribe(isSignedIn => {
             if (!isSignedIn) {
                 this.user.next(null);
+                this.avatar.next(null)
             } else {
                 this.getUserData();
+                this.getUserAvatar();
             }
         })
     }
@@ -38,7 +44,28 @@ export class UserService {
         }
     }
 
-    public async getUserAvatar(): Promise<void> { }
+    public async getUserAvatar(): Promise<string> {
+
+        try {
+
+            const arrayBuffer = await firstValueFrom(
+                this.httpClient.get(`/v1/user/avatar`,
+                    { withCredentials: true, responseType: `blob` })
+            ).catch(error => { throw error });
+            console.log(`User avatar has been fetched.`);
+            const avatar = URL.createObjectURL(arrayBuffer);
+            console.log(avatar)
+            this.avatar.next(avatar);
+            return avatar;
+
+        } catch (error) {
+            console.error(`Failed to get user avatar:`);
+            console.error(error);
+            this.avatar.next(null);
+            return null;
+        }
+
+    }
 
     public async setUserPermissions(): Promise<void> { }
 
@@ -48,15 +75,11 @@ export class UserService {
 
     public async setEmailStatus(): Promise<void> { }
 
-    public async sendVerificationEmail(): Promise<void> { }
-
     public async updateEmailValue(): Promise<void> { }
 
     public async removeEmailValue(): Promise<void> { }
 
     public async checkIfActivateCodeExists(): Promise<void> { }
-
-    public async verifyByRequest(): Promise<void> { }
 
     public async createUserInPanel(): Promise<void> { }
 
@@ -66,6 +89,4 @@ export class UserService {
 
     public async deleteUserAvatar(): Promise<void> { }
 
-
-    public user = new BehaviorSubject<UserData>(null);
 }
