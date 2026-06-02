@@ -4,7 +4,6 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { UserData } from "@models/user.types";
 import { AuthService } from "./auth.service";
-import { Subject } from "rxjs";
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -44,8 +43,7 @@ export class UserService {
         }
     }
 
-    public async getUserAvatar(): Promise<string> {
-
+    public async getUserAvatar(): Promise<void> {
         try {
 
             const arrayBuffer = await firstValueFrom(
@@ -54,15 +52,12 @@ export class UserService {
             ).catch(error => { throw error });
             console.log(`User avatar has been fetched.`);
             const avatar = URL.createObjectURL(arrayBuffer);
-            console.log(avatar)
             this.avatar.next(avatar);
-            return avatar;
 
         } catch (error) {
             console.error(`Failed to get user avatar:`);
             console.error(error);
             this.avatar.next(null);
-            return null;
         }
 
     }
