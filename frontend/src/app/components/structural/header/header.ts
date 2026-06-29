@@ -1,10 +1,11 @@
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { AppAssetsService } from "@services/assets.service";
 import { AuthService } from "@services/auth.service";
-import { Component, inject } from "@angular/core";
-import { CommonModule } from '@angular/common';
-import { map, Observable, startWith } from "rxjs";
 import { UserService } from "@services/user.service";
+import { Component, inject } from "@angular/core";
+import { map, Observable, startWith } from "rxjs";
+import { CommonModule } from '@angular/common';
+
 @Component({
     selector: `app-header`,
     templateUrl: `./header.html`,
