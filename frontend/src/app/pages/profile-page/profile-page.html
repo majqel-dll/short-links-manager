@@ -19,6 +19,10 @@
         <p>email: {{user.email}}</p>
     </div>
 
+    @if(user !== null){
+        <change-password [currentUser]="user"></change-password>
+    }
+
     <div class="delete-account">
         <button class="delete-account-button">Delete account</button>
     </div>

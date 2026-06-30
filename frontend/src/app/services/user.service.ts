@@ -4,6 +4,7 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { UserData } from "@models/user.types";
 import { AuthService } from "./auth.service";
+import { ChangePasswordPayload, DeactivateUserPayload } from "@models/payload.types";
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -13,6 +14,11 @@ export class UserService {
 
     public user = new BehaviorSubject<UserData>(null);
     public avatar = new BehaviorSubject<string>(null);
+
+    public otherUsersList = new BehaviorSubject<UserData[]>([]);
+    public deleteEmailProcess: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+    public changeEmailProcess: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+    public pendingEmail: BehaviorSubject<string> = new BehaviorSubject<string>(null);
 
     constructor() {
         this.authService.isSignedIn.subscribe(isSignedIn => {
@@ -62,11 +68,53 @@ export class UserService {
 
     }
 
+    public async changeUserPassword(payload: ChangePasswordPayload): Promise<any> {
+
+        try {
+
+            const data = await firstValueFrom(
+                this.httpClient.post<UserData>(
+                    `/v1/auth/change-password`,
+                    payload,
+                    { withCredentials: true }
+                )
+            ).catch(error => { throw error });
+            console.log(`Password has been changed.`);
+            this.user.next(data);
+
+        } catch (error) {
+            console.error(`Failed to change password:`);
+            console.error(error);
+            this.user.next(null);
+        }
+
+    }
+
+    public async deactivateUser(payload: DeactivateUserPayload): Promise<any> {
+
+        try {
+            const response = await firstValueFrom(
+                this.httpClient.delete<DefaultResponse>(
+                    `/v1/user/${payload.id}`,
+                    { withCredentials: true }
+                )
+            ).catch(error => { throw error });
+
+            if (response.status !== 200) {
+                return false;
+            }
+            console.log(`Password has been changed.`);
+            this.user.next(data);
+
+        } catch (error) {
+            console.error(`Failed to change password:`);
+            console.error(error);
+            this.user.next(null);
+        }
+
+    }
+
     public async setUserPermissions(): Promise<void> { }
-
-    public async changeUserPassword(): Promise<void> { }
-
-    public async deactivateUser(): Promise<void> { }
 
     public async setEmailStatus(): Promise<void> { }
 

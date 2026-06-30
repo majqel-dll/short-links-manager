@@ -1,0 +1,29 @@
+.deleteAccountForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.delete-account {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: medium;
+
+    &:hover {
+        background-color: rgb(255, 65, 65);
+    }
+}
+
+.delete {
+    &:hover {
+        background-color: rgb(255, 65, 65);
+    }
+}
+
+.inputs-field{
+    width: 100%;
+}
+
+.login{
+    width: 100%;
+}

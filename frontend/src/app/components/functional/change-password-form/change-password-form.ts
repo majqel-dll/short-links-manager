@@ -1,15 +1,19 @@
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Component, Input, OnInit } from '@angular/core';
 import { UserService } from '@services/user.service';
+import { UserData } from '@models/user.types';
+import { CanComponentDeactivate } from '@models/guards.types';
 
 @Component({
     selector: 'change-password',
-    templateUrl: './change-password.component.html',
-    styleUrls: ['./change-password.component.scss', './../user-profile.component.scss'],
+    templateUrl: './change-password-form.html',
+    styleUrls: ['./change-password-form.scss',
+        '../../../pages/profile-page/profile-page.scss'],
+    imports: [ReactiveFormsModule]
 })
-export class ChangePasswordComponent implements OnInit {
+export class ChangePasswordComponent implements OnInit, CanComponentDeactivate {
 
-    @Input(`currentUser`) currentUser: User;
+    @Input(`currentUser`) currentUser: UserData;
 
     public unauthorizedResponse: boolean = false;
     public changePasswordForm: FormGroup;
@@ -24,7 +28,6 @@ export class ChangePasswordComponent implements OnInit {
 
     constructor(
         private readonly usersService: UserService,
-        private readonly canLeave: CanDeactivateService,
     ) { }
 
     private areEquals(control: FormControl): { [s: string]: boolean } {
@@ -34,27 +37,23 @@ export class ChangePasswordComponent implements OnInit {
         return null;
     }
 
+    public canDeactivate(): boolean {
+        const form = this.changePasswordForm.value;
+        const canLeave = form.password === null && form.password === '' &&
+            form.newPassword === null && form.newPassword === '' &&
+            form.confirmPassword === null && form.confirmPassword === '';
+        return canLeave;
+    }
+
     public ngOnInit(): void {
         this.changePasswordForm = new FormGroup({
             password: new FormControl(null, [Validators.required]),
             newPassword: new FormControl(null, [Validators.required, Validators.minLength(3)]),
             confirmPassword: new FormControl(null, [Validators.required, this.areEquals.bind(this)]),
         });
-
-        this.changePasswordForm.valueChanges.subscribe((value) => {
-
-            if (value.password !== null && value.password !== '' ||
-                value.newPassword !== null && value.newPassword !== '' ||
-                value.confirmPassword !== null && value.confirmPassword !== ''
-            ) {
-                this.canLeave.getSubject('changePassword').next(true);
-            } else {
-                this.canLeave.getSubject('changePassword').next(false);
-            }
-        })
     }
 
-    public onToggleVisibility = (field: string): void => {
+    public onToggleVisibility(field: string): void {
 
         if (field === 'password') {
             this.showpassword = !this.showpassword;
@@ -68,7 +67,7 @@ export class ChangePasswordComponent implements OnInit {
 
     }
 
-    public onPasswordChange = async (): Promise<void> => {
+    public async onPasswordChange(): Promise<void> {
         if (this.changePasswordForm.status === 'VALID') {
             const { password, newPassword, confirmPassword } = this.changePasswordForm.value;
             const body = { password, newPassword, confirmPassword };

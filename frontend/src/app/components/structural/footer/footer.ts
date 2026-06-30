@@ -1,5 +1,5 @@
 import { RouterLink, RouterLinkActive } from "@angular/router";
-import { FooterSection } from "@models/footer-media.types";
+import { FooterSection } from "@models/layout.types";
 import { Component, inject } from "@angular/core";
 import { AppAssetsService } from "@services/assets.service";
 

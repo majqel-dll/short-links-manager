@@ -1,4 +1,4 @@
-import { FooterSection } from "@models/footer-media.types";
+import { FooterSection, PageRoute } from "@models/layout.types";
 import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: `root` })
@@ -34,5 +34,22 @@ export class AppAssetsService {
                 { label: `About me`, href: atob('aHR0cHM6Ly9tYnVnYWpza2kucGwvby1tbmll') },
             ]
         },
+    ];
+
+    private routes: PageRoute[] = [
+        { title: "Redirections", route: 'redirections' },
+        { title: 'Users', route: 'users' },
+        { title: 'Logs', route: 'logs' },
+        { title: 'profile', route: 'profile' },
     ]
+
+    public addRoute(route: PageRoute): void {
+        this.routes.push(route);
+    }
+
+    public getRoutes(count?: number): PageRoute[] {
+        if (count) return this.routes.filter((_, i) => i < count);
+        return this.routes;
+    }
+
 };

@@ -16,3 +16,8 @@ type MediaPropertyBase = {
     class?: string,
     label: string,
 }
+
+export type PageRoute = {
+    route: string,
+    title: string,
+}

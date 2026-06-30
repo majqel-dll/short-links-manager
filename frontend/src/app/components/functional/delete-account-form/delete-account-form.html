@@ -1,0 +1,56 @@
+@if(!procesStarted){
+<div>
+    <input type="button" class="input button delete-account" (click)="onStartDeleteProcess()" value="delete account" />
+</div>
+} @else {
+
+<div class="wrapper">
+    <form [formGroup]="deleteAccountForm" class="deleteAccountForm" (ngSubmit)="onDeleteAccount()">
+
+        <div class="inputs-field">
+            <label for="confirmDeleteWithLogin">Login</label>
+            <input type="login" class="input login" name="confirmDeleteWithLogin" id="confirmDeleteWithLogin"
+                formControlName="confirmDeleteWithLogin" placeholder="confirm your login">
+        </div>
+
+        @if(deleteAccountForm.get('confirmDeleteWithLogin').touched
+        && !deleteAccountForm.get('confirmDeleteWithLogin').valid){
+        <div class="error-code">
+            login is required!
+        </div>
+        }
+
+        <div class="inputs-field">
+            <label for="confirmDeleteWithPassword">Password</label>
+            <div class="row">
+                <input [type]="isPasswordVisible ? 'text' : 'password'" class="input" id="confirmDeleteWithPassword"
+                    name="confirmDeleteWithPassword" formControlName="confirmDeleteWithPassword"
+                    placeholder="password" />
+                <input type="button" class="input button" [value]="isPasswordVisible ? 'hide' : 'show'"
+                    (click)="togglePasswordVisibility()" />
+            </div>
+        </div>
+
+        @if(deleteAccountForm.get('confirmDeleteWithPassword').touched
+        && !deleteAccountForm.get('confirmDeleteWithPassword').valid){
+        <div class="error-code">
+            password is required!
+        </div>
+        }
+
+        @if(error){
+        <div class="error-code">
+            incorrect password or email
+        </div>
+        }
+
+        <div class="inputs-field">
+            <div class="row">
+                <input type="button" class="input button" value="cancel" (click)="onCancel()" />
+                <input type="submit" class="input button delete" value="delete" />
+            </div>
+        </div>
+
+    </form>
+</div>
+}

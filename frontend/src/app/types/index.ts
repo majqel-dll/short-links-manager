@@ -1,1 +1,1 @@
-export * from "./footer-media.types";
+export * from "./layout.types";
